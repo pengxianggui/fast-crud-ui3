@@ -17,6 +17,9 @@
 Table, TableColumn, Input, InputNumber, Checkbox, CheckboxGroup, Select, Option, DatePicker, Switch, TimePicker, Radio,
 Upload, Row, Col, Button, Empty, Popover, Form, FormItem, Dropdown, DropdownMenu, DropdownItem, Pagination, Link
 
+> node=18.16.0
+> npm=9.5.1
+
 ## 组件列表
 
 - FastTable: 核心组件
