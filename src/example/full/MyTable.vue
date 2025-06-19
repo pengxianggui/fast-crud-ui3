@@ -293,7 +293,7 @@ export default {
     },
     expandButton({choseRow, checkedRows, editRows}, type) {
       if (type === 'code') {
-        window.open('https://github.com/pengxianggui/fast-crud/tree/main/fast-crud-ui/src/example/full/MyTable.vue', '_blank')
+        window.open('https://github.com/pengxianggui/fast-crud-ui/blob/main/src/example/full/MyTable.vue', '_blank')
       } else if (type === 'doc') {
         window.open('http://pengxg.cc/tags/fast-crud', '_blank')
       }
