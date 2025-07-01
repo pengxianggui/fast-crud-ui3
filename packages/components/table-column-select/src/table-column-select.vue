@@ -3,8 +3,7 @@
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
-      <fast-table-head-cell class="fc-table-column-head-cell" :class="{'filter': filter}" :column="columnProp"
-                            @click.native="headCellClick(column)">
+      <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
           <span>{{ column.label }}</span>
         </slot>
@@ -19,15 +18,16 @@
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
-          <fast-select v-model="row['editRow'][column.property]"
-                       v-bind="row['config'][column.property]['props']"
-                       :ref="column.property + $index"
+          <fast-select v-model="row['editRow'][prop]"
+                       v-bind="row['config'][prop]['props']"
+                       :options="options"
+                       :ref="prop + $index"
                        @change="(val) => handleChange(val, {row, column, $index})"
                        @blur="(event) => handleBlur(event, {row, column, $index})"
                        @focus="(event) => handleFocus(event, {row, column, $index})"
                        @clear="() => handleClear({row, column, $index})"
-                       @visible-change="(visible) => $emit('visible-change', visible, {row, column, $index})"
-                       @remove-tag="(tagVal) => $emit('remove-tag', tagVal, {row, column, $index})"></fast-select>
+                       @visible-change="(visible) => $emit('visibleChange', visible, {row, column, $index})"
+                       @remove-tag="(tagVal) => $emit('removeTag', tagVal, {row, column, $index})"></fast-select>
         </slot>
       </slot>
     </template>
@@ -35,7 +35,6 @@
 </template>
 
 <script>
-
 import FastTableHeadCell from "../../table-head-cell/src/table-head-cell.vue";
 import tableColumn from "../../../mixins/table-column";
 import FastSelect from "../../select/src/fast-select.vue";
@@ -44,6 +43,7 @@ export default {
   name: "FastTableColumnSelect",
   components: {FastTableHeadCell, FastSelect},
   mixins: [tableColumn],
+  emits: ['visibleChange', 'removeTag'],
   props: {
     options: {
       type: Array,

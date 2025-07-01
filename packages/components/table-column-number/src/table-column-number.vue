@@ -6,14 +6,12 @@
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
-      <fast-table-head-cell class="fc-table-column-head-cell" :class="{'filter': filter}" :column="columnProp"
-                            @click.native="headCellClick(column)">
+      <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
           <span>{{ column.label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>
-
 
     <template #default="{row, column, $index}">
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
@@ -23,9 +21,9 @@
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
-          <el-input-number v-model="row['editRow'][column.property]"
-                           v-bind="row['config'][column.property]['props']"
-                           :ref="column.property + $index"
+          <el-input-number v-model="row['editRow'][prop]"
+                           v-bind="row['config'][prop]['props']"
+                           :ref="prop + $index"
                            @change="(val) => handleChange(val, {row, column, $index})"
                            @blur="(event) => handleBlur(event, {row, column, $index})"
                            @focus="(event) => handleFocus(event, {row, column, $index})"></el-input-number>

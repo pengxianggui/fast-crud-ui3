@@ -1,6 +1,8 @@
 import {isUndefined, merge, ternary} from "../../util/util";
 import {Cond, Opt} from "../../model";
 
+const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD'
+const DEFAULT_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
 const defaultQueryConfig = {
     component: 'el-date-picker',
     opt: Opt.BTW,
@@ -8,7 +10,7 @@ const defaultQueryConfig = {
     props: {
         type: `daterange`,
         clearable: true,
-        'value-format': 'yyyy-MM-dd'
+        valueFormat: DEFAULT_DATE_FORMAT
     },
     condMapFn: (cond) => {
         const conds = []
@@ -30,7 +32,7 @@ const defaultEditConfig = {
     props: {
         type: "date",
         clearable: true,
-        'value-format': 'yyyy-MM-dd',
+        valueFormat: DEFAULT_DATE_FORMAT,
         class: 'fc-table-inline-edit-component',
         editable: true,
         rules: []
@@ -40,14 +42,14 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {'default-val': defaultVal, ...validProps} = config.props;
+        const {defaultVal, ...validProps} = config.props;
         const {type: dateType = 'date'} = validProps;
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
-        const {'value-format': valueFormat} = validProps;
+        const {valueFormat} = validProps;
         if (config.props.type === 'datetime' && isUndefined(valueFormat)) {
-            validProps['value-format'] = 'yyyy-MM-dd HH:mm:ss';
+            validProps.valueFormat = DEFAULT_DATETIME_FORMAT;
         }
         config.val = val;
         config.props = {
@@ -57,16 +59,16 @@ export default {
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {label, props: {'default-val': defaultVal, ...validProps}} = config;
+        const {label, props: {defaultVal, ...validProps}} = config;
         const {rules = []} = validProps;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
             rules.push({required: true, message: `${label}不能为空`})
         }
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal);
-        const {'value-format': valueFormat} = validProps;
+        const {valueFormat} = validProps;
         if (config.props.type === 'datetime' && isUndefined(valueFormat)) {
-            validProps['value-format'] = 'yyyy-MM-dd HH:mm:ss';
+            validProps.valueFormat = DEFAULT_DATETIME_FORMAT;
         }
         config.props = {
             ...validProps,

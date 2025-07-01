@@ -1,5 +1,6 @@
 import {buildFinalComponentConfig} from "../../mapping";
 import {
+    convertCaseToCamelOfObjectKey,
     deepClone,
     defaultIfBlank,
     defaultIfEmpty,
@@ -7,7 +8,8 @@ import {
     isBoolean,
     isEmpty, isFunction,
     isUndefined,
-    merge
+    merge,
+    filterConflictEvents
 } from "../../../util/util";
 
 import Schema from 'async-validator'
@@ -42,18 +44,18 @@ export function colValid(val, config) {
  * @param context 上下文
  */
 export function rowValid(fatRows, context) {
-    const validPromises = [];
+    const validPromises = []
     for (let i = 0; i < fatRows.length; i++) {
-        const fatRow = fatRows[i];
-        const {editRow, config} = fatRow;
+        const fatRow = fatRows[i]
+        const {editRow, config} = fatRow
         Object.keys(config).map(col => {
-            const canEdit = colEditable.call(defaultIfEmpty(context, this), fatRow, col);
+            const canEdit = colEditable.call(context == null ? this : context, fatRow, col)
             if (canEdit) {
-                validPromises.push(colValid(editRow[col], config[col]));
+                validPromises.push(colValid(editRow[col], config[col]))
             }
         });
     }
-    return Promise.all(validPromises);
+    return Promise.all(validPromises)
 }
 
 /**
@@ -111,6 +113,19 @@ export function toTableRow(row, columnConfig, status = 'normal', editType) {
     }
 }
 
+function parseStaticProps(staticProps) {
+    const props = {}
+    if (!isEmpty(staticProps)) {
+        for (const key in staticProps) {
+            if (staticProps[key].hasOwnProperty('default')) {
+                const defaultV = staticProps[key]['default']
+                props[key] = isFunction(defaultV) ? defaultV() : defaultV
+            }
+        }
+    }
+    return props
+}
+
 /**
  * 构建组件配置
  * @param vnodes fast-table-column-* 组成的节点数组，蕴含fast-table-column-*上的信息
@@ -124,22 +139,27 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
 
     for (const vnode of vnodes) {
         const {
-            componentInstance: {
-                $attrs = {},
-                _props = {} // 默认属性
-            },
-            componentOptions: {
-                tag: tableColumnComponentName,
-                propsData = {}
-            } = {} // 传入属性
+            props: _props,
+            type: {
+                name: tableColumnComponentName,
+                props: _typeProps,
+                mixins = []
+            }
         } = vnode
+        const propsInMixin = mixins.reduce((acc, item) => {
+            let mixinProps = parseStaticProps(item.props)
+            return {...acc, ...mixinProps}
+        }, {});
+        const customProps = filterConflictEvents(convertCaseToCamelOfObjectKey(_props, '-'), vnode)
+        const defaultProps = {
+            ...parseStaticProps(_typeProps),
+            ...propsInMixin
+        }
+        const props = {...defaultProps, ...customProps}
 
-        const {filter = true} = {...$attrs, _props, ...propsData}
-        const props = {...$attrs, ..._props, ...propsData}
         const param = {};
-
-        const {label, prop: col} = props;
-        if (isUndefined(col)) {
+        const {label, prop: col, filter = true} = props
+        if (isUndefined(col)) { // 操作列
             continue;
         }
         const customConfig = {
@@ -149,13 +169,13 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
         }
         try {
             if (filter) {
-                buildFilterComponentConfig(param, tableColumnComponentName, customConfig);
+                buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption);
             }
             buildEditComponentConfig(param, tableColumnComponentName, customConfig, tableOption);
         } catch (err) {
             console.error(err)
         } finally {
-            callback({tableColumnComponentName, col, customConfig, ...param})
+            callback({tableColumnComponentName, col, customConfig: customConfig, ...param})
         }
     }
 
@@ -164,29 +184,29 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
 /**
  * 构建过滤器组件配置
  * @param param
- * @prop tableColumnComponentName
- * @param defaultProp
- * @param props
+ * @param tableColumnComponentName
+ * @param customConfig
+ * @param tableOption
  */
-function buildFilterComponentConfig(param, tableColumnComponentName, customConfig) {
-    const {'quick-filter': quickFilter = false} = customConfig.props;
+function buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption) {
+    const {quickFilter = false} = customConfig.props;
     // build quick filters
     if (quickFilter) {
         try {
-            param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick');
+            param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick', tableOption);
         } catch (e) {
             console.error(e)
         }
     }
     // build easy filters
     try {
-        param.easyFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'easy');
+        param.easyFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'easy', tableOption);
     } catch (e) {
         console.error(e)
     }
     // build easy filters
     try {
-        param.dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic')
+        param.dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', tableOption)
     } catch (e) {
         console.error(e)
     }
@@ -197,8 +217,8 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
  * 构建编辑组件配置
  * @param param
  * @param tableColumnComponentName
- * @param defaultProp
- * @param props
+ * @param customConfig
+ * @param tableOption
  */
 function buildEditComponentConfig(param, tableColumnComponentName, customConfig, tableOption) {
     // form表单组件配置

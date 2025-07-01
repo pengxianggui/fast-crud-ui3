@@ -1,7 +1,7 @@
 import FastUpload from "./src/fast-upload.vue";
 
-FastUpload.install= (Vue) => {
-    Vue.component(FastUpload.name, FastUpload)
+FastUpload.install= (app) => {
+    app.component(FastUpload.name, FastUpload)
 }
 
 export default FastUpload;

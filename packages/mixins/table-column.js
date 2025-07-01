@@ -1,8 +1,8 @@
-import {defaultIfEmpty} from "../util/util";
 import {colEditable} from "../components/table/src/util";
 
 export default {
     inject: ['openDynamicFilterForm', 'tableStyle', 'context'],
+    emits: ['change', 'focus', 'blur', 'input', 'clear'],
     props: {
         prop: String,
         label: String,
@@ -43,7 +43,7 @@ export default {
          * @returns {boolean}
          */
         canEdit(fatRow, column, $index) {
-            return colEditable.call(defaultIfEmpty(this.context, this), fatRow, column.property);
+            return colEditable.call(this.context !== null && this.context !== undefined ? this.context : this, fatRow, column.property);
         },
         showLabel(fatRow, column) {
             const {row, editRow, status} = fatRow;
@@ -76,7 +76,7 @@ export default {
             this.$emit('input', val, scope);
         },
         handleClear(scope) {
-            this.$emit('input', scope);
+            this.$emit('clear', scope);
         }
     }
 }

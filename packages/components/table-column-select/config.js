@@ -28,7 +28,7 @@ const defaultEditConfig = {
 }
 export default {
     query: (config, type) => {
-        const {'default-val': defaultVal, ...validProps} = config.props;
+        const {defaultVal, ...validProps} = config.props;
         let val = []
         let component = 'fast-select';
 
@@ -45,16 +45,16 @@ export default {
     },
     edit: (config, type) => {
         const {label, props} = config;
-        const {'default-val': defaultVal, rules = [], ...validProps} = props;
+        const {defaultVal, rules = [], ...validProps} = props
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
             rules.push({required: true, message: `${label}不能为空`})
         }
-        config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal);
+        config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal)
         config.props = {
             ...validProps,
             rules: rules
         }
-        return merge(config, defaultEditConfig, true, false);
+        return merge(config, defaultEditConfig, true, false)
     }
 }

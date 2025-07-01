@@ -1,5 +1,5 @@
-import Vue from 'vue';
-import {Message} from 'element-ui';
+import {h, defineComponent, ref} from 'vue';
+import {ElMessage} from 'element-plus';
 import {FastTableOption} from "../index";
 import {defaultIfEmpty, isEmpty, isFunction} from "./util";
 import {openDialog} from "./dialog";
@@ -13,6 +13,7 @@ import FastTable from '../components/table'
  * @returns {Promise<*>|*}
  */
 export function pick({option, multiple = false, dialog = {width: '70%'}}) {
+    const _this = this
     if (isEmpty(option)) {
         throw new Error("option 不能为空!");
     }
@@ -25,11 +26,28 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
     option.deletable = false;
     option.enableMulti = (multiple === true);
 
-    const dynamicFastTable = Vue.extend({
+    const DynamicFastTable = defineComponent({
         name: 'DynamicFastTable',
-        render(h) {
-            const slotContent = isFunction(option.render) ? option.render(h) : null;
-            return h(FastTable, {props: {option}, ref: 'table'}, slotContent);
+        data() {
+            return {
+                option: option
+            }
+        },
+        methods: {
+            getTableRef() {
+                return this.$refs.table
+            }
+        },
+        render() {
+            const slotContent = isFunction(option.render) ? option.render.call(_this) : []
+            return h(FastTable, {
+                    ref: 'table',
+                    option: this.option
+                },
+                {
+                    default: () => slotContent
+                }
+            )
         }
     });
 
@@ -39,10 +57,10 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
                 type: 'primary',
                 size: option.style.size,
                 onClick: (instance) => {
-                    const tableRef = instance.$refs.table;
+                    const tableRef = instance.getTableRef();
                     const data = multiple ? tableRef.getCheckedRows() : tableRef.getChoseRow();
                     if (isEmpty(data)) {
-                        Message.warning('请选择数据');
+                        ElMessage.warning('请选择数据');
                         return; // 返回非Promise则不会关闭对话框
                     }
                     return Promise.resolve(data);
@@ -58,8 +76,10 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
         ]
     );
 
+    console.log(DynamicFastTable)
     return openDialog.call(this, {
-        component: dynamicFastTable,
+        component: DynamicFastTable,
+        props: {},
         dialogProps: {
             ...dialog,
             buttons: buttons

@@ -1,12 +1,11 @@
 <template>
-  <el-select v-model="modelValue" v-bind="$attrs" :size="size" :multiple="multiple"
-             @input="handleInput"
-             @change="handleChange"
+  <el-select v-model="value" v-bind="$attrs" :size="size" :multiple="multiple"
+             @change="(val) => $emit('change', val)"
              @clear="() => $emit('clear')"
              @focus="(event) => $emit('focus', event)"
              @blur="(event) => $emit('blur', event)"
-             @visible-change="(visible) => $emit('visible-change', visible)"
-             @remove-tag="(tagVal) => $emit('remove-tag', tagVal)">
+             @visible-change="(visible) => $emit('visibleChange', visible)"
+             @remove-tag="(tagVal) => $emit('removeTag', tagVal)">
     <el-option v-for="item in options" :key="item.value" :label="item[labelKey]" :value="item[valKey]"
                :disabled="disableVal.indexOf(item[valKey]) > -1"></el-option>
   </el-select>
@@ -15,8 +14,9 @@
 <script>
 export default {
   name: "fast-select",
+  emits: ['update:modelValue', 'change', 'clear', 'focus', 'blur', 'visibleChange', 'removeTag'],
   props: {
-    value: {
+    modelValue: {
       required: true
     },
     options: {
@@ -39,25 +39,19 @@ export default {
       type: Array,
       default: () => []
     },
-    size: String
-  },
-  computed: {
-    modelValue: {
-      get() {
-        return this.value
-      },
-      set(val) {
-        this.$emit('input', val)
-      }
+    size: {
+      type: String,
+      default: 'default'
     }
   },
-  methods: {
-    handleInput(val) {
-      this.modelValue = val
-    },
-    handleChange(val) {
-      this.modelValue = val
-      this.$emit('change', val)
+  computed: {
+    value: {
+      get() {
+        return this.modelValue
+      },
+      set(val) {
+        this.$emit('update:modelValue', val)
+      }
     }
   }
 }

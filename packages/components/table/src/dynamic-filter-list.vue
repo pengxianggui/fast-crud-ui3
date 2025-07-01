@@ -3,23 +3,23 @@
     <el-popover v-for="(f, index) in filters" :key="f.col + '.' + index">
       <template v-slot:reference>
         <div class="fc-dynamic-filter-btns">
-          <el-button type="text" class="fc-dynamic-filter-open-btn" :class="{'strikethrough': f.disabled}">
-            {{ f | label | ellipsis(30) }}
+          <el-button link class="fc-dynamic-filter-open-btn" :class="{'strikethrough': f.disabled}">
+            {{ ellipsis(label(f), 30) }}
           </el-button>
-          <el-button type="text" class="fc-dynamic-filter-del-btn" icon="el-icon-close"
+          <el-button link class="fc-dynamic-filter-del-btn" icon="Close"
                      @click.stop="delConfig(index)"></el-button>
         </div>
       </template>
       <component class="component" :is="f.component" v-model="f.val" v-bind="f.props"
                  v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
       <div class="fc-dynamic-filter-footer">
-        <el-button type="primary" size="mini" icon="el-icon-search" @click="confirm">查询</el-button>
-        <el-button :type="f.disabled ? 'primary' : 'info'" plain size="mini" @click="toggleFilter(f)">
+        <el-button type="primary" size="small" icon="Search" @click="confirm">查询</el-button>
+        <el-button :type="f.disabled ? 'primary' : 'info'" plain size="small" @click="toggleFilter(f)">
           {{ f.disabled ? '启用' : '禁用' }}
         </el-button>
       </div>
     </el-popover>
-    <el-button class="fc-dynamic-filter-clear-btn" type="text" style="padding: 0; color: #d37c84" @click="clearFilters"
+    <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters"
                v-if="filters.length > 1">清空筛选
     </el-button>
   </div>
@@ -28,11 +28,11 @@
 <script>
 import {Opt} from "../../../model";
 import {escapeValToLabel} from "./util";
-import {ellipsis} from "../../../filters";
-import {isEmpty, isString} from "../../../util/util";
+import {ellipsis} from '../../../util/util'
 
 export default {
   name: "dynamic-filter-list",
+  emits: ['search'],
   props: {
     filters: {
       type: Array,
@@ -48,12 +48,27 @@ export default {
       Opt: Opt
     }
   },
-  filters: {
+  methods: {
     ellipsis,
+    delConfig(index) {
+      this.filters.splice(index, 1)
+      this.confirm()
+    },
+    confirm(/*filter*/) {
+      this.$emit('search')
+    },
+    toggleFilter(filter) {
+      filter.disabled = !filter.disabled
+      this.confirm()
+    },
+    clearFilters() {
+      this.filters.splice(0, this.filters.length);
+      this.confirm();
+    },
     label(filter) {
-      const {label, component} = filter;
+      const {label, component} = filter
       if (!filter.isEffective()) {
-        filter.disabled = true;
+        filter.disabled = true
         return `[${label}]无有效值`
       }
       const conds = filter.getConds();
@@ -106,23 +121,6 @@ export default {
         }
       }
       return tip;
-    }
-  },
-  methods: {
-    delConfig(index) {
-      this.filters.splice(index, 1)
-      this.confirm()
-    },
-    confirm(/*filter*/) {
-      this.$emit('search')
-    },
-    toggleFilter(filter) {
-      filter.disabled = !filter.disabled
-      this.confirm()
-    },
-    clearFilters() {
-      this.filters.splice(0, this.filters.length);
-      this.confirm();
     }
   }
 }
@@ -179,15 +177,13 @@ export default {
   max-height: 600px;
   overflow: auto;
 
-  ::v-deep {
-    .fc-checkbox-group {
-      display: block;
-
-      .el-checkbox {
-        display: block;
-      }
-    }
+  :deep(.fc-checkbox-group) {
+    display: block;
   }
+  :deep(.fc-checkbox-group .el-checkbox) {
+    display: block;
+  }
+
 }
 
 .fc-dynamic-filter-footer {

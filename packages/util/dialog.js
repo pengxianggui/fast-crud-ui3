@@ -1,5 +1,6 @@
-import Vue from 'vue';
-import {Dialog} from 'element-ui';
+import {h, defineComponent, reactive, createVNode, render} from 'vue'
+import {ElDialog, ElButton} from 'element-plus'
+import {getAppContext} from "../index.js"
 
 /**
  * 动态打开弹窗
@@ -8,7 +9,7 @@ import {Dialog} from 'element-ui';
  * @param dialogProps 传递给dialog的props, 其中还支持自定义的buttons数组，描述dialog按钮
  * @example
  * openDialog({
- *  component: YourForm,
+ *  component: YourComponent,
  *  props: {
  *      model: {...}
  *  },
@@ -19,18 +20,18 @@ import {Dialog} from 'element-ui';
  *          {
  *              text: '确定',
  *              type: 'primary',
- *              onClick: (component) => { // component是你传入的YourForm组件实例
- *                  if (!component.validate()) { // YourForm里提供的校验方法
- *                      Message.warning('校验不通过!');
- *                      return; // 返回非Promise则不会关闭对话框
+ *              onClick: (component) => { // component是你传入的YourComponent组件实例
+ *                  if (!component.validate()) { // YourComponent里提供的校验方法
+ *                      ElMessage.warning('校验不通过!')
+ *                      return // 返回非Promise则不会关闭对话框
  *                  }
- *                  return Promise.resolve(component.getModel()); // YourForm提供的getModel获取表单数据, 走resolve逻辑
+ *                  return Promise.resolve(component.getModel()) // YourComponent提供的getModel获取表单数据, 走resolve逻辑
  *              }
  *          },
  *          {
  *              text: '取消',
  *              onClick: (component) => {
- *                  return Promise.reject(); // 走catch逻辑
+ *                  return Promise.reject() // 走catch逻辑
  *              }
  *          }
  *          // 其它自定义按钮
@@ -40,80 +41,68 @@ import {Dialog} from 'element-ui';
  * })
  * @returns {Promise<unknown>}
  */
-export function openDialog({component, props = {}, dialogProps = {width: '50%'}}) {
-    const _this = this;
-    const {buttons = [], ...validDialogProps} = dialogProps;
-    return new Promise((resolve, reject) => {
-        const dialogInstance = new Vue({
-            data() {
-                return {
-                    visible: true, // 控制 Dialog 的显示
-                };
-            },
-            methods: {
-                handleOk(data) {
-                    this.visible = false;
-                    resolve(data);
-                },
-                handleClose(whoClose) {
-                    this.visible = false;
-                    reject(whoClose);
-                },
-                cleanUp() {
-                    document.body.removeChild(dialogInstance.$el);
-                    this.$destroy();
-                }
-            },
-            render(h) {
-                return h(Dialog, {
-                    class: ['fc-dynamic-dialog'],
-                    props: {
-                        ...validDialogProps,
-                        visible: this.visible
-                    },
-                    on: {
-                        "update:visible": (val) => {
-                            this.visible = val;
-                            if (!val) {
-                                this.cleanUp();
-                            }
-                        },
-                        close: () => this.handleClose('dialog'),
-                    },
-                }, [
-                    h(component, {
-                        props,
-                        ref: 'component',
-                        on: {
-                            ok: (data) => this.handleOk(data),
-                            cancel: () => this.handleClose('component')
-                        },
-                    }),
-                    // 具名插槽footer
-                    h('template', {slot: 'footer'}, buttons.map(btn => {
-                        return h('el-button', {
-                            props: {
-                                type: btn.type,
-                                icon: btn.icon,
-                                size: btn.size
-                            },
-                            on: {
-                                click: () => {
-                                    const componentInstance = dialogInstance.$refs.component;
-                                    const returnObj = btn.onClick.call(_this, componentInstance);
-                                    if (!(returnObj instanceof Promise)) {
-                                        return;
-                                    }
-                                    returnObj.then((data) => this.handleOk(data))
-                                        .catch(() => this.handleClose('dialog'));
-                                }
-                            }
-                        }, btn.text);
-                    }))
-                ]);
-            },
-        }).$mount();
+export function openDialog({component, props = {}, dialogProps = {}}) {
+    const {buttons = [], ...validDialogProps} = dialogProps
 
-        document.body.appendChild(dialogInstance.$el)
-    });
+    return new Promise((resolve, reject) => {
+        const container = document.createElement('div')
+        document.body.appendChild(container)
+
+        const state = reactive({visible: true})
+        let componentRef = null
+
+        const DialogWrapper = defineComponent({
+            setup() {
+                const handleClose = (who) => {
+                    state.visible = false
+                    cleanup()
+                    reject(who)
+                }
+
+                const handleOk = (data) => {
+                    state.visible = false
+                    cleanup()
+                    resolve(data)
+                }
+
+                const cleanup = () => {
+                    render(null, container) // 卸载 vnode
+                    container.remove()      // 清理 DOM
+                }
+
+                return () => h(ElDialog, {
+                    modelValue: state.visible,
+                    'update:modelValue': (val) => {
+                        state.visible = val
+                        if (!val) cleanup()
+                    },
+                    onClose: () => handleClose('dialog'),
+                    ...validDialogProps
+                }, {
+                    default: () => h(component, {
+                        ref: (el) => (componentRef = el),
+                        ...props,
+                        onOk: (data) => handleOk(data),
+                        onCancel: () => handleClose('component')
+                    }),
+                    footer: () => buttons.map(btn =>
+                        h(ElButton, {
+                            type: btn.type,
+                            icon: btn.icon,
+                            size: btn.size,
+                            onClick: () => {
+                                const returnVal = btn.onClick?.(componentRef)
+                                if (!(returnVal instanceof Promise)) return
+                                returnVal.then(handleOk).catch(() => handleClose('dialog'))
+                            }
+                        }, () => btn.text)
+                    )
+                })
+            }
+        })
+
+        const vnode = createVNode(DialogWrapper)
+        vnode.appContext = getAppContext() // 集成app的上下文，保证<component :is="" /> 可以找到全局注册的组件
+        render(vnode, container)
+    })
 }

@@ -1,4 +1,19 @@
-import {cloneDeep} from 'lodash-es'
+import {cloneDeep, isEmpty as _isEmpty} from 'lodash-es'
+import moment from "moment/moment";
+
+/**
+ * 剪掉字符串指定的前缀, 如果不是此前缀开头，则直接返回str
+ * @param str 待操作的字符串
+ * @param prefix 指定前缀
+ */
+export function cutPrefix(str, prefix) {
+    if (!isString(str) || !isString(prefix) || !str.startsWith(prefix)) {
+        return str
+    }
+
+    return str.slice(prefix.length)
+}
+
 
 export function assert(cond, msg) {
     if (!cond) {
@@ -49,14 +64,33 @@ export function camelCaseTo(str, separator = '_') {
 }
 
 /**
- * ?(默认下划线)转驼峰
+ * ?(默认下划线)转驼峰。单个字符串转换
  * @param str
- * @param separator
+ * @param separator 默认下划线
  */
 export function caseToCamel(str, separator = '_') {
     if (!str.includes(separator)) return str; // 无需转换直接返回
     const regex = new RegExp(`\\${separator}([a-z])`, 'g');
     return str.replace(regex, (_, letter) => letter.toUpperCase());
+}
+
+/**
+ * ?(默认下划线)转驼峰。将一个对象类型中的所有key转换。若obj不是对象类型，则直接返回obj，否则将返回一个新的object
+ * @param obj 对象
+ * @param separator 默认下划线
+ */
+export function convertCaseToCamelOfObjectKey(obj, separator = "_") {
+    if (!isObject(obj)) {
+        return obj
+    }
+    const newObj = {}
+    const keys = Object.keys(obj)
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i]
+        const newKey = caseToCamel(key, separator)
+        newObj[newKey] = obj[key]
+    }
+    return newObj
 }
 
 /**
@@ -126,11 +160,14 @@ export function typeOf(value) {
  * 6. 其他情况均返回false
  */
 export function isEmpty(value) {
+    if (value && typeof value === 'object' && value.$ && value.$.vnode) {
+        throw new Error('组件实例不要用isEmpty判空!')
+    }
     switch (typeOf(value)) {
         case '[object String]':
             return value.trim() === '';
         case "[object Object]":
-            return Object.keys(value).length === 0;
+            return _isEmpty(value);
         case "[object Array]":
             return value.length === 0;
         case "[object Undefined]":
@@ -400,4 +437,70 @@ export function replaceKey(obj, str, position = 'end') {
     });
 
     return result;
+}
+
+/**
+ * 超出指定长度则超出部分转换为...
+ * @param val
+ * @param len
+ * @returns {string|*}
+ */
+export const ellipsis = function (val, len) {
+    if (isEmpty(val) || !isString(val)) return '';
+    if (!isNumber(len)) {
+        console.warn('The "ellipsis" filter requires a numeric second argument as the maxLength.');
+        return val;
+    }
+
+    return val.length > len ? val.slice(0, len) + '...' : val;
+}
+
+/**
+ * 日期格式化
+ * @param val
+ * @param format
+ * @returns {string}
+ */
+export const dateFormat = function (val, format) {
+    const date = new Date(val)
+    const adjustFormat = format.replace(/yyyy/g, 'YYYY').replace(/dd/g, 'DD')
+    return moment(date).format(adjustFormat)
+}
+
+/**
+ * 从属性key中提取事件名。例如: onChange 提取出来就是change
+ * @param key
+ * @return {string|null}
+ */
+export function extractEventName(key) {
+    if (isEmpty(key) || !key.startsWith('on')) return null;
+    const raw = key.slice(2);
+    return raw.charAt(0).toLowerCase() + raw.slice(1); // 保留驼峰
+}
+
+/**
+ * 过滤冲突的事件名
+ * @param props 属性键值对象
+ * @param vnode vnode节点
+ * @return 返回过滤后新的props属性
+ */
+export function filterConflictEvents(props, vnode) {
+    const {type: {emits = [], mixins = []} = {}} = vnode
+    const allEmits = new Set([
+        ...(emits || []),
+        ...((mixins || []).flatMap(m => {
+            const {emits: emitsInMixin} = m
+            return emitsInMixin || []
+        }))
+    ]);
+
+    const newProps = {};
+    for (const [key, value] of Object.entries(props)) {
+        const evtName = extractEventName(key);
+        if (evtName && allEmits.has(evtName)) {
+            continue;
+        }
+        newProps[key] = value;
+    }
+    return newProps;
 }

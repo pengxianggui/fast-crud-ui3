@@ -1,4 +1,4 @@
-import {Message, MessageBox} from 'element-ui';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import {
     assert,
     caseToCamel,
@@ -288,7 +288,7 @@ class FastTableOption {
     deleteUrl = '';
     batchDeleteUrl = '';
     uploadUrl = ''; // 文件上传接口
-    exportUrl = ''; // 数据导出接口 TODO 2.0 兑现
+    exportUrl = ''; // 数据导出接口
     enableDblClickEdit = true;
     enableMulti = true; // 启用多选
     enableColumnFilter = true; // 启用列过滤：即动筛
@@ -305,7 +305,7 @@ class FastTableOption {
     style = {
         flexHeight: false, // 表格是否使用弹性高度: 自适应高度, 撑满全屏
         bodyRowHeight: '50px', // 行高
-        size: 'medium',  // 尺寸
+        size: 'default',  // 尺寸
         formLabelWidth: 'auto', // 表单标签宽度:
         formLayout: null // 表单布局: 只作用于form表单, 对快筛和行内编辑无效
     };
@@ -328,7 +328,7 @@ class FastTableOption {
     beforeExport; // 导出前
     afterExport; // 导出后
 
-    render; // 渲染函数, pick时用到
+    render; // 渲染函数, 当前table需要被pick时有用
     conds; // 固定的筛选条件，内部无法取消
 
     static $http;
@@ -365,7 +365,7 @@ class FastTableOption {
                     style = {
                         flexHeight: false,
                         bodyRowHeight: '50px',
-                        size: 'medium',
+                        size: 'default',
                         formLabelWidth: 'auto',
                         formLayout: null
                     },
@@ -387,7 +387,7 @@ class FastTableOption {
                     beforeCancel = ({fatRows, rows, status}) => Promise.resolve(),
                     beforeExport = ({columns, pageQuery}) => Promise.resolve(columns),
                     afterExport = () => Promise.resolve(),
-                    render = (h) => [],
+                    render = () => [],
                     conds = []
                 }) {
         assert(isString(title), 'title必须为字符串')
@@ -505,7 +505,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        Message.success(`成功新增${postData.length}条记录`);
+                        ElMessage.success(`成功新增${postData.length}条记录`);
                     });
                 }).catch(err => {
                     reject(err);
@@ -515,7 +515,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        Message.success('新增失败:' + JSON.stringify(err));
+                        ElMessage.success('新增失败:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
@@ -532,7 +532,7 @@ class FastTableOption {
             return Promise.reject('当前表格不允许删除');
         }
         if (isEmpty(fatRows)) {
-            Message.warning('请先选中一条记录');
+            ElMessage.warning('请先选中一条记录');
             return Promise.reject('请先选中一条记录');
         }
 
@@ -543,7 +543,7 @@ class FastTableOption {
                 fatRows: fatRows,
                 rows: rows
             }).then(() => {
-                MessageBox.confirm(`确定删除这${rows.length}条记录吗？`, '删除确认', {}).then(() => {
+                ElMessageBox.confirm(`确定删除这${rows.length}条记录吗？`, '删除确认', {}).then(() => {
                     const {beforeDelete} = this;
                     beforeDelete.call(context, {fatRows: fatRows, rows: rows}).then((postData) => {
                         const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this;
@@ -555,12 +555,12 @@ class FastTableOption {
                                 rows: rows,
                                 res: res
                             }).then(() => {
-                                Message.success('删除成功');
+                                ElMessage.success('删除成功');
                             })
                         }).catch(err => {
                             reject(err);
                             deleteFail.call(context, {fatRows, rows: rows, error: err}).then(() => {
-                                Message.success('删除失败:' + JSON.stringify(err));
+                                ElMessage.success('删除失败:' + JSON.stringify(err));
                             })
                         })
                     }).catch((err) => {
@@ -603,7 +603,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        Message.success(`成功更新${postData.length}条记录`);
+                        ElMessage.success(`成功更新${postData.length}条记录`);
                     });
                 }).catch(err => {
                     reject(err);
@@ -613,7 +613,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        Message.success('更新失败:' + JSON.stringify(err));
+                        ElMessage.success('更新失败:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
@@ -655,12 +655,13 @@ class FastTableOption {
                     const url = window.URL.createObjectURL(new Blob([response.data]));
                     const link = document.createElement('a')
                     link.href = url;
-                    link.setAttribute('download', `${title ? title : module}_${new Date().getTime()}.xlsx`);
+                    link.setAttribute('download', `${title ? title : module}_${new Date().getTime()}.xlsx`)
                     document.body.appendChild(link)
                     link.click()
                     link.remove()
-                }).catch(() => {
-                    // TODO 错误提示
+                    afterExport.call(context)
+                }).catch((err) => {
+                    ElMessage.error('导出失败:' + err.message)
                 })
             })
         })

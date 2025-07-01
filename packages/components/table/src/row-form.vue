@@ -28,13 +28,14 @@
 </template>
 
 <script>
-import {Message} from 'element-ui';
+import {ElMessage} from 'element-plus';
 import FastTableOption, {EditComponentConfig} from "../../../model";
 import {isEmpty} from "../../../util/util";
 import {colEditable} from "./util";
 
 export default {
   name: "row-form",
+  emits: ['ok', 'cancel'],
   props: {
     option: FastTableOption,
     config: EditComponentConfig,
@@ -105,15 +106,13 @@ export default {
       })
     },
     submit() {
-      this.$refs['editForm'].validate().then((valid) => {
-        if (!valid) {
-          Message.warn('表单校验未通过! 请检查输入内容');
-          return;
-        }
+      this.$refs['editForm'].validate().then(() => {
         const fn = this.type === 'insert' ? this.option._insertRows : this.option._updateRows;
         fn.call(this.option, [this.row]).then(() => {
           this.$emit('ok')
         })
+      }).catch(() => {
+        ElMessage.warning('表单校验未通过! 请检查输入内容');
       })
     }
   }

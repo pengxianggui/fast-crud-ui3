@@ -5,8 +5,7 @@
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
-      <fast-table-head-cell class="fc-table-column-head-cell" :class="{'filter': filter}" :column="columnProp"
-                            @click.native="headCellClick(column)">
+      <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
           <span>{{ column.label }}</span>
         </slot>

@@ -8,17 +8,19 @@
     <component class="fc-easy-filter-value" :is="activeFilter.component" v-model="activeFilter.val"
                v-bind="activeFilter.props"
                :size="size"
-               @clear="handleClear" @keydown.enter.native="handleEnter"/>
-    <el-button type="primary" class="fc-easy-filter-btn" :size="size" icon="el-icon-search" @click="search"></el-button>
+               @clear="handleClear" @keydown.enter="handleEnter"/>
+    <el-button type="primary" class="fc-easy-filter-btn" :size="size" icon="Search" @click="search"></el-button>
   </div>
 </template>
 
 <script>
+import {nextTick} from "vue";
 import FastSelect from "../../select/src/fast-select.vue";
 
 export default {
   name: "easy-filter",
   components: {FastSelect},
+  emits: ['search'],
   props: {
     filters: {
       type: Array,
@@ -44,12 +46,12 @@ export default {
       })
     },
     handleClear() {
-      this.$nextTick(() => {
+      nextTick(() => {
         this.search()
       })
     },
     handleEnter() {
-      this.$nextTick(() => {
+      nextTick(() => {
         this.search()
       })
     },

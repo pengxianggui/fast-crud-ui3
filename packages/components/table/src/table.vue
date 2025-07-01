@@ -20,10 +20,10 @@
         <slot name="button"
               v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" icon="el-icon-plus" @click="toInsert"
+          <el-button :size="option.style.size" icon="Plus" @click="toInsert"
                      v-if="option.insertable">新建
           </el-button>
-          <el-button type="danger" plain :size="option.style.size" icon="el-icon-delete" @click="deleteRow"
+          <el-button type="danger" plain :size="option.style.size" icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
           </el-button>
           <el-button type="danger" :size="option.style.size" @click="deleteRows"
@@ -32,31 +32,36 @@
         </template>
         <template v-if="status === 'update' || status === 'insert'">
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
-          <el-button :size="option.style.size" icon="el-icon-plus" @click="toInsert"
+          <el-button :size="option.style.size" icon="Plus" @click="toInsert"
                      v-if="status === 'insert' && option.insertable">继续新建
           </el-button>
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
-        <el-dropdown class="fc-fast-table-operation-more" trigger="click">
+        <el-dropdown class="fc-fast-table-operation-more" @command="emitMoreFeature">
           <el-button type="primary" plain :size="option.style.size">
-            更多<i class="el-icon-arrow-down el-icon--right"></i>
+            <span>更多</span>
+            <el-icon class="el-icon--right">
+              <ArrowDown/>
+            </el-icon>
           </el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item @click.native="activeBatchEdit" v-if="option.updatable">
-              <i class="el-icon-third-piliangbianji"></i>
-              <span>批量编辑</span>
-            </el-dropdown-item>
-            <!-- TODO 2.0 批量编辑、导出和自定义表格 -->
-            <!--            <el-dropdown-item @click.native="activeBatchUpdate">批量修改</el-dropdown-item>-->
-            <el-dropdown-item @click.native="exportData">
-              <i class="el-icon-third-daochudangqianye"></i>
-              <span>导出</span>
-            </el-dropdown-item>
-            <!--            <el-dropdown-item @click.native="customTable">自定义表格</el-dropdown-item>-->
-            <slot name="moreButton"
-                  v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
-          </el-dropdown-menu>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="BATCH_EDIT" v-if="option.updatable">
+                <i class="el-icon-third-piliangbianji"></i>
+                <span>批量编辑</span>
+              </el-dropdown-item>
+              <!-- TODO 2.0 批量编辑、导出和自定义表格 -->
+              <!--  <el-dropdown-item command="BATCH_UPDATE">批量修改</el-dropdown-item>-->
+              <el-dropdown-item command="EXPORT">
+                <i class="el-icon-third-daochudangqianye"></i>
+                <span>导出</span>
+              </el-dropdown-item>
+              <!--            <el-dropdown-item command="CUSTOM_TABLE">自定义表格</el-dropdown-item>-->
+              <slot name="moreButton"
+                    v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
+            </el-dropdown-menu>
+          </template>
         </el-dropdown>
       </div>
     </div>
@@ -89,8 +94,8 @@
       <slot name="foot"
             v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}">
         <span></span></slot>
-      <el-pagination :page-size.sync="pageQuery.size"
-                     :current-page.sync="pageQuery.current"
+      <el-pagination v-model:page-size="pageQuery.size"
+                     v-model:current-page="pageQuery.current"
                      :page-sizes="option.pagination['page-sizes']"
                      :total="total"
                      @current-change="pageLoad"
@@ -101,7 +106,8 @@
 </template>
 
 <script>
-import {Message} from 'element-ui';
+import {nextTick} from "vue";
+import {ElMessage} from 'element-plus';
 import {remove} from 'lodash-es';
 import QuickFilterForm from "./quick-filter-form.vue";
 import EasyFilter from "./easy-filter.vue";
@@ -125,6 +131,7 @@ import RowForm from "./row-form.vue";
 export default {
   name: "FastTable",
   components: {QuickFilterForm, EasyFilter, DynamicFilterList},
+  emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
       type: FastTableOption,
@@ -164,7 +171,6 @@ export default {
     if (!ifBlank(this.option.sortField)) {
       pageQuery.addOrder(this.option.sortField, !this.option.sortDesc);
     }
-
     return {
       tableKey: 0, // 用于前端刷新表格
       loading: false, // 表格数据是否正加载中
@@ -194,7 +200,7 @@ export default {
       this.pageLoad();
     }
     if (this.option.style.flexHeight) {
-      this.$nextTick(() => {
+      nextTick(() => {
         this.calTableHeight();
         window.addEventListener('resize', this.calTableHeight);
         this.$watch('dynamicFilters.length', () => { // 动态过滤器变化时可能高度改变, 重新计算高度
@@ -220,7 +226,7 @@ export default {
       this.tableKey++;
     },
     buildComponentConfig() {
-      const children = this.$slots.default ? this.$slots.default : [];
+      const children = this.$slots.default ? this.$slots.default() : [];
       iterBuildComponentConfig(children, this.option, ({
                                                          tableColumnComponentName,
                                                          col,
@@ -298,10 +304,13 @@ export default {
           FastTableOption.$http.post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
             this.exitEditStatus();
             const loadSuccess = this.option.loadSuccess;
-            loadSuccess.call(context, {query: this.pageQuery, data: res.data, res: res}).then(({records = [], total = 0}) => {
+            loadSuccess.call(context, {query: this.pageQuery, data: res.data, res: res}).then(({
+                                                                                                 records = [],
+                                                                                                 total = 0
+                                                                                               }) => {
               this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
               this.total = total;
-              this.$nextTick(() => {
+              nextTick(() => {
                 this.setChoseRow(0); // 默认选中第一行
               })
             }).finally(() => {
@@ -310,7 +319,7 @@ export default {
           }).catch(err => {
             const loadFail = this.option.loadFail;
             loadFail.call(context, {query: this.pageQuery, error: err}).then(() => {
-              Message.success('加载失败:' + JSON.stringify(err));
+              ElMessage.success('加载失败:' + JSON.stringify(err));
             })
             reject(err);
           }).finally(() => {
@@ -379,7 +388,7 @@ export default {
         return;
       }
       if (this.status !== 'normal' && this.status !== 'insert') {
-        Message.warning(`当前FastTable处于${this.status}状态, 不允许新增`);
+        ElMessage.warning(`当前FastTable处于${this.status}状态, 不允许新增`);
         return;
       }
       const {context, beforeToInsert} = this.option;
@@ -421,7 +430,7 @@ export default {
       }
       const {prop, label, order} = column
       const {tableColumnComponentName, customConfig} = this.columnConfig[prop]
-      const dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic')
+      const dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', this.option)
       openDialog({
         component: DynamicFilterForm,
         props: {
@@ -454,7 +463,7 @@ export default {
     },
     handleCurrentChange(row) {
       this.choseRow = row;
-      this.$emit('current-change', {fatRow: row, row: isNull(row) ? null : row.row});
+      this.$emit('currentChange', {fatRow: row, row: isNull(row) ? null : row.row});
     },
     /**
      * 选中指定行
@@ -480,16 +489,16 @@ export default {
     },
     handleSelectionChange(rows) {
       this.checkedRows = rows;
-      this.$emit('selection-change', {fatRows: rows, rows: rows.map(r => r.row)})
+      this.$emit('selectionChange', {fatRows: rows, rows: rows.map(r => r.row)})
     },
     handleSelectAll(rows) {
-      this.$emit('select-all', {fatRows: rows, rows: rows.map(r => r.row)});
+      this.$emit('selectAll', {fatRows: rows, rows: rows.map(r => r.row)});
     },
     handleRowClick(row, column, event) {
-      this.$emit('row-click', {fatRow: row, column, event, row: row.row});
+      this.$emit('rowClick', {fatRow: row, column, event, row: row.row});
     },
     handleRowDblclick(row, column, event) {
-      this.$emit('row-dblclick', {fatRow: row, column, event, row: row.row});
+      this.$emit('rowDblclick', {fatRow: row, column, event, row: row.row});
       const {enableDblClickEdit} = this.option;
       if (!enableDblClickEdit) {
         return;
@@ -544,7 +553,7 @@ export default {
         return;
       }
       if (this.status !== 'normal' && this.status !== 'update') {
-        Message.warning(`当前FastTable处于${this.status}状态, 不允许更新`);
+        ElMessage.warning(`当前FastTable处于${this.status}状态, 不允许更新`);
         return;
       }
       const {context, beforeToUpdate} = this.option;
@@ -556,11 +565,24 @@ export default {
       })
     },
     /**
+     * 【更多】触发
+     * @param command
+     */
+    emitMoreFeature(command) {
+      if (command === 'BATCH_EDIT') {
+        this.activeBatchEdit()
+      } else if (command === 'BATCH_UPDATE') {
+        this.activeBatchUpdate()
+      } else if (command === 'EXPORT') {
+        this.exportData()
+      }
+    },
+    /**
      * 激活批量编辑
      */
     activeBatchEdit() {
       if (this.status !== 'normal') {
-        Message.warning('请先退出编辑状态')
+        ElMessage.warning('请先退出编辑状态')
         return;
       }
       const {context, beforeToUpdate} = this.option;
@@ -630,7 +652,7 @@ export default {
         });
       }).catch((errors) => {
         const firstError = errors[0];
-        Message.error(firstError.message);
+        ElMessage.error(firstError.message);
       })
     },
     /**
@@ -643,8 +665,7 @@ export default {
      * 导出数据
      */
     exportData() {
-      // TODO 2.0 导出数据，基于前端col和label,props。导出当前页或当前筛选条件下的全部数据
-      const promise = this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);
+      this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);
     },
     /**
      * 自定义表格
@@ -665,7 +686,7 @@ export default {
       this.tableFlexHeight = totalHeight - titleHeight - quickHeight - operationHeight - dynamicHeight - paginationHeight - 2;
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // 清理事件监听
     window.removeEventListener('resize', this.calTableHeight);
   }
@@ -715,81 +736,52 @@ export default {
 
   .fc-fast-table-wrapper {
     //height: auto;
-    ::v-deep {
-      .el-table__cell {
-        padding: 0;
-      }
-
-      .fc-table-column-head-cell {
-        text-align: center;
-        height: 38px;
-        line-height: 38px;
-        margin: 0 10px;
-      }
-
-      .fc-table-column-head-cell.filter {
-        cursor: pointer;
-      }
-
-      td.fc-table-column > .cell {
-        padding: 0 3px;
-
-        .fc-table-inline-edit-component {
-          width: 100%;
-
-          .el-input__inner {
-            padding: 0 4px;
+    :deep(.el-table__cell) {
+      padding: 0;
+    }
+    :deep(td.fc-table-column > .cell) {
+      padding: 0 3px;
+      .fc-table-inline-edit-component {
+        width: 100%;
+        .el-input__inner {
+          padding: 0 4px;
+        }
+        .el-input-number__decrease, .el-input-number__increase {
+          width: 15px;
+        }
+        .el-input__prefix {
+          display: none;
+        }
+        input {
+          text-align: left;
+        }
+        .el-upload-list--picture-card .el-upload-list__item, .el-upload--picture-card {
+          width: auto;
+          height: 100%;
+          aspect-ratio: 1 / 1;
+          line-height: 100%;
+          margin: 0;
+          & .el-icon-plus {
+            $uploadIconSize: 18px;
+            font-size: $uploadIconSize;
+            width: $uploadIconSize;
+            height: $uploadIconSize;
+            margin-top: calc(50% - $uploadIconSize / 2);
           }
-
-          .el-input-number__decrease, .el-input-number__increase {
-            width: 15px;
-          }
-
-          .el-input__prefix {
-            display: none;
-          }
-
-          input {
-            text-align: left;
-          }
-
-
-          .el-upload-list--picture-card .el-upload-list__item, .el-upload--picture-card {
-            width: auto;
-            height: 100%;
-            aspect-ratio: 1 / 1;
-            line-height: 100%;
+        }
+        .el-upload-list--text {
+          .el-upload-list__item {
             margin: 0;
-
-            & .el-icon-plus {
-              $uploadIconSize: 18px;
-              font-size: $uploadIconSize;
-              width: $uploadIconSize;
-              height: $uploadIconSize;
-              margin-top: calc(50% - $uploadIconSize / 2);
+            line-height: 1;
+            & > * {
+              display: inline;
             }
           }
-
-          .el-upload-list--text {
-            .el-upload-list__item {
-              //word-break: normal;
-              margin: 0;
-              line-height: 1;
-
-              & > * {
-                display: inline;
-              }
-            }
-          }
-
-          .el-link {
-            //word-break: normal;
-          }
         }
+      }
 
-        .fc-table-inline-edit-component.valid-error {
-          border: 1px solid #F56C6C;
-        }
+      .fc-table-inline-edit-component.valid-error {
+        border: 1px solid #F56C6C;
       }
     }
   }

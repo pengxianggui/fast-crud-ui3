@@ -1,4 +1,4 @@
-import {Loading} from 'element-ui'
+import {ElLoading} from 'element-plus'
 import FastCheckboxGroup from "./components/checkbox-group";
 import FastSelect from "./components/select";
 import FastUpload from "./components/upload";
@@ -20,7 +20,6 @@ import {pick} from "./util/pick";
 import "./style.scss"
 import FastTableOption from "./model";
 import {PageQuery, Query, Order, Cond, Opt} from "./model";
-import {ellipsis} from "./filters";
 import {
     isEmpty,
     isString,
@@ -62,31 +61,23 @@ const components = [
 ];
 
 const directives = [
-    Loading
+    ElLoading
 ]
 
-const filters = [
-    ellipsis
-]
-
-const install = function (Vue, opts = {}) {
+// 全局应用上下文
+let globalAppContext = null
+const install = function (app, opts = {}) {
+    globalAppContext = app._context // 保存上下文
     if (opts.hasOwnProperty('$http')) {
-        FastTableOption.$http = opts.$http;
+        FastTableOption.$http = opts.$http
     }
     components.forEach(component => {
-        Vue.component(component.name, component);
+        app.component(component.name, component);
     });
     directives.forEach(directive => {
-        Vue.use(directive)
-    })
-    filters.forEach(filter => {
-        Vue.filter(`fc${filter.name.charAt(0).toUpperCase() + filter.name.slice(1)}`, filter);
+        app.use(directive)
     })
 };
-if (typeof window !== 'undefined' && window.Vue) {
-    install(window.Vue);
-
-}
 
 const util = {
     isEmpty,
@@ -112,6 +103,22 @@ const util = {
 }
 
 export {
+    FastCheckboxGroup,
+    FastSelect,
+    FastUpload,
+    FastObjectPicker,
+    FastTable,
+    FastTableColumn,
+    FastTableColumnDatePicker,
+    FastTableColumnFile,
+    FastTableColumnImg,
+    FastTableColumnInput,
+    FastTableColumnNumber,
+    FastTableColumnObject,
+    FastTableColumnSelect,
+    FastTableColumnSwitch,
+    FastTableColumnTextarea,
+    FastTableColumnTimePicker,
     FastTableOption,
     Opt,
     PageQuery,
@@ -120,6 +127,9 @@ export {
     Cond,
     util
 }
+
+// 获取App上下文
+export const getAppContext = () => globalAppContext
 
 export default {
     install

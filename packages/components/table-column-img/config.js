@@ -5,7 +5,7 @@ import {
     merge,
     ternary
 } from "../../util/util";
-import {Opt} from "../../model";
+import {Opt} from "../../model"
 
 const defaultQueryConfig = {
     component: 'el-input',
@@ -38,7 +38,7 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {'default-val': defaultVal, ...validProps} = config.props;
+        const {defaultVal, ...validProps} = config.props;
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
@@ -48,7 +48,7 @@ export default {
     },
     edit: (config, type, tableOption) => {
         const {label, props} = config;
-        const {'default-val': defaultVal, rules = [], ...validProps} = props;
+        const {defaultVal, rules = [], ...validProps} = props;
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
             rules.push({required: true, message: `${label}不能为空`})
         }
@@ -59,7 +59,7 @@ export default {
         }
         const finalConfig = merge(config, defaultEditConfig, true, false);
         finalConfig.props.action = addStartWith(tableOption.uploadUrl, '/');
-        finalConfig.props['list-type'] = 'picture-card'; // 固定避免被自定义覆盖
+        finalConfig.props.listType = 'picture-card'; // 固定避免被自定义覆盖
         return finalConfig;
     }
 }

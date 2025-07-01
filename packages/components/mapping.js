@@ -13,17 +13,17 @@ import FastTableColumnTextareaConfig from './table-column-textarea/config';
 import FastTableColumnTimePickerConfig from './table-column-time-picker/config';
 
 const MAPPING = {
-    'fast-table-column': FastTableColumnConfig,
-    'fast-table-column-date-picker': FastTableColumnDatePickerConfig,
-    'fast-table-column-file': FastTableColumnFileConfig,
-    'fast-table-column-img': FastTableColumnImgConfig,
-    'fast-table-column-input': FastTableColumnInputConfig,
-    'fast-table-column-number': FastTableColumnNumberConfig,
-    'fast-table-column-object': FastTableColumnObjectConfig,
-    'fast-table-column-select': FastTableColumnSelectConfig,
-    'fast-table-column-switch': FastTableColumnSwitchConfig,
-    'fast-table-column-textarea': FastTableColumnTextareaConfig,
-    'fast-table-column-time-picker': FastTableColumnTimePickerConfig
+    'FastTableColumn': FastTableColumnConfig,
+    'FastTableColumnDatePicker': FastTableColumnDatePickerConfig,
+    'FastTableColumnFile': FastTableColumnFileConfig,
+    'FastTableColumnImg': FastTableColumnImgConfig,
+    'FastTableColumnInput': FastTableColumnInputConfig,
+    'FastTableColumnNumber': FastTableColumnNumberConfig,
+    'FastTableColumnObject': FastTableColumnObjectConfig,
+    'FastTableColumnSelect': FastTableColumnSelectConfig,
+    'FastTableColumnSwitch': FastTableColumnSwitchConfig,
+    'FastTableColumnTextarea': FastTableColumnTextareaConfig,
+    'FastTableColumnTimePicker': FastTableColumnTimePickerConfig
 }
 
 export const getConfigFn = function (tableColumnComponentName, type) {
@@ -41,6 +41,7 @@ export const getConfigFn = function (tableColumnComponentName, type) {
  * @param tableColumnComponentName table-column组件名
  * @param action 行为: 可选: query, edit
  * @param type 类型, 当action为query时, 可选: quick, easy, dynamic; 当action为edit时, 可选: inline, form
+ * @param tableOption FastTable配置
  */
 export const buildFinalComponentConfig = function (customConfig, tableColumnComponentName, action, type, tableOption) {
     // 排除props中后缀为_e的属性, 因为这些配置项仅用于编辑控件, 并将_q后缀的属性名移除此后缀

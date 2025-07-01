@@ -3,8 +3,7 @@
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
-      <fast-table-head-cell class="fc-table-column-head-cell" :class="{'filter': filter}" :column="columnProp"
-                            @click.native="headCellClick(column)">
+      <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
           <span>{{ column.label }}</span>
         </slot>
@@ -19,11 +18,11 @@
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
-          <fast-object-picker v-model="row['editRow'][column.property]"
-                              v-bind="row['config'][column.property]['props']"
+          <fast-object-picker v-model="row['editRow'][prop]"
+                              v-bind="row['config'][prop]['props']"
                               :table-option="getTableOption(row, column, $index)"
                               :pick-object="row['editRow']"
-                              :ref="column.property + $index"
+                              :ref="prop + $index"
                               @change="(val) => handleChange(val, {row, column, $index})"
                               @blur="(event) => handleBlur(event, {row, column, $index})"
                               @focus="(event) => handleFocus(event, {row, column, $index})"
@@ -41,10 +40,11 @@ import FastTableHeadCell from "../../table-head-cell/src/table-head-cell.vue";
 import tableColumn from "../../../mixins/table-column";
 import {FastTableOption} from "../../../index";
 import {isFunction} from "../../../util/util";
+import FastObjectPicker from "../../object-picker/src/fast-object-picker.vue";
 
 export default {
   name: "FastTableColumnObject",
-  components: {FastTableHeadCell},
+  components: {FastObjectPicker, FastTableHeadCell},
   mixins: [tableColumn],
   props: {
     minWidth: {
@@ -52,7 +52,7 @@ export default {
       default: () => '100px'
     },
     tableOption: {
-      type: FastTableOption | Function,
+      type: [FastTableOption, Function],
       required: true
     },
     showField: String, // 回显到input上的字段

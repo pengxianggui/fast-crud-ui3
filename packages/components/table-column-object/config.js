@@ -33,7 +33,7 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {'default-val': defaultVal, ...validProps} = config.props;
+        const {defaultVal, ...validProps} = config.props;
         if (type === 'quick') {
             val = (isUndefined(defaultVal), val, defaultVal);
         }
@@ -43,7 +43,7 @@ export default {
     },
     edit: (config, type) => {
         const {label, props} = config;
-        const {'default-val': defaultVal, rules = [], ...validProps} = props;
+        const {defaultVal, rules = [], ...validProps} = props;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
             rules.push({required: true, message: `${label}不能为空`})

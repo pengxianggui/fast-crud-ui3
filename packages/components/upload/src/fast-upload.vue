@@ -1,5 +1,5 @@
 <template>
-  <el-upload v-model="modelValue"
+  <el-upload v-model="value"
              v-bind="$attrs"
              :action="actionValue"
              :data="formData"
@@ -14,7 +14,9 @@
              class="fc-fast-upload"
              :class="{'fc-fast-upload__hidden': hideUploadButton, 'fc-fast-upload__disable': disabled}">
     <template #default>
-      <i class="el-icon-plus"></i>
+      <el-icon>
+        <Plus/>
+      </el-icon>
     </template>
     <template #file="{file}">
       <!-- 图片 -->
@@ -22,46 +24,46 @@
         <img class="el-upload-list__item-thumbnail" :src="file.url" alt=""/>
         <span class="el-upload-list__item-actions">
           <span class="el-upload-list__item-preview" @click="preview(file)">
-            <i class="el-icon-zoom-in"></i>
+            <el-icon>
+              <ZoomIn/>
+            </el-icon>
           </span>
-          <!--        <span-->
-          <!--            v-if="!disabled"-->
-          <!--            class="el-upload-list__item-download"-->
-          <!--            @click="handleDownload(file)"-->
-          <!--        >-->
-          <!--          <i class="el-icon-download"></i>-->
-          <!--        </span>-->
           <span v-if="!disabled" class="el-upload-list__item-delete" @click="handleRemove(file)">
-            <i class="el-icon-delete"></i>
+            <el-icon><Delete/></el-icon>
           </span>
         </span>
       </template>
       <!-- 普通文件 -->
-      <template v-else>
-        <i :class="'el-icon-paperclip'" v-if="disabled"></i>
-        <el-button type="text" icon="el-icon-delete" style="padding: 2px; color: #f56c6c;" v-else
-                   @click="handleRemove(file)"></el-button>
-        <el-link :href="file.url" style="display: inline">{{ file.name }}</el-link>
-      </template>
+      <div style="word-break: break-all; display: inline-flex;" v-else>
+        <el-icon v-if="disabled">
+          <Paperclip/>
+        </el-icon>
+        <el-button link icon="Delete" @click="handleRemove(file)" style="padding: 2px; color: #f56c6c;" v-else/>
+        <el-link :href="file.url" style="margin-left: 3px;">{{ file.name }}</el-link>
+      </div>
     </template>
   </el-upload>
 </template>
 
 <script>
-import {Message} from 'element-ui';
+import {nextTick, h, defineComponent} from "vue";
+import {ElMessage} from 'element-plus';
 import {
   isArray,
   isEmpty,
   isFunction,
   getNameFromUrl,
   getFirstUrlFromFileItems,
-  defaultIfBlank
+  defaultIfBlank,
+  ellipsis,
+  cutPrefix, isString
 } from "../../../util/util";
 import FastTableOption from "../../../model";
 import {openDialog} from "../../../util/dialog";
 
 export default {
   name: "fast-upload",
+  emits: ['update:modelValue', 'success', 'fail', 'change', 'exceed'],
   props: {
     /**
      * 是否支持多文件
@@ -71,7 +73,7 @@ export default {
       default: () => false
     },
     // multiple为true则应当是单个url地址, 否则为url数组
-    value: {
+    modelValue: {
       type: [String, Array],
       default: () => null
     },
@@ -95,14 +97,17 @@ export default {
       type: String,
       default: () => ''
     },
+    // optimized: 优化下面两个参数，跟表格耦合太强
     row: {
       type: Object,
       default: () => {
+        return {}
       }
     },
     data: {
       type: Object,
       default: () => {
+        return {}
       }
     },
     /**
@@ -114,13 +119,12 @@ export default {
     }
   },
   computed: {
-    modelValue: {
+    value: {
       get() {
-        return this.fillBackFiles(this.value)
+        return this.fillBackFiles(this.modelValue)
       },
       set(val) {
-        debugger
-        this.$emit('input', val);
+        this.$emit('update:modelValue', val);
       }
     },
     actionValue() {
@@ -130,7 +134,7 @@ export default {
       return this.listType === 'picture-card';
     },
     hideUploadButton() {
-      return this.disabled || (!isEmpty(this.modelValue) && this.files.length >= this.limit);
+      return this.disabled || (!isEmpty(this.value) && this.files.length >= this.limit);
     },
     formData() {
       return {
@@ -147,14 +151,15 @@ export default {
     }
   },
   methods: {
-    isEmpty,
+    ellipsis,
     /**
      * 回显files并返回modelValue值
      * @param value
      */
     fillBackFiles(value) {
-      const multiple = this.multiple;
-      const files = [];
+      // TODO 如果类型不变，则继续返回value引用，防止每次el-upload显示的文件都会因刷新而闪动
+      const multiple = this.multiple
+      const files = []
       if (multiple) {
         if (isArray(value)) {
           files.push(...value)
@@ -171,34 +176,21 @@ export default {
       }
 
       // 处理代理前缀
-      const {apiPrefix} = this;
       this.files = files.map(f => {
-        return {name: f.name, url: apiPrefix + f.url}
+        return {name: f.name, url: this.disposeUrl(f.url, true)}
       });
       if (multiple) {
-        return files;
-      } else {
-        return isEmpty(files) ? null : files[0].url;
+        return files
       }
-      // urls.forEach(url => {
-      //   const name = getNameFromUrl(url);
-      //   if (this.files.every(f => f.name !== name && f.url !== url)) {
-      //     this.files.push({name: name, url: apiPrefix + url});
-      //   }
-      // });
-      // for (let i = this.files.length - 1; i >= 0; i--) {
-      //   if (urls.every(url => (apiPrefix + url) !== this.files[i].url)) {
-      //     this.files.splice(i, 1);
-      //   }
-      // }
+      return isEmpty(files) ? null : files[0].url
     },
     handleSuccess(response, file, fileList) {
       const url = this.responseHandler(response, file, fileList);
       if (this.multiple === false) {
-        this.modelValue = url;
+        this.value = url;
       } else {
-        this.modelValue.push({name: file.name, url: url});
-        this.modelValue = [...this.modelValue]
+        this.value.push({name: file.name, url: url});
+        this.value = [...this.value]
       }
       try {
         if (this.$attrs.hasOwnProperty('on-success')) {
@@ -213,43 +205,53 @@ export default {
       this.$emit('success', {response, file, fileList})
     },
     handleError(err, file, fileList) {
-      // debugger
       this.$emit('fail', {err, file, fileList})
     },
     handleChange(file, fileList) {
-      this.$nextTick(() => { // 延迟执行, 等待modelValue更新
-        this.$emit('change', this.modelValue);
+      nextTick(() => { // 延迟执行, 等待modelValue更新
+        this.$emit('change', this.value);
       })
     },
     handleExceed(files, fileList) {
-      Message.warning('文件数量超过限制');
+      ElMessage.warning('文件数量超过限制');
       this.$emit('exceed', {files, fileList})
     },
     handleRemove(file) {
       const index = this.files.findIndex(f => f.url === file.url);
       this.files.splice(index, 1);
-      const urls = this.files.map(f => f.url);
       if (this.multiple === false) {
-        this.modelValue = isEmpty(urls) ? '' : urls[0];
+        const url = getFirstUrlFromFileItems(this.files);
+        this.value = this.disposeUrl(url, false)
       } else {
-        this.modelValue = this.files.map(f => {
-          return { name: f.name, url: f.url }
-        });
+        this.value = this.files.map(f => {
+          return {name: f.name, url: this.disposeUrl(f.url, false)}
+        })
       }
     },
     preview(file) {
-      openDialog({
-        component: {
-          render: function (h) {
-            return h('img', {
-              attrs: {
-                src: file.url,
-                width: '100%'
-              }
-            })
-          }
+      const imgPreviewComponent = defineComponent({
+        render() {
+          return h('img', {
+            src: file.url,
+            width: '100%'
+          })
         }
       })
+      openDialog({
+        component: imgPreviewComponent
+      })
+    },
+    /**
+     * 处理url
+     * @param url 待处理的url
+     * @param append 添加前缀? 若true则追加this.apiPrefix前缀; false则移除前面可能得前缀
+     * @return {*}
+     */
+    disposeUrl(url, append) {
+      if (!isString(url) || isEmpty(url) || url.startsWith('http://') || url.startsWith('https://')) {
+        return url
+      }
+      return append ? this.apiPrefix + url : cutPrefix(url, this.apiPrefix)
     }
   }
 }
@@ -257,11 +259,20 @@ export default {
 
 <style scoped lang="scss">
 .fc-fast-upload {
+  :deep(.el-upload-list--picture-card) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 48px);
+    grid-gap: 2px;
+  }
+
+  :deep(.el-upload-list--text .el-upload-list__item) {
+    margin: 3px 0 !important;
+  }
+
   .el-upload-list__item-actions {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    //justify-content: center;
 
     & > * {
       margin: 0 !important;
@@ -283,10 +294,8 @@ export default {
 }
 
 .fc-fast-upload.fc-fast-upload__hidden {
-  ::v-deep {
-    .el-upload {
-      display: none;
-    }
+  :deep(.el-upload) {
+    display: none;
   }
 }
 

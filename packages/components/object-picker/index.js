@@ -1,7 +1,7 @@
 import FastObjectPicker from './src/fast-object-picker.vue'
 
-FastObjectPicker.install = (Vue) => {
-    Vue.component(FastObjectPicker.name, FastObjectPicker)
+FastObjectPicker.install = (app) => {
+    app.component(FastObjectPicker.name, FastObjectPicker)
 }
 
 export default FastObjectPicker

@@ -1,9 +1,12 @@
 <template>
   <div>
-    <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange" v-if="showChoseAll">全选</el-checkbox>
-    <el-checkbox-group class="fc-checkbox-group" v-model="modelValue" @change="handleChange">
-      <el-checkbox v-for="item in options" :label="item[valKey]" :key="item[valKey]"
-                   :disabled="disableVal.indexOf(item[valKey]) > -1">{{ item[labelKey] }}</el-checkbox>
+    <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange" v-if="showChoseAll">
+      全选
+    </el-checkbox>
+    <el-checkbox-group class="fc-checkbox-group" v-model="value" @change="handleChange">
+      <el-checkbox v-for="item in options" :value="item[valKey]" :key="item[valKey]"
+                   :disabled="disableVal.indexOf(item[valKey]) > -1">{{ item[labelKey] }}
+      </el-checkbox>
     </el-checkbox-group>
   </div>
 </template>
@@ -11,8 +14,9 @@
 <script>
 export default {
   name: "fast-checkbox-group",
+  emits: ['update:modelValue', 'change'],
   props: {
-    value: {
+    modelValue: {
       type: Array,
       required: true
     },
@@ -38,41 +42,31 @@ export default {
     }
   },
   computed: {
-    modelValue: {
+    value: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(val) {
-        this.$emit('input', val)
+        this.$emit('update:modelValue', val)
       }
     },
-    isIndeterminate: {
-      get() {
-        return this.modelValue.length > 0 && this.modelValue.length < this.options.length
-      },
-      set(val) {
-      }
+    isIndeterminate() {
+      return this.value.length > 0 && this.value.length < this.options.length
     },
-    checkAll: {
-      get() {
-        return this.modelValue.length === this.options.length
-      },
-      set(val) {
-      }
+    checkAll() {
+      return this.value.length === this.options.length
     }
   },
   data() {
-    return {
-    }
+    return {}
   },
   methods: {
     handleCheckAllChange(val) {
-      this.modelValue = val ? this.options.filter(item => this.disableVal.indexOf(item[this.valKey]) === -1)
+      this.value = val ? this.options.filter(item => this.disableVal.indexOf(item[this.valKey]) === -1)
           .map(item => item[this.valKey]) : [];
       this.isIndeterminate = false;
     },
     handleChange(val) {
-      this.modelValue = val
       this.$emit('change', val)
     }
   }

@@ -1,7 +1,7 @@
 import FastTableColumnFile from './src/table-column-file.vue'
 
-FastTableColumnFile.install = (Vue) => {
-    Vue.component(FastTableColumnFile.name, FastTableColumnFile)
+FastTableColumnFile.install = (app) => {
+    app.component(FastTableColumnFile.name, FastTableColumnFile)
 }
 
 export default FastTableColumnFile

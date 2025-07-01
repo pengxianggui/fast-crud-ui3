@@ -17,7 +17,7 @@
           <span>DISTINCT：</span>
           <el-checkbox v-model="reuseCond" @change="distinctLoad">复用已生效的条件</el-checkbox>
         </div>
-        <el-button type="text"
+        <el-button link
                    :style="{'color': distinctOptionAsc === '' ? 'gray': '#409EFF', 'padding': 0}"
                    :icon="distinctOptionsAscIcon"
                    @click="() => distinctOptionAsc = !distinctOptionAsc"
@@ -26,14 +26,14 @@
       <!-- 由于distinct查询可能比较慢, 因此由用户点击触发展示 -->
       <div class="fc-dynamic-filter-distinct" v-loading="distinctLoading">
         <!-- distinct 勾选项 -->
-        <el-input size="mini" v-model="distinctOptionFilterKeyword" :clearable="true" placeholder="输入过滤.."
+        <el-input size="small" v-model="distinctOptionFilterKeyword" :clearable="true" placeholder="输入过滤.."
                   v-if="distinctLoaded"></el-input>
         <fast-checkbox-group :options="distinctFilteredOptions" :show-chose-all="false"
                              class="fc-dynamic-filter-distinct-options"
                              v-model="distinctCheckedValue"
                              v-if="distinctLoaded"></fast-checkbox-group>
         <div style="display: flex; justify-content: center;" v-if="!distinctLoaded">
-          <el-button type="text" style="color: gray;" @click="distinctLoad">请点击加载</el-button>
+          <el-button link style="color: gray;" @click="distinctLoad">请点击加载</el-button>
         </div>
         <el-empty v-if="distinctLoaded && distinctOptions.length === 0">
           <template #image><span></span></template>
@@ -54,9 +54,13 @@
 import FastTableOption, {FilterComponentConfig, Query, Opt} from "../../../model";
 import {escapeValToLabel} from "./util";
 import {isEmpty, isObject, toStr} from "../../../util/util";
+import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue";
+import {Sort, SortDown, SortUp} from "@element-plus/icons-vue";
 
 export default {
   name: "dynamic-filter-form",
+  components: {FastCheckboxGroup},
+  emits: ['ok', 'cancel'],
   props: {
     filter: FilterComponentConfig,
     order: [String],
@@ -67,9 +71,12 @@ export default {
     },
     size: String
   },
+  mounted() {
+    console.log(this.localFilter)
+  },
   computed: {
     distinctOptionsAscIcon() {
-      return this.distinctOptionAsc === '' ? 'el-icon-sort' : (this.distinctOptionAsc === true ? 'el-icon-sort-up' : 'el-icon-sort-down')
+      return this.distinctOptionAsc === '' ? Sort : (this.distinctOptionAsc === true ? SortUp : SortDown)
     },
     distinctFilteredOptions() {
       const {distinctOptionFilterKeyword, distinctOptionAsc} = this
@@ -82,7 +89,6 @@ export default {
   },
   data() {
     const localFilter = new FilterComponentConfig({...this.filter})
-    const {col} = localFilter
     return {
       localFilter: localFilter,
       asc: this.order === 'asc' ? true : (this.order === 'desc' ? false : ''),
@@ -107,8 +113,8 @@ export default {
         distinctQuery.setConds(this.conds);
       }
       FastTableOption.$http.post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then(({data = []}) => {
-        if (data.length > 10000) { // 为防止页面卡死, 最多显示10000个
-          data.splice(10001);
+        if (data.length > 1000) { // 为防止页面卡死, 最多显示1000个
+          data.splice(1001);
         }
         const distinctValues = data.filter(item => isObject(item) && item.hasOwnProperty(col)).map(item => item[col]);
         this.distinctOptions = distinctValues.map(v => {
@@ -174,7 +180,7 @@ export default {
       this.$emit('cancel')
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.distinctAbortCtrl) {
       this.distinctAbortCtrl.abort()
     }
@@ -217,17 +223,14 @@ export default {
     .fc-dynamic-filter-distinct-options {
       margin-top: 10px;
 
-      ::v-deep {
-        .el-checkbox {
-          display: block;
-        }
+      :deep(.el-checkbox) {
+        display: block;
       }
     }
   }
 
   .fc-dynamic-filter-form-btn {
     display: flex;
-    //justify-content: right;
   }
 }
 

@@ -1,23 +1,23 @@
 <template>
-  <el-input v-model="modelValue" prefix-icon="el-icon-search"
+  <el-input v-model="value"
             :clearable="clearable" :placeholder="placeholder" :size="size" :disabled="disabled"
             @clear="handleClear"
             @blur="(event) => $emit('blur', event)"
             @change="(val) => $emit('change', val)"
-            @input="(val) => $emit('input', val)"
-            @click.native="handleClick"
-            @focus="handleFocus"></el-input>
+            @click="handleClick"
+            @focus="handleFocus" />
 </template>
 
 <script>
-import {pick} from "../../../util/pick";
-import {isArray, isObject} from "../../../util/util";
-import {FastTableOption} from "../../../index";
+import {pick} from "../../../util/pick"
+import {isArray, isObject} from "../../../util/util"
+import FastTableOption from "../../../model.js"
 
 export default {
   name: "FastObjectPicker",
+  emits: ['update:modelValue', 'blur', 'change', 'clear', 'click', 'focus'],
   props: {
-    value: {
+    modelValue: {
       required: true
     },
     tableOption: {
@@ -65,38 +65,36 @@ export default {
     size: String
   },
   computed: {
-    modelValue: {
+    value: {
       get() {
-        return this.value
+        return this.modelValue
       },
       set(val) {
-        this.$emit('input', val)
+        this.$emit('update:modelValue', val)
       }
     }
   },
   methods: {
     handleClear(event) {
-      this.$emit('clear', event);
+      this.$emit('clear', event)
       // 清除pickMap的其它属性
       Object.entries(this.pickMap).forEach(([pickFieldName, formFieldName]) => {
-        this.pickObject[formFieldName] = null;
-        // this.$set(this.pickObject, formFieldName, row[pickFieldName])
+        this.pickObject[formFieldName] = null
       })
     },
     handleClick(event) {
       // 检查点击事件的目标是否为清除按钮, 清除按钮的话不上抛点击事件
       if (event.target.classList.contains('el-input__clear')) {
-        return;
+        return
       }
-      this.$emit('click', event);
-      this.openPick();
+      this.$emit('click', event)
+      this.openPick()
     },
     handleFocus(event) {
-      this.$emit('focus', event);
-      this.openPick();
+      this.$emit('focus', event)
     },
     openPick() {
-      const {beforeOpen} = this;
+      const {beforeOpen} = this
       beforeOpen().then(() => {
         pick({
           option: this.tableOption,
@@ -106,13 +104,12 @@ export default {
             appendToBody: this.appendToBody
           }
         }).then(({row}) => {
-          // 赋值modelValue
-          this.modelValue = this.valueCovert(row, this.showField);
+          // 赋值value
+          this.value = this.valueCovert(row, this.showField)
           if (this.multiple !== true && isObject(row)) {
             // 赋值pickObject
             Object.entries(this.pickMap).forEach(([pickFieldName, formFieldName]) => {
               this.pickObject[formFieldName] = row[pickFieldName]
-              // this.$set(this.pickObject, formFieldName, row[pickFieldName])
             })
           }
         }).catch((err = '你取消了pic弹窗') => {

@@ -8,7 +8,6 @@ const defaultQueryConfig = {
     props: {
         clearable: true,
         options: [],
-        // placeholder: `请输入${config.label}`
     }
 }
 const defaultEditConfig = {
@@ -19,12 +18,12 @@ const defaultEditConfig = {
         options: [],
         class: 'fc-table-inline-edit-component',
         editable: true,
-        // placeholder: `请输入${config.label}`
+        inlinePrompt: true
     }
 }
 export default {
     query: (config, type) => {
-        const {'default-val': defaultVal, ...validProps} = config.props;
+        const {defaultVal, ...validProps} = config.props;
         const {activeValue, inactiveValue, activeText, inactiveText} = validProps;
         let val = defaultQueryConfig.val;
         if (type === 'quick') {
@@ -42,7 +41,7 @@ export default {
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {'default-val': defaultVal, ...validProps} = config.props
+        const {defaultVal, ...validProps} = config.props
         const {activeValue, inactiveValue, activeText, inactiveText} = validProps
         const options = [
             {label: inactiveText, value: inactiveValue},
