@@ -79,7 +79,7 @@ export function caseToCamel(str, separator = '_') {
  * @param obj 对象
  * @param separator 默认下划线
  */
-export function convertCaseToCamelOfObjectKey(obj, separator = "_") {
+export function convertKeyFromCaseToCamel(obj, separator = "_") {
     if (!isObject(obj)) {
         return obj
     }
