@@ -142,7 +142,7 @@ export default {
      */
     emitValue(fileList) {
       if (isEmpty(fileList)) {
-        this.$emit('update:modelValue', this.multiple ? [] : null)
+        this.$emit('update:modelValue', null)
         return
       }
       const {multiple} = this
