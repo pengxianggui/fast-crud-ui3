@@ -1,16 +1,13 @@
-# fast-crud-ui
+# fast-crud-ui3
 
-> 一个简单的组件库, 快速实现表格CRUD, 支持强大、灵活的筛选、排序、新增和数据编辑功能。
-> 并且扩展性高、配置灵活。
+> [fast-crud-ui](https://github.com/pengxianggui/fast-crud-ui)的vue3升级支持版本
 > 
 > 后端: [传送门](https://github.com/pengxianggui/fast-crud)
 
 ## 说明:
 
-**fast-crud基于vue@2.7.16 + element-ui@2.5.14， fast-crud-ui打包不会包含这两个组件，你必须在项目里单独安装并正确注册。
+**fast-crud-ui3基于vue@^3.4.0 + element-plus@^2.3.12， fast-crud-ui3打包不会包含这两个组件，你必须在项目里单独安装并正确注册。
 **
-
-针对兼容性, 理论上vue2.x和element-ui较高版本应该都支持。
 
 如果针对element-ui你采用的是按需部分引入，请确保以下element-ui组件正确注册, 否则fast-crud-ui中部分内容将无法正常展示：
 
@@ -41,28 +38,36 @@ Upload, Row, Col, Button, Empty, Popover, Form, FormItem, Dropdown, DropdownMenu
 安装
 
 ```bash
-npm install fast-crud-ui
+npm install fast-crud-ui3
 ```
 
 配置
 
 ```js
-import Vue from 'vue'
+import {createApp} from 'vue'
+import ElementPlus from 'element-plus'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import 'element-plus/theme-chalk/index.css'
 import App from './App.vue'
-import ElementUI from 'element-ui'
-import "element-ui/lib/theme-chalk/index.css"
-import FastCrudUI from 'fast-crud-ui'
-import 'fast-crud-ui/lib/style.css'
-import http from "@/http" // 假设这里可导入你的axios实例
+import '@/assets/index.scss'
+import '@/../packages/assets/fonts/iconfont.css'
+import FastCrudUI from 'fast-crud-ui3'
+import http from "@/http";
 
-Vue.use(ElementUI)
-Vue.use(FastCrudUI, {
-    $http: http // axios实例, 必须提供!
+const app = createApp(App)
+app.use(ElementPlus, {
+    // element-plus 配置项
 })
+app.use(FastCrudUI, {
+    $http: http,
+    // fast-crud-ui3配置项
+})
+// 注册element-plus图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+    app.component(key, component)
+}
+app.mount('#app')
 
-new Vue({
-    render: (h) => h(App)
-}).$mount('#app')
 
 ```
 
@@ -82,7 +87,7 @@ new Vue({
 </template>
 
 <script>
-  import {FastTableOption} from "fast-crud-ui";
+  import {FastTableOption} from "fast-crud-ui3";
 
   export default {
     name: "EasyDemo",
