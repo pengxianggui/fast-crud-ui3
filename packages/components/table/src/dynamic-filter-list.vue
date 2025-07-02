@@ -19,9 +19,10 @@
         </el-button>
       </div>
     </el-popover>
-    <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters"
-               v-if="filters.length > 1">清空筛选
-    </el-button>
+    <template v-if="filters.length > 1">
+      <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters">清空</el-button>
+      <el-button class="fc-dynamic-filter-clear-btn" type="info" link style="padding: 0;" @click="toggleAllFilters">{{allDisabled ? '全启' : '全禁'}}</el-button>
+    </template>
   </div>
 </template>
 
@@ -41,6 +42,11 @@ export default {
     size: {
       type: String,
       default: () => 'small'
+    }
+  },
+  computed: {
+    allDisabled() {
+      return this.filters.every(f => f.disabled)
     }
   },
   data() {
@@ -63,7 +69,12 @@ export default {
     },
     clearFilters() {
       this.filters.splice(0, this.filters.length);
-      this.confirm();
+      this.confirm()
+    },
+    toggleAllFilters() {
+      const {allDisabled} = this
+      this.filters.forEach(f => f.disabled = !allDisabled)
+      this.confirm()
     },
     label(filter) {
       const {label, component} = filter
@@ -167,7 +178,7 @@ export default {
 
   .fc-dynamic-filter-clear-btn {
     font-size: 13px !important;
-    margin-left: 10px;
+    margin-left: 3px;
   }
 }
 

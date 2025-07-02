@@ -11,8 +11,7 @@
     <div ref="operation" class="fc-fast-table-operation-bar">
       <div class="fc-operation-filter">
         <!-- 简筛区 -->
-        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad"
-                     v-if="easyFilters.length > 0"></easy-filter>
+        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad" @reset="resetFilter" v-if="easyFilters.length > 0"></easy-filter>
         <!-- TODO 2.0 存筛区 -->
       </div>
       <!-- 按钮功能区 -->
@@ -107,7 +106,7 @@
 
 <script>
 import {nextTick} from "vue";
-import {ElMessage} from 'element-plus';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import {remove} from 'lodash-es';
 import QuickFilterForm from "./quick-filter-form.vue";
 import EasyFilter from "./easy-filter.vue";
@@ -225,6 +224,9 @@ export default {
     reRender() {
       this.tableKey++;
     },
+    /**
+     * 解析FastTable下的vnodes, 得到列配置和列中组件配置。核心方法(important!)
+     */
     buildComponentConfig() {
       const children = this.$slots.default ? this.$slots.default() : [];
       iterBuildComponentConfig(children, this.option, ({
@@ -283,53 +285,71 @@ export default {
      * 分页加载请求
      */
     pageLoad() {
-      const conds = []
-      // 添加快筛条件
-      const quickConds = this.quickFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat();
-      conds.push(...quickConds)
-      // 添加简筛条件
-      const easyConds = this.easyFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat();
-      conds.push(...easyConds)
-      // 添加动筛条件
-      const dynamicConds = this.dynamicFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat();
-      conds.push(...dynamicConds)
-      // 添加固定的预置条件
-      conds.push(...this.option.conds);
-      this.pageQuery.setConds(conds);
-      const context = this.option.context;
-      const beforeLoad = this.option.beforeLoad;
-      return new Promise((resolve, reject) => {
-        beforeLoad.call(context, {query: this.pageQuery}).then(() => {
-          this.loading = true;
-          FastTableOption.$http.post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
-            this.exitEditStatus();
-            const loadSuccess = this.option.loadSuccess;
-            loadSuccess.call(context, {query: this.pageQuery, data: res.data, res: res}).then(({
-                                                                                                 records = [],
-                                                                                                 total = 0
-                                                                                               }) => {
-              this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
-              this.total = total;
-              nextTick(() => {
-                this.setChoseRow(0); // 默认选中第一行
+      const confirmPromise = (this.status !== 'normal')
+          ? ElMessageBox.confirm('当前处于编辑状态, 点击【确定】将丢失已编辑内容?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消'
+          })
+          : Promise.resolve()
+      confirmPromise.then(() => {
+        const conds = []
+        // 添加快筛条件
+        const quickConds = this.quickFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
+        conds.push(...quickConds)
+        // 添加简筛条件
+        const easyConds = this.easyFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
+        conds.push(...easyConds)
+        // 添加动筛条件
+        const dynamicConds = this.dynamicFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
+        conds.push(...dynamicConds)
+        // 添加固定的预置条件
+        conds.push(...this.option.conds);
+        this.pageQuery.setConds(conds);
+        const context = this.option.context;
+        const beforeLoad = this.option.beforeLoad;
+        return new Promise((resolve, reject) => {
+          beforeLoad.call(context, {query: this.pageQuery}).then(() => {
+            this.loading = true;
+            FastTableOption.$http.post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
+              this.exitEditStatus();
+              const loadSuccess = this.option.loadSuccess;
+              loadSuccess.call(context, {query: this.pageQuery, data: res.data, res: res})
+                  .then(({records = [], total = 0}) => {
+                    this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
+                    this.total = total;
+                    nextTick(() => {
+                      this.setChoseRow(0); // 默认选中第一行
+                    })
+                  }).finally(() => {
+                resolve()
               })
+            }).catch(err => {
+              const loadFail = this.option.loadFail;
+              loadFail.call(context, {query: this.pageQuery, error: err}).then(() => {
+                ElMessage.success('加载失败:' + JSON.stringify(err));
+              })
+              reject(err);
             }).finally(() => {
-              resolve();
+              this.loading = false;
             })
           }).catch(err => {
-            const loadFail = this.option.loadFail;
-            loadFail.call(context, {query: this.pageQuery, error: err}).then(() => {
-              ElMessage.success('加载失败:' + JSON.stringify(err));
-            })
             reject(err);
-          }).finally(() => {
-            this.loading = false;
           })
-        }).catch(err => {
-          reject(err);
         })
       })
     },
+    /**
+     * 重置筛选条件值
+     */
+    resetFilter() {
+      this.quickFilters.forEach((f) => f.reset())
+      this.easyFilters.forEach((f) => f.reset())
+      this.dynamicFilters.length = 0
+      this.pageLoad()
+    },
+    /**
+     * insert前校验
+     */
     toInsert() {
       const {editType} = this.option;
       if (this.status !== 'normal' && this.status !== 'insert') {
@@ -615,16 +635,16 @@ export default {
     exitEditStatus() {
       // 移除列表中可能存在的insert状态记录
       remove(this.list, item => item.status === 'insert');
-      const isNormal = (this.status === 'normal'); // 非编辑状态
       // 将编辑的行状态改为normal, 并清空editRows,因为editRows是list中的引用，所以不能光清空数组
       this.editRows.forEach(r => {
-        r.status = 'normal';
+        r.status = 'normal'
         r.editRow = {...r.row} // 重置editRow
-      });
-      this.editRows.length = 0;
-      if (isNormal === false) { // 编辑状态时(尤其新建状态), 控制表格重新渲染, 避免一些“残留”
-        this.reRender();
-      }
+      })
+      this.editRows.length = 0
+      // if (isNormal === false) { // 编辑状态时(尤其新建状态), 控制表格重新渲染, 避免一些“残留”。升级vue3后没看到什么残留，而且退出编辑都刷新页面并不好
+        // this.reRender();
+        // this.pageLoad()
+      // }
     },
     /**
      * 保存编辑的行: 包括新增或更新状态的行。内部会将保存成功的记录的行状态置为normal
@@ -739,28 +759,36 @@ export default {
     :deep(.el-table__cell) {
       padding: 0;
     }
+
     :deep(td.fc-table-column > .cell) {
       padding: 0 3px;
+
       .fc-table-inline-edit-component {
         width: 100%;
+
         .el-input__inner {
           padding: 0 4px;
         }
+
         .el-input-number__decrease, .el-input-number__increase {
           width: 15px;
         }
+
         .el-input__prefix {
           display: none;
         }
+
         input {
           text-align: left;
         }
+
         .el-upload-list--picture-card .el-upload-list__item, .el-upload--picture-card {
           width: auto;
           height: 100%;
           aspect-ratio: 1 / 1;
           line-height: 100%;
           margin: 0;
+
           & .el-icon-plus {
             $uploadIconSize: 18px;
             font-size: $uploadIconSize;
@@ -769,10 +797,12 @@ export default {
             margin-top: calc(50% - $uploadIconSize / 2);
           }
         }
+
         .el-upload-list--text {
           .el-upload-list__item {
             margin: 0;
             line-height: 1;
+
             & > * {
               display: inline;
             }
@@ -780,8 +810,13 @@ export default {
         }
       }
 
-      .fc-table-inline-edit-component.valid-error {
+      .fc-table-inline-edit-component.fc-valid-error {
         border: 1px solid #F56C6C;
+        //border-radius: 3px;
+      }
+
+      .el-upload-list__item {
+        transition: none !important; // 防止内部FastUpload因数据刷新而跳动
       }
     }
   }

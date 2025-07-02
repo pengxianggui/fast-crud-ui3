@@ -1,11 +1,14 @@
 <template>
-  <el-table-column class-name="fc-table-column" :prop="prop" :label="label" :min-width="minWidth"
+  <el-table-column class-name="fc-table-column"
+                   :prop="prop"
+                   :label="label"
+                   :min-width="minWidth"
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>
@@ -54,22 +57,7 @@ export default {
     tableOption: {
       type: [FastTableOption, Function],
       required: true
-    },
-    showField: String, // 回显到input上的字段
-    pickMap: Object, // 单选时, pick选择后回填到目标object上时，指导字段对应关系: key为pick的数据的字段名, value为pickObject中的字段名
-    valueConvert: Function,
-    beforeOpen: Function,
-    title: String,
-    multiple: {
-      type: Boolean,
-      default: () => false
-    },
-    placeholder: String,
-    appendToBody: Boolean,
-    clearable: {
-      type: Boolean,
-      default: () => true
-    },
+    }
   },
   data() {
     return {}

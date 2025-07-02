@@ -8,13 +8,19 @@
               @select-all="handleSelectAll">
     <fast-table-column label="ID" prop="id"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
-    <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10" width="300px"/>
-    <fast-table-column-input label="姓名" prop="name" first-filter :quick-filter="true" required/>
+    <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10"
+                           :before-remove="handleGalleryBeforeRemove"
+                           :on-success="handleGalleryUploadSuccess"
+                           :on-remove="handleGalleryRemove"
+                           :response-handler="handleGalleryResponseHandle"
+                           :on-change="handleGalleryChange"
+                           width="300px"/>
+    <fast-table-column-input label="姓名" prop="name" first-filter required/>
     <fast-table-column-number label="年龄" prop="age" required
                               :min="18" :max="60"
                               :rules="[{type: 'number', min: 18, max: 60, message: '年龄必须在[18,60]之间'}]"
                               @change="handleAgeChange"/>
-    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :quick-filter="true" required>
+    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :quick-filter="false" required>
       <template #header="{column, $index}">
         <span>{{ $index + '.' + column.label }}</span>
       </template>
@@ -79,7 +85,7 @@
 
 <script>
 import {h} from 'vue'
-import {ElMessage} from 'element-plus';
+import {ElMessage, ElMessageBox} from 'element-plus';
 import {FastTableColumnImg, FastTableColumn, FastTableOption, util} from "../../../packages";
 import staticDict from './dict'
 import {pick} from "../../../packages/util/pick";
@@ -250,6 +256,37 @@ export default {
       // const {row, editRow, config, status} = fatRow
       console.log(fatRow)
       this.$refs['fastTable'].updateForm(fatRow)
+    },
+    handleGalleryUploadSuccess(response, file, fileList, scope) {
+      const {row: {row: {name}}} = scope
+      ElMessage.success(`${name}的相册上传成功!`)
+    },
+    handleGalleryBeforeRemove(file, fileList, scope) {
+      console.log('tableKey', this.tableKey)
+      const {row: {row: {name}}} = scope
+      return new Promise((resolve, reject) => {
+        ElMessageBox.confirm(`确定要从${name}的相册中移除?`, 'Warning', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消'
+        }).then(() => {
+          resolve(true)
+        }).catch(() => {
+          reject(false)
+        })
+      })
+    },
+    handleGalleryRemove(file, fileList, scope) {
+      const {row: {row: {name}}} = scope
+      ElMessage.success(`${name}的相册移除成功!`)
+    },
+    handleGalleryResponseHandle(response, file, fileList, scope) {
+      const {row: {row: {name}}} = scope
+      ElMessage.success(`${name}的相册上传成功! 你可以在这个钩子函数里根据上传接口的响应数据解析出地址。响应:${response}`)
+      return response
+    },
+    handleGalleryChange(file, fileList, scope) {
+      const {row: {row: {name}}} = scope
+      ElMessage.success(`${name}的相册更新成功!`)
     },
     handleAgeChange(age, scope) {
       const {row: {row, editRow, status, config}, column, $index} = scope

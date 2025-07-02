@@ -1,16 +1,18 @@
 <template>
-  <el-upload v-model="value"
+  <el-upload :file-list="files"
+             ref="uploadRef"
              v-bind="$attrs"
              :action="actionValue"
-             :data="formData"
              :limit="limit"
              :list-type="listType"
-             :file-list="files"
              :show-file-list="true"
+             :on-preview="onPreview"
+             :on-remove="onRemove"
              :on-success="handleSuccess"
-             :on-error="handleError"
-             :on-change="handleChange"
-             :on-exceed="handleExceed"
+             :on-progress="onProgress"
+             :on-change="onChange"
+             :on-exceed="onExceed"
+             :before-remove="beforeRemove"
              class="fc-fast-upload"
              :class="{'fc-fast-upload__hidden': hideUploadButton, 'fc-fast-upload__disable': disabled}">
     <template #default>
@@ -46,8 +48,7 @@
 </template>
 
 <script>
-import {nextTick, h, defineComponent} from "vue";
-import {ElMessage} from 'element-plus';
+import {h, defineComponent} from "vue"
 import {
   isArray,
   isEmpty,
@@ -55,15 +56,17 @@ import {
   getNameFromUrl,
   getFirstUrlFromFileItems,
   defaultIfBlank,
-  ellipsis,
-  cutPrefix, isString
-} from "../../../util/util";
-import FastTableOption from "../../../model";
-import {openDialog} from "../../../util/dialog";
+  cutPrefix,
+  isString
+} from "../../../util/util"
+import UploadMixin from "../../../mixins/upload.js"
+import FastTableOption from "../../../model"
+import {openDialog} from "../../../util/dialog"
 
 export default {
   name: "fast-upload",
-  emits: ['update:modelValue', 'success', 'fail', 'change', 'exceed'],
+  mixins: [UploadMixin],
+  emits: ['update:modelValue'],
   props: {
     /**
      * 是否支持多文件
@@ -92,77 +95,15 @@ export default {
     disabled: {
       type: Boolean,
       default: () => false
-    },
-    col: {
-      type: String,
-      default: () => ''
-    },
-    // optimized: 优化下面两个参数，跟表格耦合太强
-    row: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
-    data: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
-    /**
-     * 上传成功后的回调, 必须解析出并返回url地址
-     */
-    responseHandler: {
-      type: Function,
-      default: (response, file, fileList) => response
     }
   },
   computed: {
-    value: {
-      get() {
-        return this.fillBackFiles(this.modelValue)
-      },
-      set(val) {
-        this.$emit('update:modelValue', val);
-      }
-    },
-    actionValue() {
-      return this.apiPrefix + this.action;
-    },
-    isPicture() {
-      return this.listType === 'picture-card';
-    },
-    hideUploadButton() {
-      return this.disabled || (!isEmpty(this.value) && this.files.length >= this.limit);
-    },
-    formData() {
-      return {
-        row: JSON.stringify(this.row),
-        col: this.col,
-        ...this.data
-      }
-    }
-  },
-  data() {
-    return {
-      files: [],
-      apiPrefix: defaultIfBlank(FastTableOption.$http.defaults.baseURL, '')
-    }
-  },
-  methods: {
-    ellipsis,
-    /**
-     * 回显files并返回modelValue值
-     * @param value
-     */
-    fillBackFiles(value) {
-      // TODO 如果类型不变，则继续返回value引用，防止每次el-upload显示的文件都会因刷新而闪动
-      const multiple = this.multiple
-      const files = []
-      if (multiple) {
+    files() {
+      const value = this.modelValue
+      let files = []
+      if (this.multiple) {
         if (isArray(value)) {
-          files.push(...value)
+          files = value
         } else {
           if (!isEmpty(value)) {
             files.push({name: getNameFromUrl(value), url: value})
@@ -174,60 +115,81 @@ export default {
           files.push({name: getNameFromUrl(value), url: url})
         }
       }
-
       // 处理代理前缀
-      this.files = files.map(f => {
+      return files.map(f => {
         return {name: f.name, url: this.disposeUrl(f.url, true)}
-      });
-      if (multiple) {
-        return files
-      }
-      return isEmpty(files) ? null : files[0].url
-    },
-    handleSuccess(response, file, fileList) {
-      const url = this.responseHandler(response, file, fileList);
-      if (this.multiple === false) {
-        this.value = url;
-      } else {
-        this.value.push({name: file.name, url: url});
-        this.value = [...this.value]
-      }
-      try {
-        if (this.$attrs.hasOwnProperty('on-success')) {
-          const customOnSuccess = this.$attrs['on-success'];
-          if (isFunction(customOnSuccess)) {
-            customOnSuccess(response, file, fileList);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-      this.$emit('success', {response, file, fileList})
-    },
-    handleError(err, file, fileList) {
-      this.$emit('fail', {err, file, fileList})
-    },
-    handleChange(file, fileList) {
-      nextTick(() => { // 延迟执行, 等待modelValue更新
-        this.$emit('change', this.value);
       })
     },
-    handleExceed(files, fileList) {
-      ElMessage.warning('文件数量超过限制');
-      this.$emit('exceed', {files, fileList})
+    actionValue() {
+      return this.apiPrefix + this.action;
     },
-    handleRemove(file) {
-      const index = this.files.findIndex(f => f.url === file.url);
-      this.files.splice(index, 1);
-      if (this.multiple === false) {
-        const url = getFirstUrlFromFileItems(this.files);
-        this.value = this.disposeUrl(url, false)
-      } else {
-        this.value = this.files.map(f => {
-          return {name: f.name, url: this.disposeUrl(f.url, false)}
-        })
+    isPicture() {
+      return this.listType === 'picture-card';
+    },
+    hideUploadButton() {
+      return this.disabled || (!isEmpty(this.files) && this.files.length >= this.limit);
+    }
+  },
+  data() {
+    return {
+      apiPrefix: defaultIfBlank(FastTableOption.$http.defaults.baseURL, '')
+    }
+  },
+  methods: {
+    /**
+     * emit值
+     * @param fileList
+     */
+    emitValue(fileList) {
+      if (isEmpty(fileList)) {
+        this.$emit('update:modelValue', this.multiple ? [] : null)
+        return
       }
+      const {multiple} = this
+      let val
+      if (multiple) {
+        val = fileList.map(f => {
+          return {
+            name: f.name,
+            url: this.disposeUrl(f.url, false)
+          }
+        })
+      } else {
+        val = this.disposeUrl(fileList[0].url, false)
+      }
+      this.$emit('update:modelValue', val)
     },
+    handleSuccess(response, file, fileList) {
+      const responseHandler = isFunction(this.responseHandler) ? this.responseHandler : (response) => response
+      const url = responseHandler(response, file, fileList);
+      this.files.push({
+        name: file.name,
+        url: url
+      })
+      this.emitValue(this.files)
+      this.onSuccess(response, file, fileList)
+    },
+    /**
+     * 自定义移除，实现外部透传的beforeRemove和onRemove
+     * @param file
+     */
+    handleRemove(file) {
+      console.log(this.beforeRemove)
+      const beforeRemove = isFunction(this.beforeRemove) ? this.beforeRemove : () => Promise.resolve(true)
+      beforeRemove(file, this.files).then(flag => {
+        if (flag) {
+          const index = this.files.findIndex(f => f.url === file.url);
+          this.files.splice(index, 1);
+          this.emitValue(this.files)
+          this.onRemove(file, this.files)
+        }
+      })
+    },
+    /**
+     * 预览图片
+     * @param file
+     * @return {VNode}
+     */
     preview(file) {
       const imgPreviewComponent = defineComponent({
         render() {

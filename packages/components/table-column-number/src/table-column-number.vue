@@ -8,7 +8,7 @@
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>

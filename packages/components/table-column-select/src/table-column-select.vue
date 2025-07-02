@@ -1,11 +1,14 @@
 <template>
-  <el-table-column class-name="fc-table-column" :prop="prop" :label="label" :min-width="minWidth"
+  <el-table-column class-name="fc-table-column"
+                   :prop="prop"
+                   :label="label"
+                   :min-width="minWidth"
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>
@@ -21,6 +24,8 @@
           <fast-select v-model="row['editRow'][prop]"
                        v-bind="row['config'][prop]['props']"
                        :options="options"
+                       :label-key="labelKey"
+                       :val-key="valKey"
                        :ref="prop + $index"
                        @change="(val) => handleChange(val, {row, column, $index})"
                        @blur="(event) => handleBlur(event, {row, column, $index})"
@@ -61,6 +66,7 @@ export default {
       type: String,
       default: () => '90px'
     },
+    // TODO 快筛显示为checkbox，声明在这里似乎不太恰当
     quickFilterCheckbox: {
       type: Boolean,
       default: () => false

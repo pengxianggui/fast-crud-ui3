@@ -1,10 +1,14 @@
 <template>
-  <el-table-column class-name="fc-table-column" :prop="prop" :label="label" :min-width="minWidth"
-                   :show-overflow-tooltip="showOverflowTooltip" v-bind="$attrs">
+  <el-table-column class-name="fc-table-column"
+                   :prop="prop"
+                   :label="label"
+                   :min-width="minWidth"
+                   :show-overflow-tooltip="showOverflowTooltip"
+                   v-bind="$attrs">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>
@@ -19,6 +23,10 @@
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
           <el-switch v-model="row['editRow'][prop]"
                      v-bind="row['config'][prop]['props']"
+                     :active-value="activeValue"
+                     :inactive-value="inactiveValue"
+                     :active-text="activeText"
+                     :inactive-text="inactiveText"
                      :ref="prop + $index"
                      @change="(val) => handleChange(val, {row, column, $index})"></el-switch>
         </slot>

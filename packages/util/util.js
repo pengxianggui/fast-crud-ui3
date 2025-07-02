@@ -477,30 +477,3 @@ export function extractEventName(key) {
     const raw = key.slice(2);
     return raw.charAt(0).toLowerCase() + raw.slice(1); // 保留驼峰
 }
-
-/**
- * 过滤冲突的事件名
- * @param props 属性键值对象
- * @param vnode vnode节点
- * @return 返回过滤后新的props属性
- */
-export function filterConflictEvents(props, vnode) {
-    const {type: {emits = [], mixins = []} = {}} = vnode
-    const allEmits = new Set([
-        ...(emits || []),
-        ...((mixins || []).flatMap(m => {
-            const {emits: emitsInMixin} = m
-            return emitsInMixin || []
-        }))
-    ]);
-
-    const newProps = {};
-    for (const [key, value] of Object.entries(props)) {
-        const evtName = extractEventName(key);
-        if (evtName && allEmits.has(evtName)) {
-            continue;
-        }
-        newProps[key] = value;
-    }
-    return newProps;
-}

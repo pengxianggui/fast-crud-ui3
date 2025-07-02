@@ -1,11 +1,14 @@
 <template>
-  <el-table-column class-name="fc-table-column" :prop="prop" :label="label" :min-width="minWidth"
+  <el-table-column class-name="fc-table-column"
+                   :prop="prop"
+                   :label="label"
+                   :min-width="minWidth"
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>

@@ -9,8 +9,8 @@
       <component :size="size" :is="filter.component" v-model="filter.val" v-bind="filter.props"/>
     </el-form-item>
     <div class="fc-quick-filter-form-btns">
-      <el-button type="primary" :size="size" icon="Search" @click="search"></el-button>
-      <el-button type="info" plain :size="size" icon="RefreshLeft" @click="reset"></el-button>
+<!--      <el-button type="primary" :size="size" icon="Search" @click="search" />-->
+<!--      <el-button type="info" plain :size="size" icon="RefreshLeft" @click="reset" />-->
       <el-button link :size="size" @click="expColl" v-if="filters.length > 3">
         <span>{{ expand ? '收起' : '展开' }}</span>
         <el-icon>

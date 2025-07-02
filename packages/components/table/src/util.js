@@ -3,13 +3,12 @@ import {
     convertCaseToCamelOfObjectKey,
     deepClone,
     defaultIfBlank,
-    defaultIfEmpty,
+    defaultIfEmpty, extractEventName,
     isArray,
     isBoolean,
     isEmpty, isFunction,
     isUndefined,
-    merge,
-    filterConflictEvents
+    merge
 } from "../../../util/util";
 
 import Schema from 'async-validator'
@@ -28,10 +27,10 @@ export function colValid(val, config) {
         });
         validator.validate({[col]: val}, (errors, fields) => {
             if (isEmpty(errors)) {
-                props.class = defaultIfBlank(props.class, '').replace('valid-error', '');
+                props.class = defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
                 resolve();
             } else {
-                props.class = defaultIfBlank(props.class, '') + ' valid-error';
+                props.class = defaultIfBlank(props.class, '') + ' fc-valid-error';
                 reject(errors);
             }
         })
@@ -150,7 +149,9 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
             let mixinProps = parseStaticProps(item.props)
             return {...acc, ...mixinProps}
         }, {});
-        const customProps = filterConflictEvents(convertCaseToCamelOfObjectKey(_props, '-'), vnode)
+        // const customProps = filterConflictKey(_props, vnode)
+        // 将vnodes下定义的静态属性从组件的props中移除，避免透传给底层的输入控件，造成”脏属性污染“，若vnodes下定义的属性需要透传给底层输入组件，在vnode里显式传递
+        const customProps = filterConflictKey(convertCaseToCamelOfObjectKey(_props, '-'), vnode)
         const defaultProps = {
             ...parseStaticProps(_typeProps),
             ...propsInMixin
@@ -181,6 +182,57 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
 
 }
 
+
+/**
+ * 排除掉props中那些已经在vnode里静态定义过的属性或事件。例如:
+ * 1. props有属性filter, vnode里也在props上定义了filter(vnode.type.props或vnode.type.mixins[*].props), 则返回的对象中不会包含filter
+ * 2. props中有属性onChange, vnode里在emits中定义了change(vnode.type.emits或vnode.type.mixins[*].emits), 则返回的对象中不会包含onChange
+ *
+ * 而：
+ * - 针对属性的过滤，主要目的是避免专属于vnode的属性透传给底层的输入控件，造成”脏属性污染“(若vnodes下定义的属性需要透传给底层输入组件，在vnode里显式传递)
+ * - 针对事件的过滤，主要目的是预防vnode对应的组件中定义了透传给底层控件的事件，却被传入的覆盖，导致内部的不触发。
+ * @param props 属性键值对象
+ * @param vnode vnode节点
+ * @return 返回过滤后新的props属性
+ */
+export function filterConflictKey(props, vnode) {
+    const {type: {emits = [], props: _props, mixins = []} = {}} = vnode
+
+    // TODO 属性处理
+    // 定义的props
+    // const allProps = {
+    //     ...(_props || {}),
+    //     ...((mixins || []).flatMap(m => {
+    //         const {props: propsInMixin} = m
+    //         return propsInMixin || {}
+    //     }))
+    // }
+    // 定义的emits
+    const allEmits = new Set([
+        ...(emits || []),
+        ...((mixins || []).flatMap(m => {
+            const {emits: emitsInMixin} = m
+            return emitsInMixin || []
+        }))
+    ])
+
+    const newProps = {};
+    for (const [key, value] of Object.entries(props)) {
+        // // 1. 排除已定义的属性
+        // const propExist = (Object.keys(allProps).indexOf(key) > -1)
+        // if (propExist) {
+        //     continue
+        // }
+        // 2. 排除已定义的事件
+        const evtName = extractEventName(key)
+        if (evtName && allEmits.has(evtName)) {
+            continue
+        }
+        newProps[key] = value
+    }
+    return newProps
+}
+
 /**
  * 构建过滤器组件配置
  * @param param
@@ -189,7 +241,8 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
  * @param tableOption
  */
 function buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption) {
-    const {quickFilter = false} = customConfig.props;
+    const {quickFilter = false, ...validProp} = customConfig.props;
+    customConfig.props = validProp
     // build quick filters
     if (quickFilter) {
         try {
@@ -234,11 +287,11 @@ function buildEditComponentConfig(param, tableColumnComponentName, customConfig,
             //  绑定一个valid事件, 完成校验逻辑，如果校验不通过，则追加class: valid-error以便显示出来
             valid: (val, ref, props) => {
                 colValid(val, param.inlineItemConfig).then(() => {
-                    // ref.$el.classList.remove('valid-error') // !!! 这里不用ref是因为当el-table中存在fixed的列时,会渲染两个表格, 然后这个ref拿到的是另一个fixed的那个，导致无法正确显示/移除valid-error
-                    props.class = defaultIfBlank(props.class, '').replace('valid-error', '');
+                    // ref.$el.classList.remove('fc-valid-error') // !!! 这里不用ref是因为当el-table中存在fixed的列时,会渲染两个表格, 然后这个ref拿到的是另一个fixed的那个，导致无法正确显示/移除valid-error
+                    props.class = defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
                 }).catch(errors => {
-                    // ref.$el.classList.add('valid-error');
-                    props.class = defaultIfBlank(props.class, '') + ' valid-error';
+                    // ref.$el.classList.add('fc-valid-error');
+                    props.class = defaultIfBlank(props.class, '') + ' fc-valid-error';
                 });
                 return val
             }

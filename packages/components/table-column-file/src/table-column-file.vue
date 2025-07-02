@@ -8,7 +8,7 @@
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">
-          <span>{{ column.label }}</span>
+          <span>{{ label }}</span>
         </slot>
       </fast-table-head-cell>
     </template>
@@ -29,11 +29,15 @@
                        :row="row['editRow']" :col="prop"
                        v-bind="row['config'][prop]['props']"
                        :ref="prop + $index"
-                       @change="(val) => handleChange(val, {row, column, $index})"
-                       @success="(componentScope) => $emit('success', componentScope, {row, column, $index})"
-                       @fail="(componentScope) => $emit('fail', componentScope, {row, column, $index})"
-                       @exceed="(componentScope) => $emit('exceed', componentScope, {row, column, $index})"
-                       class="fc-fast-upload-file"></fast-upload>
+                       :on-preview="(file) => onPreview(file, {row, column, $index})"
+                       :before-remove="(file, files) => handleBeforeRemove(file, files, {row, column, $index})"
+                       :on-remove="(file, files) => isFunction(onRemove) ? onRemove(file, files, {row, column, $index}) : null"
+                       :response-handler="(response, file, files) => isFunction(responseHandler) ? responseHandler(response, file, files, {row, column, $index}) : response"
+                       :on-success="(response, file, files) => isFunction(onSuccess) ? onSuccess(response, file, files, {row, column, $index}) : null"
+                       :on-progress="(event ,file, files) => isFunction(onProgress) ? onProgress(event, file, files, {row, column, $index}) : null"
+                       :on-change="(file, files) => isFunction(onChange) ? onChange(file, files, {row, column, $index}) : null"
+                       :on-exceed="(file, files) => isFunction(onExceed) ? onExceed(file, files, {row, column, $index}) : null"
+                       class="fc-fast-upload-file"/>
         </slot>
       </slot>
     </template>
@@ -44,12 +48,13 @@
 import FastTableHeadCell from "../../table-head-cell/src/table-head-cell.vue";
 import FastUpload from "../../upload/src/fast-upload.vue";
 import tableColumn from "../../../mixins/table-column";
+import UploadMixin from "../../../mixins/upload.js";
+import {isFunction} from "../../../util/util.js";
 
 export default {
   name: "FastTableColumnFile",
   components: {FastTableHeadCell, FastUpload},
-  mixins: [tableColumn],
-  emits: ['success', 'fail', 'exceed'],
+  mixins: [tableColumn, UploadMixin],
   props: {
     minWidth: {
       type: String,
@@ -58,6 +63,12 @@ export default {
   },
   data() {
     return {}
+  },
+  methods: {
+    isFunction,
+    handleBeforeRemove(file, files, scope) {
+      return isFunction(this.beforeRemove) ? this.beforeRemove(file, files, scope) : Promise.resolve(true)
+    }
   }
 }
 </script>
