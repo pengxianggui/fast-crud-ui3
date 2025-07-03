@@ -48,7 +48,7 @@ export default {
     },
     placeholder: {
       type: String,
-      default: () => "请点选"
+      default: () => "请点选..."
     },
     appendToBody: {
       type: Boolean,

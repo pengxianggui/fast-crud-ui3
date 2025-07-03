@@ -17,7 +17,7 @@
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
         <div v-if="!canEdit(row, column, $index)">
           <slot name="normal" v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-            <span>{{ showLabel(row, column) }}</span>
+            <span>{{ showLabel(row) }}</span>
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
@@ -46,9 +46,6 @@ export default {
       type: String,
       default: () => '150px'
     }
-  },
-  data() {
-    return {}
   }
 }
 </script>

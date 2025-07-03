@@ -1,5 +1,5 @@
-import {isArray, isUndefined, merge, ternary} from "../../util/util";
-import {Opt} from "../../model";
+import {isArray, isSampleType, isUndefined, merge, ternary} from "../../util/util";
+import {Cond, Opt} from "../../model";
 
 const defaultQueryConfig = {
     component: 'fast-select',
@@ -8,10 +8,14 @@ const defaultQueryConfig = {
     props: {
         clearable: true,
         multiple: true,
+        placeholder: '请选择...'
     },
     condMapFn: (cond) => {
         if (isArray(cond.val) && cond.val.length > 0) {
             return [cond]
+        }
+        if (isSampleType(cond.val)) {
+            return [new Cond(cond.col, Opt.EQ, cond.val)]
         }
         return []
     }
@@ -34,7 +38,7 @@ export default {
 
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), defaultQueryConfig.val, defaultVal);
-            if (validProps.hasOwnProperty('quickFilterCheckbox')) {
+            if (validProps.quickFilterCheckbox !== false) {
                 component = 'fast-checkbox-group';
             }
         }

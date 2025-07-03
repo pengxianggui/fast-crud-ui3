@@ -12,7 +12,8 @@ const defaultQueryConfig = {
     opt: Opt.LIKE,
     val: null, // 默认值
     props: {
-        clearable: true
+        clearable: true,
+        placeholder: '请输入文件名...'
     },
     condMapFn: (cond) => {
         const operators = {

@@ -29,7 +29,8 @@ const defaultEditConfig = {
     val: null,
     props: {
         action: '/',
-        'list-type': 'picture-card',
+        listType: 'picture-card',
+        accept: 'image/*',
         class: 'fc-table-inline-edit-component',
         multiple: false, // 默认单选文件
         editable: true

@@ -7,7 +7,7 @@ const defaultQueryConfig = {
     val: null, // 默认值
     props: {
         clearable: true,
-        // placeholder: `请输入${config.label}`
+        placeholder: '请输入...'
     },
     condMapFn: (cond) => {
         const operators = {
@@ -26,7 +26,7 @@ const defaultEditConfig = {
         class: 'fc-table-inline-edit-component',
         clearable: true,
         multiple: false, // 默认单选
-        title: '请选择',
+        title: '请点选...',
         editable: true,
     }
 }

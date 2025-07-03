@@ -6,6 +6,11 @@
               @select="handleSelect"
               @selection-change="handleSelectionChange"
               @select-all="handleSelectAll">
+    <template #quickFilter="{size}">
+      <el-form-item label="自定义筛选项">
+        <el-input :size="size" v-model="customQueryParam.keyword" placeholder="同时筛选姓名和仰慕者姓名"/>
+      </el-form-item>
+    </template>
     <fast-table-column label="ID" prop="id"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
     <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10"
@@ -16,11 +21,11 @@
                            :on-change="handleGalleryChange"
                            width="300px"/>
     <fast-table-column-input label="姓名" prop="name" first-filter required/>
-    <fast-table-column-number label="年龄" prop="age" required
+    <fast-table-column-number label="年龄" prop="age" required quick-filter
                               :min="18" :max="60"
                               :rules="[{type: 'number', min: 18, max: 60, message: '年龄必须在[18,60]之间'}]"
                               @change="handleAgeChange"/>
-    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :quick-filter="false" required>
+    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" quick-filter required>
       <template #header="{column, $index}">
         <span>{{ $index + '.' + column.label }}</span>
       </template>
@@ -40,10 +45,10 @@
     <fast-table-column-object label="仰慕者姓名" prop="loveName"
                               :table-option="loveOption" show-field="name" :pick-map="{id: 'loveId'}"/>
     <fast-table-column-textarea label="简介" prop="info"/>
-    <fast-table-column-switch label="已毕业" prop="graduated" required/>
+    <fast-table-column-switch label="已毕业" prop="graduated" active-text="Y" inactive-text="N" quick-filter required/>
     <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px"
                                    :editable="({editRow}) => !(editRow.age > 35)" required/>
-    <fast-table-column-date-picker label="生日" prop="birthday"
+    <fast-table-column-date-picker label="生日" prop="birthday" quick-filter
                                    :disabled-date="pickerOptionsE.disabledDate"
                                    :shortcuts="pickerOptionsE.shortcuts"
                                    required/>
@@ -64,6 +69,7 @@
     <template #button="scope">
       <el-button :size="scope.size" @click="tryPick(false)">Try Pick</el-button>
       <el-button :size="scope.size" @click="tryPick(true)">Try Pick(多选)</el-button>
+<!--      <div class="sick-msg">这是一段提示</div>-->
     </template>
     <template #moreButton="scope">
       <el-dropdown-item :size="scope.size" @click="expandMoreButton(scope)">扩展按钮</el-dropdown-item>
@@ -100,6 +106,9 @@ export default {
     const monthAgo = new Date();
     monthAgo.setTime(monthAgo.getTime() - 3600 * 1000 * 24 * 30);
     return {
+      customQueryParam: {
+        keyword: null
+      },
       tableOption: new FastTableOption({
         context: this, // important! 否则钩子函数里无法获取当当前组件实例上下文
         title: '',
@@ -123,59 +132,70 @@ export default {
           size: 'default', // small,default,large
           bodyRowHeight: '45px',
           formLabelWidth: 'auto', // 默认为auto
-          formLayout: 'id,avatarUrl, name|age|sex, graduated|state|state, loveId|loveName|loveName, info, birthday|luckTime, resumeUrl, createTime' // 弹窗表单布局设置
+          formLayout: 'id,avatarUrl, name|age|sex, graduated|state|state, loveId|loveName|loveName, info, birthday|luckTime, resumeUrl, createTime', // 弹窗表单布局设置
+          quickFilterSpan: 3
         },
+        beforeReset({query}) {
+          this.customQueryParam.keyword = null // 重置自定义筛选项
+          return Promise.resolve()
+        },
+        /**
+         * 典型场景: 追加筛选条件
+         * @param query
+         * @return {Promise<never>|Promise<void>}
+         */
         beforeLoad({query}) {
           if (this.params.pageLoadable) {
+            query.extra.keyword = this.customQueryParam.keyword
             return Promise.resolve();
           }
-          ElMessage.warning('未勾选【允许加载分页】, 不会分页请求');
+          this.showMsg('warning', '未勾选【允许加载分页】, 不会分页请求')
           return Promise.reject()
         },
         loadSuccess({query, data, res}) {
           if (this.params.loadSuccessTip) {
-            ElMessage.success('分页加载成功!');
+            this.showMsg('success', '分页加载成功!')
           }
           return Promise.resolve(data);
         },
         loadFail({query, error}) {
           if (this.params.customLoadFailTip) {
-            ElMessage.error('哦豁, 分页加载失败了:' + JSON.stringify(error));
+            this.showMsg('error', '哦豁, 分页加载失败了:' + JSON.stringify(error));
             return Promise.reject();
           }
           return Promise.resolve(); // 可以通过reject覆盖默认的加载失败提示
         },
         beforeInsert({fatRows, rows, editRows}) {
           if (editRows.findIndex(r => r.name === '司马懿') > -1 && this.params.disableInsertSmy) {
-            ElMessage.warning('你已勾选【不允许添加司马懿】');
+            this.showMsg('warning', '你已勾选【不允许添加司马懿】')
             return Promise.reject();
           }
           return Promise.resolve(editRows);
         },
         insertSuccess({fatRows, rows, editRows, res}) {
           if (this.params.customInsertSuccessTip) {
-            ElMessage.success('啧啧啧, 插入成功啦!');
+            this.showMsg('success', '啧啧啧, 插入成功啦!')
             return Promise.reject(); // 取消内置的插入成功提示
           }
           return Promise.resolve();
         },
         insertFail({fatRows, rows, editRows, error}) {
           if (this.params.customInsertFailTip) {
-            ElMessage.error('哦豁, 插入失败了!');
+            this.showMsg('error', '哦豁, 插入失败了!')
             return Promise.reject();
           }
           return Promise.resolve();
         },
         beforeToUpdate({fatRows, rows}) {
           if (rows.findIndex(r => r.name === '曹操') > -1 && this.params.disableUpdate) {
-            ElMessage.warning("你已勾选【曹操不允许编辑】")
+            this.showMsg('warning', "你已勾选【曹操不允许编辑】")
             return Promise.reject();
           }
           return Promise.resolve();
         },
         beforeUpdate({fatRows, rows, editRows}) {
           if (editRows.findIndex(r => r.name === '皇帝') > -1 && this.params.disableUpdateToHd) {
-            ElMessage.warning('你已勾选【名字不允许改为皇帝】');
+            this.showMsg('warning', '你已勾选【名字不允许改为皇帝】')
             return Promise.reject();
           }
           return Promise.resolve(editRows);
@@ -188,7 +208,7 @@ export default {
         },
         beforeDeleteTip({fatRows, rows}) {
           if (rows.findIndex(r => r.name === '诸葛亮') > -1 && this.params.notDelete) {
-            ElMessage.warning('你已勾选【不能删除诸葛亮】');
+            this.showMsg('warning', '你已勾选【不能删除诸葛亮】')
             return Promise.reject();
           }
           return Promise.resolve();
@@ -196,7 +216,7 @@ export default {
         beforeDelete({fatRows, rows}) {
           const {notDeleteAfterConfirm} = this.params;
           if (rows.findIndex(r => r.name === '赵云') > -1 && notDeleteAfterConfirm) {
-            ElMessage.warning('删除记录中包含赵云, 你已勾选不能删除赵云');
+            this.showMsg('warning', '删除记录中包含赵云, 你已勾选不能删除赵云')
             return Promise.reject();
           }
           return Promise.resolve(rows);
@@ -204,21 +224,21 @@ export default {
         deleteSuccess({fatRows, rows, res}) {
           const {disableDefultDeleteSuccessTip} = this.params;
           if (disableDefultDeleteSuccessTip && rows.findIndex(r => r.name === '吕蒙') > -1) {
-            ElMessage.success('恭喜恭喜! 删除对象中包含吕蒙');
+            this.showMsg('success', '恭喜恭喜! 删除对象中包含吕蒙')
             return Promise.reject(); // 通过reject覆盖默认的删除成功提示
           }
           return Promise.resolve();
         },
         deleteFail({fatRows, rows, error}) {
           if (this.params.customDeleteFailTip) {
-            ElMessage.error('哦豁, 删除失败了! ' + JSON.stringify(error));
+            this.showMsg('error', '哦豁, 删除失败了! ' + JSON.stringify(error))
             return Promise.reject(); // 通过reject覆盖默认的删除失败提示
           }
           return Promise.resolve();
         },
         beforeCancel({fatRows, rows, status}) {
           if (status === 'update' && this.params.disableCancelWhenUpdate) {
-            ElMessage.warning('你已经勾选更新时不允许取消')
+            this.showMsg('warning', '你已经勾选更新时不允许取消')
             return Promise.reject();
           }
           return Promise.resolve();
@@ -368,10 +388,22 @@ export default {
       console.log('checkedRows', checkedRows)
       console.log('editRows', editRows)
     },
+    showMsg(type, msg) {
+      ElMessage({
+        message: msg,
+        type: type
+      })
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
-
+.sick-msg {
+  position: absolute;
+  left: 0;
+}
+:deep(.fc-fast-table-operation-bar) {
+  //height: 50px;
+}
 </style>

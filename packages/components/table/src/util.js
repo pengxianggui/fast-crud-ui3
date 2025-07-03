@@ -127,16 +127,16 @@ function parseStaticProps(staticProps) {
 
 /**
  * 构建组件配置
- * @param vnodes fast-table-column-* 组成的节点数组，蕴含fast-table-column-*上的信息
+ * @param tableColumnVNodes fast-table-column-* 组成的节点数组，蕴含fast-table-column-*组件节点上的信息(也可能是ElTableColumn)
  * @param tableOption 表格配置
  * @param callback 针对每个table-column解析的回调函数
  */
-export function iterBuildComponentConfig(vnodes, tableOption, callback) {
-    const defaultProp = { // 通过option传入配置项, 需要作用到搜索或编辑等组件内部
+export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callback) {
+    const fromTableProps = { // 通过option传入配置项, 需要作用到搜索或编辑等组件内部
         size: tableOption.style.size
     }
 
-    for (const vnode of vnodes) {
+    for (const columnVNode of tableColumnVNodes) {
         const {
             props: _props,
             type: {
@@ -144,30 +144,35 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
                 props: _typeProps,
                 mixins = []
             }
-        } = vnode
+        } = columnVNode
         const propsInMixin = mixins.reduce((acc, item) => {
             let mixinProps = parseStaticProps(item.props)
             return {...acc, ...mixinProps}
-        }, {});
-        const customProps = filterConflictEvents(convertKeyFromCaseToCamel(_props, '-'), vnode)
+        }, {})
+
+        const customProps = convertKeyFromCaseToCamel(_props, '-')
         const defaultProps = {
+            ...fromTableProps,
             ...parseStaticProps(_typeProps),
             ...propsInMixin
         }
         const props = {...defaultProps, ...customProps}
 
-        const param = {};
+        const param = {}
         const {filter = true, showOverflowTooltip, minWidth, ...leftProp} = props
         const {label, prop: col} = leftProp
         if (isEmpty(col)) { // 操作列
-            continue;
+            continue
         }
         const customConfig = {
             label: label,
             col: col,
-            props: leftProp
+            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
+            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'firstFilter', 'quickFilterBlock'])
         }
+
         try {
+            // TODO filter、quickFilter支持Number类型，值越小，排序越靠前，filter对快筛、简筛都生效，quickFilter对快筛生效(优先级高于filter)
             if (filter) {
                 buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption);
             }
@@ -183,16 +188,27 @@ export function iterBuildComponentConfig(vnodes, tableOption, callback) {
 
 
 /**
- * 排除掉props中那些已经在vnode里静态定义过的事件。
+ * 排除掉props中那些已经在vnode里静态定义过的属性(包括事件), 视为columnVNode的，无需透传给底层控件
  *
- * props中有属性onChange, vnode里在emits中定义了change(vnode.type.emits或vnode.type.mixins[*].emits), 则返回的对象中不会包含onChange。
+ * 例如:
+ * props中有属性onChange, vnode里在emits中定义了change(columnVNode.type.emits或vnode.type.mixins[*].emits), 则返回的对象中不会包含onChange。
  * 针对事件的过滤，主要目的是预防vnode对应的组件中定义了透传给底层控件的事件，却被传入的覆盖，导致内部的不触发。
  * @param props 属性键值对象
- * @param vnode vnode节点
+ * @param columnVNode vnode节点
+ * @param ignoreKeys 忽略的属性
  * @return 返回过滤后新的props属性
  */
-function filterConflictEvents(props, vnode) {
-    const {type: {emits = [], props: _props, mixins = []} = {}} = vnode
+function filterConflictKey(props, columnVNode, ignoreKeys) {
+    const {type: {emits = [], props: _props, mixins = []} = {}} = columnVNode
+    // 定义的属性
+    const allProps = {
+        ...(_props || {}),
+        ...((mixins || []).reduce((acc, m) => {
+            return {...acc, ...m.props}
+        }, {}))
+    }
+    const allPropKeys = Object.keys(allProps)
+
     // 定义的emits
     const allEmits = new Set([
         ...(emits || []),
@@ -204,6 +220,13 @@ function filterConflictEvents(props, vnode) {
 
     const newProps = {}
     for (const [key, value] of Object.entries(props)) {
+        if (ignoreKeys.indexOf(key) > -1) {
+            newProps[key] = value
+            continue
+        }
+        if (allPropKeys.indexOf(key) > -1) {
+            continue
+        }
         const evtName = extractEventName(key)
         if (evtName && allEmits.has(evtName)) {
             continue
@@ -224,7 +247,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     const {quickFilter = false, ...validProp} = customConfig.props;
     customConfig.props = validProp
     // build quick filters
-    if (quickFilter) {
+    if (quickFilter !== false) {
         try {
             param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick', tableOption);
         } catch (e) {

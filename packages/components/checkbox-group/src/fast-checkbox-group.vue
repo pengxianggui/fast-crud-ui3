@@ -1,10 +1,10 @@
 <template>
   <div>
-    <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange" v-if="showChoseAll">
+    <el-checkbox :size="size" :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange" v-if="showChoseAll">
       全选
     </el-checkbox>
-    <el-checkbox-group class="fc-checkbox-group" v-model="value" @change="handleChange">
-      <el-checkbox v-for="item in options" :value="item[valKey]" :key="item[valKey]"
+    <el-checkbox-group class="fc-checkbox-group" :size="size" v-model="value" @change="handleChange">
+      <el-checkbox  v-for="item in options" :value="item[valKey]" :key="item[valKey]"
                    :disabled="disableVal.indexOf(item[valKey]) > -1">{{ item[labelKey] }}
       </el-checkbox>
     </el-checkbox-group>
@@ -39,7 +39,8 @@ export default {
     disableVal: {
       type: Array,
       default: () => []
-    }
+    },
+    size: String
   },
   computed: {
     value: {

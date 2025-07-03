@@ -3,6 +3,7 @@
                    :prop="prop"
                    :label="label"
                    :min-width="minWidth"
+                   :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
@@ -59,13 +60,10 @@ export default {
       default: () => '100px'
     },
   },
-  data() {
-    return {}
-  },
   methods: {
     isFunction,
     handleBeforeRemove(file, files, scope) {
-      return isFunction(this.beforeRemove) ? this.beforeRemove(file, files, scope) : Promise.resolve(true)
+      return isFunction(this.beforeRemove) ? this.beforeRemove(file, files, scope) : Promise.resolve(true) // Promise在模版中不识别?
     }
   }
 }

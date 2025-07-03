@@ -1,5 +1,5 @@
 import {cloneDeep, isEmpty as _isEmpty} from 'lodash-es'
-import moment from "moment/moment";
+import moment from "moment/moment"
 
 /**
  * 剪掉字符串指定的前缀, 如果不是此前缀开头，则直接返回str
@@ -138,6 +138,15 @@ export function isUndefined(val) {
 }
 
 /**
+ * undefined、null、string、number、boolean视为简单类型，返回true
+ * @param val
+ * @return {boolean}
+ */
+export function isSampleType(val) {
+    return isUndefined(val) || isNull(val) || isString(val) || isNumber(val) || isBoolean(val)
+}
+
+/**
  * 返回值的类型:
  * [object String]、[object Number]、[object Object]、[object Boolean]、
  * [object Array]、[object Function]、[object Null]、[object Undefined]
@@ -236,15 +245,11 @@ export function deepClone(obj) {
  */
 export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, coverFn = (obj1, obj2, key, valueOfObj2) => {
 }) {
-    if (opt2 === null || !isObject(opt2)) {
+    if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
         return opt1;
     }
 
-    if (opt1 === null || !isObject(opt1)) {
-        return opt1;
-    }
-
-    let deepMerge = function (obj1, obj2) {
+    const deepMerge = function (obj1, obj2) {
         if (!isObject(obj1) || !isObject(obj2)) return;
         for (let key in obj2) {
             let valueOfObj1 = obj1[key]
@@ -273,6 +278,40 @@ export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, c
 }
 
 /**
+ * 将opt2中key的值，赋值到opt1中的同名key上；若opt1上没有同名key则忽略。返回值更新后的opt1
+ * @description
+ * @param opt1
+ * @param opt2
+ * @param deep
+ * @param ignoreNullAndUndefined
+ */
+export function mergeValue(opt1, opt2, deep = true, ignoreNullAndUndefined = false) {
+    if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
+        return opt1;
+    }
+    const deepMerge = function (obj1, obj2) {
+        if (!isObject(obj1) || !isObject(obj2)) return;
+        for (let key in obj1) {
+            let valueOfObj1 = obj1[key]
+            if (!(key in obj2)) {
+                continue
+            }
+
+            let valueOfObj2 = obj2[key]
+            if (ignoreNullAndUndefined && (isUndefined(valueOfObj2) || isNull(valueOfObj2))) {
+                continue
+            }
+            if (isObject(valueOfObj1) && isObject(valueOfObj2) && deep) {
+                deepMerge(valueOfObj1, valueOfObj2)
+            }
+            obj1[key] = valueOfObj2
+        }
+    }
+    deepMerge(opt1, opt2)
+    return opt1
+}
+
+/**
  * @description merge 策略2： 对两个对象中的属性和值执行merge操作, 将opt2中的key-value根据key merge到opt1上： 若op1也存在这个key，则取opt2这个key的值
  * 覆盖到opt1上； 若opt1中不存在, 则会被直接追加到opt1中， 因此函数会更改opt1, 执行完后, opt1将是merge后的对象。最后将opt1的深拷贝返回
  * @param opt1 opt1中的k-v将被覆盖。如果不是object类型或者是null类型，则直接返回op1
@@ -282,15 +321,11 @@ export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, c
  * @returns {} 返回merge后的opt1的深拷贝对象
  */
 export function coverMerge(opt1, opt2, deep = true, ignoreNullAndUndefined = false) {
-    if (opt2 === null || !isObject(opt2)) {
+    if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
         return opt1;
     }
 
-    if (opt1 === null || !isObject(opt1)) {
-        return opt1;
-    }
-
-    let deepMerge = function (obj1, obj2) {
+    const deepMerge = function (obj1, obj2) {
         if (!isObject(obj1) || !isObject(obj2)) return;
         for (let key in obj2) {
             let valueOfObj1 = obj1[key]
@@ -310,7 +345,7 @@ export function coverMerge(opt1, opt2, deep = true, ignoreNullAndUndefined = fal
                 obj1[key] = deepClone(valueOfObj2)
             }
         }
-    };
+    }
 
     deepMerge(opt1, opt2);
     return opt1;

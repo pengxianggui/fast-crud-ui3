@@ -14,7 +14,7 @@
 
     <template #default="{row, column, $index}">
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-        <span>{{ showLabel(row, column) }}</span>
+        <span>{{ showLabel(row) }}</span>
       </slot>
     </template>
   </el-table-column>
@@ -22,15 +22,12 @@
 
 <script>
 import FastTableHeadCell from '../../table-head-cell/src/table-head-cell.vue'
-import tableColumn from "../../../mixins/table-column";
+import tableColumn from "../../../mixins/table-column"
 
 export default {
   name: "FastTableColumn",
   components: {FastTableHeadCell},
-  mixins: [tableColumn],
-  data() {
-    return {}
-  }
+  mixins: [tableColumn]
 }
 </script>
 

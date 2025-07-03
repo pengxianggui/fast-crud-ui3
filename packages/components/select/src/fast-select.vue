@@ -21,7 +21,7 @@ export default {
     },
     options: {
       type: Array,
-      required: true
+      default: () => []
     },
     labelKey: {
       type: String,

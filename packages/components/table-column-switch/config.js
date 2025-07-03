@@ -18,13 +18,17 @@ const defaultEditConfig = {
         options: [],
         class: 'fc-table-inline-edit-component',
         editable: true,
-        inlinePrompt: true
+        inlinePrompt: true,
+        activeValue: true,
+        inactiveValue: false,
+        activeText: '是',
+        inactiveText: '否'
     }
 }
 export default {
     query: (config, type) => {
         const {defaultVal, ...validProps} = config.props;
-        const {activeValue, inactiveValue, activeText, inactiveText} = validProps;
+        const {activeValue = true, inactiveValue = false, activeText = '是', inactiveText = '否'} = validProps
         let val = defaultQueryConfig.val;
         if (type === 'quick') {
             val = ternary(defaultVal === inactiveValue || defaultVal === activeValue, defaultVal, val);
@@ -42,16 +46,9 @@ export default {
     },
     edit: (config, type) => {
         const {defaultVal, ...validProps} = config.props
-        const {activeValue, inactiveValue, activeText, inactiveText} = validProps
-        const options = [
-            {label: inactiveText, value: inactiveValue},
-            {label: activeText, value: activeValue}
-        ]
-        config.val = ternary(defaultVal === inactiveValue || defaultVal === activeValue, defaultVal, inactiveValue);
-        config.props = {
-            ...validProps,
-            options: options
-        };
+        const {activeValue = true, inactiveValue = false} = validProps
+        config.val = ternary(defaultVal === inactiveValue || defaultVal === activeValue, defaultVal, inactiveValue); // 默认值合法校验
+        config.props = validProps;
         return merge(config, defaultEditConfig, true, false);
     }
 

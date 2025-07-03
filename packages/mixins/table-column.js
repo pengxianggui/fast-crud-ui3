@@ -4,8 +4,14 @@ export default {
     inject: ['openDynamicFilterForm', 'tableStyle', 'context'],
     emits: ['change', 'focus', 'blur', 'input', 'clear'],
     props: {
-        prop: String,
-        label: String,
+        prop: {
+            type: String,
+            required: true
+        },
+        label: {
+            type: String,
+            required: true
+        },
         filter: {
             type: Boolean,
             default: () => true
@@ -45,10 +51,9 @@ export default {
         canEdit(fatRow, column, $index) {
             return colEditable.call(this.context !== null && this.context !== undefined ? this.context : this, fatRow, column.property);
         },
-        showLabel(fatRow, column) {
+        showLabel(fatRow) {
             const {row, editRow, status} = fatRow;
-            const {property} = column;
-            return status === 'normal' ? row[property] : editRow[property];
+            return status === 'normal' ? row[this.prop] : editRow[this.prop];
         },
         headCellClick(column) {
             if (this.filter) {

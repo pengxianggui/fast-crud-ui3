@@ -1,17 +1,16 @@
 <template>
-  <el-form :inline="true" :label-width="formLabelWidth" class="fc-quick-filter-form">
+  <el-form :inline="true" :label-width="formLabelWidth" class="fc-quick-filter-form" :style="formStyle">
     <el-form-item v-for="filter in visibleFilters"
                   :key="filter.col"
                   :prop="filter.col"
                   :label="filter.label + '：'"
-                  :class="filter.props && filter.props.quickFilterBlock !== false ? 'fc-quick-filter-form-item-block': ''"
+                  :style="filter.props && filter.props.quickFilterBlock !== false ? formItemBlockStyle : ''"
                   class="fc-quick-filter-form-item">
       <component :size="size" :is="filter.component" v-model="filter.val" v-bind="filter.props"/>
     </el-form-item>
-    <div class="fc-quick-filter-form-btns">
-<!--      <el-button type="primary" :size="size" icon="Search" @click="search" />-->
-<!--      <el-button type="info" plain :size="size" icon="RefreshLeft" @click="reset" />-->
-      <el-button link :size="size" @click="expColl" v-if="filters.length > 3">
+    <slot></slot>
+    <div class="fc-quick-filter-form-btns" v-if="toggleEnable">
+      <el-button link :size="size" @click="expColl" v-if="filters.length > toggleNum">
         <span>{{ expand ? '收起' : '展开' }}</span>
         <el-icon>
           <ArrowUp v-if="expand"/>
@@ -25,7 +24,6 @@
 <script>
 export default {
   name: "quick-filter-form",
-  emits: ['search'],
   props: {
     formLabelWidth: {
       type: String,
@@ -34,6 +32,18 @@ export default {
     filters: {
       type: Array,
       default: () => []
+    },
+    toggleEnable: {
+      type: Boolean,
+      default: false
+    },
+    toggleNum: {
+      type: Number,
+      default: 4
+    },
+    rowSpan: {
+      type: Number,
+      default: 3
     },
     size: {
       type: String,
@@ -47,8 +57,12 @@ export default {
     }
   },
   computed: {
+    /**
+     * quickFilterBlock的独占一行且排前面。注意: 必须浅拷贝
+     * @return {*[]}
+     */
     visibleFilters() {
-      const {expand, filters = []} = this;
+      const {toggleEnable, expand, filters = []} = this;
       // 确保独占一行的快筛项排前面
       filters.sort((a, b) => {
         const {props: propsA} = a;
@@ -60,17 +74,25 @@ export default {
         }
         return 0;
       });
+      if (!toggleEnable) {
+        return filters
+      }
       return expand ? filters : filters.slice(0, this.showNum);
+    },
+    formStyle() {
+      return {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${this.rowSpan}, 1fr)`,
+        gap: '10px 20px'
+      }
+    },
+    formItemBlockStyle() {
+      return {
+        gridColumn: `span ${this.rowSpan}`
+      }
     }
   },
   methods: {
-    search() {
-      this.$emit('search')
-    },
-    reset() {
-      this.filters.forEach((filter) => filter.reset());
-      this.search()
-    },
     expColl() {
       this.expand = !this.expand;
     }
@@ -78,16 +100,16 @@ export default {
 }
 </script>
 
+<style lang="scss">
+.fc-quick-filter-form > .el-form-item {
+  margin: 0 !important;
+}
+</style>
 <style scoped lang="scss">
-.fc-quick-filter-form-item {
-  margin-bottom: 0 !important;
+.fc-quick-filter-form {
+  .fc-quick-filter-form-btns {
+    margin-left: 10px;
+  }
 }
 
-.fc-quick-filter-form-item-block {
-  width: 100%;
-}
-
-.fc-quick-filter-form-btns {
-  margin-left: 10px;
-}
 </style>

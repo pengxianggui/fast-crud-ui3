@@ -3,6 +3,7 @@ import {
     assert,
     caseToCamel,
     coverMerge,
+    mergeValue,
     defaultIfBlank, isArray,
     isBoolean,
     isEmpty, isFunction,
@@ -85,6 +86,7 @@ export class Query {
     conds = [];
     distinct = false;
     orders = [];
+    extra = {}; // 扩展字段
 
     constructor() {
     }
@@ -149,7 +151,8 @@ export class Query {
             cols: cols,
             conds: conds,
             orders: orders,
-            distinct: this.distinct
+            distinct: this.distinct,
+            extra: this.extra
         };
     }
 }
@@ -307,8 +310,12 @@ class FastTableOption {
         bodyRowHeight: '50px', // 行高
         size: 'default',  // 尺寸
         formLabelWidth: 'auto', // 表单标签宽度:
-        formLayout: null // 表单布局: 只作用于form表单, 对快筛和行内编辑无效
+        formLayout: null, // 表单布局: 只作用于form表单, 对快筛和行内编辑无效
+        quickFilterToggle: false, // 快筛项过多时(超过quickFilterToggleExceed指定的数量),是否启用toggle
+        quickFilterToggleExceed: 4,
+        quickFilterSpan: 3 // 快筛每行几个筛选项
     };
+    beforeReset;
     beforeLoad;
     loadSuccess;
     loadFail;
@@ -329,7 +336,7 @@ class FastTableOption {
     afterExport; // 导出后
 
     render; // 渲染函数, 当前table需要被pick时有用
-    conds; // 固定的筛选条件，内部无法取消
+    conds = []; // 固定的筛选条件，内部无法取消
 
     static $http;
 
@@ -357,18 +364,9 @@ class FastTableOption {
                     deletable = true,
                     sortField = '',
                     sortDesc = true,
-                    pagination = {
-                        layout: 'total, sizes, prev, pager, next, jumper',
-                        'page-sizes': [10, 20, 50, 100, 200],
-                        size: 10
-                    },
-                    style = {
-                        flexHeight: false,
-                        bodyRowHeight: '50px',
-                        size: 'default',
-                        formLabelWidth: 'auto',
-                        formLayout: null
-                    },
+                    pagination = {},
+                    style = {},
+                    beforeReset = ({query}) => Promise.resolve(),
                     beforeLoad = ({query}) => Promise.resolve(),
                     loadSuccess = ({query, data, res}) => Promise.resolve(data),
                     loadFail = ({query, error}) => Promise.resolve(),
@@ -402,6 +400,7 @@ class FastTableOption {
         assert(isBoolean(deletable), 'deletable必须为布尔值')
         assert(isString(sortField), 'sortField必须为字符串')
         assert(isBoolean(sortDesc), 'sortDesc必须为布尔值')
+        assert(isFunction(beforeReset), 'beforeReset必须为函数')
         assert(isFunction(beforeLoad), 'beforeLoad必须为函数')
         assert(isFunction(loadSuccess), 'loadSuccess必须为函数')
         assert(isFunction(loadFail), 'loadFail必须为函数')
@@ -446,9 +445,10 @@ class FastTableOption {
         this.deletable = deletable;
         this.sortField = sortField;
         this.sortDesc = sortDesc;
-        coverMerge(this.pagination, pagination, true, true)
-        coverMerge(this.style, style, true, true)
+        mergeValue(this.pagination, pagination, true, true)
+        mergeValue(this.style, style, true, true)
 
+        this.beforeReset = beforeReset;
         this.beforeLoad = beforeLoad;
         this.loadSuccess = loadSuccess;
         this.loadFail = loadFail;

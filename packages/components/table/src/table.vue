@@ -6,21 +6,27 @@
       <quick-filter-form :filters="quickFilters"
                          :form-label-width="option.style.formLabelWidth"
                          :size="option.style.size"
-                         @search="pageLoad"/>
+                         :toggle-enable="option.style.quickFilterToggle"
+                         :toggle-num="option.style.quickFilterToggleExceed"
+                         :row-span="option.style.quickFilterSpan">
+        <slot name="quickFilter" v-bind="{size: option.style.size}"></slot>
+      </quick-filter-form>
     </div>
     <div ref="operation" class="fc-fast-table-operation-bar">
       <div class="fc-operation-filter">
         <!-- 简筛区 -->
-        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad" @reset="resetFilter" v-if="easyFilters.length > 0"></easy-filter>
-        <!-- TODO 2.0 存筛区 -->
+        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad" @reset="resetFilter"
+                     v-if="easyFilters.length > 0"></easy-filter>
+        <!-- TODO 存筛区 -->
+      </div>
+      <div class="expand-button">
+        <slot name="button"
+              v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
       </div>
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
-        <slot name="button"
-              v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" icon="Plus" @click="toInsert"
-                     v-if="option.insertable">新建
+          <el-button :size="option.style.size" icon="Plus" @click="toInsert" v-if="option.insertable">新建
           </el-button>
           <el-button type="danger" plain :size="option.style.size" icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
@@ -37,7 +43,7 @@
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
-        <el-dropdown class="fc-fast-table-operation-more" @command="emitMoreFeature">
+        <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size" @command="emitMoreFeature">
           <el-button type="primary" plain :size="option.style.size">
             <span>更多</span>
             <el-icon class="el-icon--right">
@@ -84,6 +90,7 @@
                 v-loading="loading"
                 :key="tableKey"
                 :height="heightTable"
+                :size="option.style.size"
                 border>
         <el-table-column type="selection" width="55" v-if="option.enableMulti"></el-table-column>
         <slot></slot>
@@ -193,19 +200,24 @@ export default {
       context: this.option.context // 提供给fast-table-column* 获取上下文信息
     }
   },
+  beforeMount() {
+
+  },
   mounted() {
-    this.buildComponentConfig();
+    this.buildComponentConfig()
     if (!this.option.lazyLoad) {
-      this.pageLoad();
+      this.pageLoad()
     }
     if (this.option.style.flexHeight) {
       nextTick(() => {
-        this.calTableHeight();
-        window.addEventListener('resize', this.calTableHeight);
-        this.$watch('dynamicFilters.length', () => { // 动态过滤器变化时可能高度改变, 重新计算高度
-          this.calTableHeight();
+        this.calTableHeight()
+        window.addEventListener('resize', this.calTableHeight)
+      })
+      this.$watch('dynamicFilters.length', () => { // 动态过滤器变化时可能高度改变, 重新计算高度
+        nextTick(() => {
+          this.calTableHeight()
         })
-      });
+      })
     }
   },
   methods: {
@@ -228,16 +240,16 @@ export default {
      * 解析FastTable下的vnodes, 得到列配置和列中组件配置。核心方法(important!)
      */
     buildComponentConfig() {
-      const children = this.$slots.default ? this.$slots.default() : [];
-      iterBuildComponentConfig(children, this.option, ({
-                                                         tableColumnComponentName,
-                                                         col,
-                                                         customConfig,
-                                                         quickFilter,
-                                                         easyFilter,
-                                                         formItemConfig,
-                                                         inlineItemConfig
-                                                       }) => {
+      const tableColumnVNodes = this.$slots.default ? this.$slots.default() : [];
+      iterBuildComponentConfig(tableColumnVNodes, this.option, ({
+                                                                  tableColumnComponentName,
+                                                                  col,
+                                                                  customConfig,
+                                                                  quickFilter,
+                                                                  easyFilter,
+                                                                  formItemConfig,
+                                                                  inlineItemConfig
+                                                                }) => {
         if (quickFilter) {
           const {props = {}} = quickFilter;
           noRepeatAdd(this.quickFilters, quickFilter,
@@ -342,10 +354,16 @@ export default {
      * 重置筛选条件值
      */
     resetFilter() {
-      this.quickFilters.forEach((f) => f.reset())
-      this.easyFilters.forEach((f) => f.reset())
-      this.dynamicFilters.length = 0
-      this.pageLoad()
+      const context = this.option.context
+      const beforeReset = this.option.beforeReset
+      beforeReset.call(context, {query: this.pageQuery}).then(() => {
+        this.quickFilters.forEach((f) => f.reset())
+        this.easyFilters.forEach((f) => f.reset())
+        this.dynamicFilters.length = 0
+        this.pageLoad()
+      }).catch(() => {
+        console.debug('你取消了重置操.')
+      })
     },
     /**
      * insert前校验
@@ -642,8 +660,8 @@ export default {
       })
       this.editRows.length = 0
       // if (isNormal === false) { // 编辑状态时(尤其新建状态), 控制表格重新渲染, 避免一些“残留”。升级vue3后没看到什么残留，而且退出编辑都刷新页面并不好
-        // this.reRender();
-        // this.pageLoad()
+      // this.reRender();
+      // this.pageLoad()
       // }
     },
     /**
@@ -691,7 +709,7 @@ export default {
      * 自定义表格
      */
     customTable() {
-      // TODO 2.0 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
+      // TODO 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
     },
     /**
      * 计算表格自适高度: tableFlexHeight
@@ -729,15 +747,6 @@ export default {
     box-sizing: border-box;
     border-bottom: 1px solid #dfdfdf;
     margin-bottom: 10px;
-
-    .fc-quick-filter-form {
-      display: flex;
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: start;
-      align-items: center;
-      align-content: flex-start;
-    }
   }
 
   .fc-fast-table-divider {
@@ -748,6 +757,10 @@ export default {
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    position: relative;
+
+    .fc-fast-table-operation-btn {
+    }
 
     .fc-fast-table-operation-more {
       margin-left: 10px;

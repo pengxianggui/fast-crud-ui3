@@ -26,7 +26,7 @@
       </div>
       <div class="line">
         <label>行高</label>
-        <el-slider class="comp" v-model="params.bodyRowHeight" :min="40" :max="100"
+        <el-slider class="comp" v-model="params.bodyRowHeight" :min="30" :max="100"
                    @change="(val) => updateOptionStyle('bodyRowHeight', val + 'px')"></el-slider>
       </div>
       <el-checkbox v-model="params.fixedAvatar">固定头像列</el-checkbox>
