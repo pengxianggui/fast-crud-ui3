@@ -51,7 +51,6 @@ export default {
       type: String,
       default: () => '90px'
     },
-    // TODO 快筛显示为checkbox，声明在这里似乎不太恰当
     quickFilterCheckbox: {
       type: Boolean,
       default: () => false
