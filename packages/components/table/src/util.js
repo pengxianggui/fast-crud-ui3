@@ -318,12 +318,12 @@ export function escapeValToLabel(component, val, config) {
         return val;
     }
 
-    const {options, valKey = 'value', labelKey = 'label'} = config
+    const {options = [], valKey = 'value', labelKey = 'label'} = config
     const escape = function (val) {
         return val.map(v => {
             const option = options.find(o => o[valKey] === v)
             if (option) {
-                return option[labelKey]
+                return option[labelKey] || v
             }
             return v
         })

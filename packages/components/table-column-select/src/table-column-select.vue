@@ -59,7 +59,7 @@ export default {
   methods: {
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow
-      const {props: {options = [], valKey = 'label', labelKey = 'value'} = {}} = config[this.prop]
+      const {props: {options = [], labelKey = 'label', valKey = 'value'} = {}} = config[this.prop]
       let val;
       if (status === 'normal') {
         val = row[this.prop];

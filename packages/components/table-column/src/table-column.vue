@@ -2,6 +2,7 @@
   <el-table-column class-name="fc-table-column"
                    :prop="prop"
                    :label="label"
+                   :min-width="minWidth"
                    :show-overflow-tooltip="showOverflowTooltip"
                    v-bind="$attrs">
     <template #header="{column, $index}">
@@ -27,7 +28,13 @@ import tableColumn from "../../../mixins/table-column"
 export default {
   name: "FastTableColumn",
   components: {FastTableHeadCell},
-  mixins: [tableColumn]
+  mixins: [tableColumn],
+  props: {
+    minWidth: {
+      type: String,
+      default: () => '150px'
+    }
+  }
 }
 </script>
 

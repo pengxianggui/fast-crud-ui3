@@ -62,7 +62,9 @@ export default {
       type: Boolean,
       default: () => true
     },
-    size: String
+    size: String,
+    // pick弹窗的宽度
+    dialogWidth: String
   },
   computed: {
     value: {
@@ -92,6 +94,7 @@ export default {
     },
     handleFocus(event) {
       this.$emit('focus', event)
+      // this.openPick() // ESC退出后焦点又回到input，会导致ESC关不掉
     },
     openPick() {
       const {beforeOpen} = this
@@ -101,6 +104,7 @@ export default {
           multiple: this.multiple,
           dialog: {
             title: this.title,
+            width: this.dialogWidth,
             appendToBody: this.appendToBody
           }
         }).then(({row}) => {
