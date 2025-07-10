@@ -22,8 +22,11 @@
 </template>
 
 <script>
+import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
+
 export default {
   name: "quick-filter-form",
+  components: {ArrowDown, ArrowUp},
   props: {
     formLabelWidth: {
       type: String,

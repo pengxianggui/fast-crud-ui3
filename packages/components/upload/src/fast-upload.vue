@@ -64,10 +64,11 @@ import {
 import UploadMixin from "../../../mixins/upload.js"
 import FastTableOption from "../../../model"
 import {openDialog} from "../../../util/dialog"
-import {Delete} from "@element-plus/icons-vue"
+import {Delete, Paperclip, Plus, ZoomIn} from "@element-plus/icons-vue"
 
 export default {
   name: "fast-upload",
+  components: {Paperclip, Delete, ZoomIn, Plus},
   mixins: [UploadMixin],
   emits: ['update:modelValue'],
   props: {

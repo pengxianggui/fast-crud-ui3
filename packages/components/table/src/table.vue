@@ -145,11 +145,11 @@ import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildPara
 import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
-import {Delete, Plus} from "@element-plus/icons-vue";
+import {Delete, Download, Edit, Plus} from "@element-plus/icons-vue";
 
 export default {
   name: "FastTable",
-  components: {QuickFilterForm, EasyFilter, DynamicFilterList},
+  components: {Download, Edit, QuickFilterForm, EasyFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
