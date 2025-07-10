@@ -63,7 +63,7 @@
               </el-dropdown-item>
               <template v-for="button in moreButtons">
                 <el-dropdown-item :disabled="getBoolVal(button.disable, false)"
-                                  @click="button.click"
+                                  @click="() => executeInContext(button.click)"
                                   v-if="getBoolVal(button.showable, true)">
                   <el-icon v-if="button.icon">
                     <component :is="button.icon"/>
@@ -730,15 +730,22 @@ export default {
       this.tableFlexHeight = totalHeight - titleHeight - quickHeight - operationHeight - dynamicHeight - paginationHeight - 2;
     },
     getBoolVal(boolValOrFun, defaultVal) {
-      const context = this.option.context
       if (isFunction(boolValOrFun)) {
-        const result = boolValOrFun.call(context, this.scopeParam)
+        const result = this.executeInContext(boolValOrFun)
         return isBoolean(result) ? result : defaultVal
       }
       if (isBoolean(boolValOrFun)) {
         return boolValOrFun
       }
       return defaultVal
+    },
+    // 使用透传的context作为this执行函数，并传递参数scopeParam
+    executeInContext(fn) {
+      if (!isFunction(fn)) {
+        console.error(`fn is not function: ${fn}`)
+        return
+      }
+      return fn.call(this.option.context, this.scopeParam)
     }
   },
   beforeUnmount() {
