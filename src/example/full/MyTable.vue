@@ -183,11 +183,11 @@ export default {
           this.showMsg('warning', '未勾选【允许加载分页】, 不会分页请求')
           return Promise.reject()
         },
-        loadSuccess({query, data, res}) {
+        loadSuccess({query, res}) {
           if (this.params.loadSuccessTip) {
             this.showMsg('success', '分页加载成功!')
           }
-          return Promise.resolve(data);
+          return Promise.resolve(res);
         },
         loadFail({query, error}) {
           if (this.params.customLoadFailTip) {

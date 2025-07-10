@@ -371,7 +371,7 @@ class FastTableOption {
                     style = {},
                     beforeReset = ({query}) => Promise.resolve(),
                     beforeLoad = ({query}) => Promise.resolve(),
-                    loadSuccess = ({query, data, res}) => Promise.resolve(data),
+                    loadSuccess = ({query, res}) => Promise.resolve(res), // res为数据而非response
                     loadFail = ({query, error}) => Promise.resolve(),
                     beforeToInsert = () => Promise.resolve(),
                     beforeInsert = ({fatRows, rows, editRows}) => Promise.resolve(editRows),
