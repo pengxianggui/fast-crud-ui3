@@ -2,13 +2,12 @@ import {ElMessage, ElMessageBox} from 'element-plus';
 import {
     assert,
     caseToCamel,
-    coverMerge,
     mergeValue,
     defaultIfBlank, isArray,
     isBoolean,
     isEmpty, isFunction,
     isString,
-    isUndefined
+    isUndefined, isObject
 } from "./util/util.js";
 import {openDialog} from "./util/dialog";
 import ExportConfirm from "./components/table/src/export-confirm.vue";
@@ -300,8 +299,10 @@ class FastTableOption {
     insertable = true; // 是否支持内置新建
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
+    createTimeField = ''; // 创建时间字段名。 TODO 兑现思路: 如果配置了，则内部动态构造3个存筛(当天/当周/当月)
     sortField;
     sortDesc = true;
+    moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
     pagination = {
         layout: 'total, sizes, prev, pager, next, jumper', 'page-sizes': [10, 20, 50, 100, 200], size: 10
     };
@@ -362,8 +363,10 @@ class FastTableOption {
                     insertable = true,
                     updatable = true,
                     deletable = true,
+                    createTimeField = '',
                     sortField = '',
                     sortDesc = true,
+                    moreButtons = [],
                     pagination = {},
                     style = {},
                     beforeReset = ({query}) => Promise.resolve(),
@@ -390,16 +393,19 @@ class FastTableOption {
                 }) {
         assert(isString(title), 'title必须为字符串')
         assert(isString(module), 'module必须为字符串')
-        assert(isBoolean(enableDblClickEdit), 'enableDblClickEdit必须为布尔值')
-        assert(isBoolean(enableMulti), 'enableMulti必须为布尔值')
-        assert(isBoolean(enableColumnFilter), 'enableColumnFilter必须为布尔值')
+        assert(isBoolean(enableDblClickEdit) || isFunction(enableDblClickEdit), 'enableDblClickEdit必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(enableMulti) || isFunction(enableMulti), 'enableMulti必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(enableColumnFilter) || isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
         assert(isBoolean(lazyLoad), 'lazyLoad必须为布尔值')
         assert(['inline', 'form'].includes(editType), 'editType必须为inline或form')
-        assert(isBoolean(insertable), 'insertable必须为布尔值')
-        assert(isBoolean(updatable), 'updatable必须为布尔值')
-        assert(isBoolean(deletable), 'deletable必须为布尔值')
+        assert(isBoolean(insertable) || isFunction(insertable), 'insertable必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(updatable) || isFunction(updatable), 'updatable必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(deletable) || isFunction(deletable), 'deletable必须为布尔值或返回布尔值的函数')
+        assert(isString(createTimeField), 'createTimeField必须为字符串')
         assert(isString(sortField), 'sortField必须为字符串')
         assert(isBoolean(sortDesc), 'sortDesc必须为布尔值')
+        assert(isArray(moreButtons), 'moreButtons必须是数组')
+        assert(isObject(pagination), 'pagination必须是对象')
         assert(isFunction(beforeReset), 'beforeReset必须为函数')
         assert(isFunction(beforeLoad), 'beforeLoad必须为函数')
         assert(isFunction(loadSuccess), 'loadSuccess必须为函数')
@@ -445,6 +451,7 @@ class FastTableOption {
         this.deletable = deletable;
         this.sortField = sortField;
         this.sortDesc = sortDesc;
+        this.moreButtons = moreButtons;
         mergeValue(this.pagination, pagination, true, true)
         mergeValue(this.style, style, true, true)
 

@@ -44,7 +44,7 @@ export default defineConfig(({mode}) => {
             lib: {
                 entry: path.resolve(__dirname, 'packages/index.js'), // 组件库入口
                 name: 'FastCrudUI', // 全局访问库时的名称
-                fileName: (format) => `fast-crud-ui.${format}.js`,
+                fileName: (format) => `fast-crud-ui3.${format}.js`,
                 formats: ['es', 'cjs', 'umd']  // 输出 ESM, CJS 和 UMD 格式
             },
             rollupOptions: {

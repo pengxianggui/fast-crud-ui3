@@ -53,6 +53,9 @@
                                    :shortcuts="pickerOptionsE.shortcuts"
                                    required/>
     <fast-table-column-file label="简历" prop="resumeUrl" :multiple="true" :limit="3" :show-overflow-tooltip="false"/>
+    <fast-table-column-input prop="idCard" label="身份证号" min-width="180px" />
+    <fast-table-column-input prop="address" label="地址" min-width="200px"/>
+    <fast-table-column-input prop="phone" label="联系电话" min-width="150px" />
     <fast-table-column-date-picker label="创建时间" prop="createTime" width="200px"
                                    :disabled-date_q="pickerOptionsQ.disabledDate"
                                    :shortcuts_q="pickerOptionsQ.shortcuts"
@@ -71,15 +74,6 @@
       <el-button :size="scope.size" @click="tryPick(true)">Try Pick(多选)</el-button>
 <!--      <div class="sick-msg">这是一段提示</div>-->
     </template>
-    <template #moreButton="scope">
-      <el-dropdown-item :size="scope.size" @click="expandMoreButton(scope)">扩展按钮</el-dropdown-item>
-      <el-dropdown-item size="small" @click="$refs['fastTable'].addRow()">插入一行(空)</el-dropdown-item>
-      <el-dropdown-item size="small"
-                        @click="$refs['fastTable'].addRows([{name: '貂蝉', age: 21},{name: '吕布', age: 27}])">
-        插入多行(带默认值)
-      </el-dropdown-item>
-      <el-dropdown-item size="small" @click="$refs['fastTable'].addForm()">弹窗新增</el-dropdown-item>
-    </template>
     <template #foot="scope">
       <div>
         <el-button :size="scope.size" icon="Link" @click="expandButton(scope, 'code')">查看源码</el-button>
@@ -90,11 +84,12 @@
 </template>
 
 <script>
-import {h} from 'vue'
+import {h, markRaw} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus';
 import {FastTableColumnImg, FastTableColumn, FastTableOption, util} from "../../../packages";
 import staticDict from './dict'
 import {pick} from "../../../packages/util/pick";
+import {Cpu, Plus} from "@element-plus/icons-vue";
 
 export default {
   name: "MyTable",
@@ -118,11 +113,47 @@ export default {
         enableColumnFilter: true,
         lazyLoad: false,
         editType: 'inline', // 默认inline
-        insertable: true,
+        // insertable: true,
+        insertable: (scope) => true, // 支持一个返回布尔的函数
         updatable: true,
         deletable: true,
         sortField: 'createTime',
         sortDesc: true,
+        moreButtons: [
+          {
+            // 这是一个完整的配置，其中: label、click是必须的
+            icon: markRaw(Cpu),
+            label: '扩展按钮',
+            click: (scope) => this.expandMoreButton(scope),
+            // showable: true, // 默认true
+            // disable: false // 默认false
+          },
+          {
+            icon: markRaw(Plus),
+            label: '插入一行(空)',
+            click: (scope) => this.$refs['fastTable'].addRow()
+          },
+          {
+            label: '插入多行(带默认值)',
+            click: (scope) => this.$refs['fastTable'].addRows([{name: '貂蝉', age: 21},{name: '吕布', age: 27}])
+          },
+          {
+            label: '弹窗新增',
+            click: (scope) => this.$refs['fastTable'].addForm()
+          },
+          {
+            label: '禁用掉',
+            click: (scope) => console.log(scope),
+            disable: true,
+            // disable: (scope) => true // 这样也可以, 就可以动态判断了，比如根据当前选中/勾选的值(怎么获取当前选中/勾选的值? 尝试打印下scope)
+          },
+          {
+            label: '隐藏掉',
+            click: (scope) => console.log(scope),
+            showable: true,
+            // showable: (scope) => true // 这样也可以, 就可以动态判断了，比如根据当前选中/勾选的值(怎么获取当前选中/勾选的值? 尝试打印下scope)
+          }
+        ],
         pagination: {
           size: 10,
           "page-sizes": [5, 10, 20, 50, 100]

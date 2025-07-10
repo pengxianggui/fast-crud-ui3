@@ -9,7 +9,7 @@
                          :toggle-enable="option.style.quickFilterToggle"
                          :toggle-num="option.style.quickFilterToggleExceed"
                          :row-span="option.style.quickFilterSpan">
-        <slot name="quickFilter" v-bind="{size: option.style.size}"></slot>
+        <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
     <div ref="operation" class="fc-fast-table-operation-bar">
@@ -20,13 +20,12 @@
         <!-- TODO 存筛区 -->
       </div>
       <div class="expand-button">
-        <slot name="button"
-              v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
+        <slot name="button" v-bind="scopeParam"></slot>
       </div>
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" icon="Plus" @click="toInsert" v-if="option.insertable">新建
+          <el-button :size="option.style.size" icon="Plus" @click="toInsert" v-if="getBoolVal(option.insertable, true)">新建
           </el-button>
           <el-button type="danger" plain :size="option.style.size" icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
@@ -38,12 +37,12 @@
         <template v-if="status === 'update' || status === 'insert'">
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
           <el-button :size="option.style.size" icon="Plus" @click="toInsert"
-                     v-if="status === 'insert' && option.insertable">继续新建
+                     v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
           </el-button>
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
-        <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size" @command="emitMoreFeature">
+        <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size">
           <el-button type="primary" plain :size="option.style.size">
             <span>更多</span>
             <el-icon class="el-icon--right">
@@ -52,19 +51,26 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="BATCH_EDIT" v-if="option.updatable">
-                <i class="el-icon-third-piliangbianji"></i>
+              <el-dropdown-item @click="activeBatchEdit" v-if="option.updatable">
+                <el-icon><Edit/></el-icon>
                 <span>批量编辑</span>
               </el-dropdown-item>
-              <!-- TODO 2.0 批量编辑、导出和自定义表格 -->
-              <!--  <el-dropdown-item command="BATCH_UPDATE">批量修改</el-dropdown-item>-->
-              <el-dropdown-item command="EXPORT">
-                <i class="el-icon-third-daochudangqianye"></i>
+              <!-- TODO 批量编辑、导出和自定义表格 -->
+              <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
+              <el-dropdown-item @click="exportData">
+                <el-icon><Download/></el-icon>
                 <span>导出</span>
               </el-dropdown-item>
-              <!--            <el-dropdown-item command="CUSTOM_TABLE">自定义表格</el-dropdown-item>-->
-              <slot name="moreButton"
-                    v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}"></slot>
+              <template v-for="button in moreButtons">
+                <el-dropdown-item :disabled="getBoolVal(button.disable, false)"
+                                  @click="button.click"
+                                  v-if="getBoolVal(button.showable, true)">
+                  <el-icon v-if="button.icon">
+                    <component :is="button.icon"/>
+                  </el-icon>
+                  <span>{{ button.label }}</span>
+                </el-dropdown-item>
+              </template>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -92,14 +98,14 @@
                 :height="heightTable"
                 :size="option.style.size"
                 border>
-        <el-table-column type="selection" width="55" v-if="option.enableMulti"></el-table-column>
+        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
         <slot></slot>
       </el-table>
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
-      <slot name="foot"
-            v-bind="{size: option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}">
-        <span></span></slot>
+      <slot name="foot" v-bind="scopeParam">
+        <span></span>
+      </slot>
       <el-pagination v-model:page-size="pageQuery.size"
                      v-model:current-page="pageQuery.current"
                      :page-sizes="option.pagination['page-sizes']"
@@ -126,6 +132,7 @@ import {
   ifBlank,
   isBoolean,
   isEmpty,
+  isFunction,
   isNull,
   noRepeatAdd
 } from "../../../util/util";
@@ -133,10 +140,11 @@ import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildPara
 import {openDialog} from "../../../util/dialog";
 import {buildFinalComponentConfig} from "../../mapping";
 import RowForm from "./row-form.vue";
+import {ArrowDown, Download, Edit} from "@element-plus/icons-vue";
 
 export default {
   name: "FastTable",
-  components: {QuickFilterForm, EasyFilter, DynamicFilterList},
+  components: {Download, ArrowDown, Edit, QuickFilterForm, EasyFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
@@ -159,16 +167,27 @@ export default {
         return 'normal';
       }
     },
+    // 行样式
     rowStyle() {
       return {
         height: this.option.style.bodyRowHeight
       }
     },
+    // table表格高度
     heightTable() {
       if (this.$attrs.hasOwnProperty('height')) { // 自定义最高优先级
         return this.$attrs.height;
       }
       return this.tableFlexHeight;
+    },
+    // 表格级别的slot向上透传的统一参数
+    scopeParam() {
+      const {choseRow, checkedRows, editRows} = this
+      return {size: this.option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}
+    },
+    // “更多”按钮扩展
+    moreButtons() {
+      return this.option.moreButtons
     }
   },
   data() {
@@ -384,7 +403,7 @@ export default {
      * 激活行内新增
      */
     addForm(row = {}) {
-      if (this.option.insertable === false) {
+      if (!this.getBoolVal(this.option.insertable, true)) {
         return;
       }
       const {context, beforeToInsert} = this.option;
@@ -422,7 +441,7 @@ export default {
      * @param rows
      */
     addRows(rows = []) {
-      if (this.option.insertable === false) {
+      if (!this.getBoolVal(this.option.insertable, true)) {
         return;
       }
       if (this.status !== 'normal' && this.status !== 'insert') {
@@ -463,7 +482,7 @@ export default {
      * @param column
      */
     openDynamicFilterForm(column) {
-      if (!this.option.enableColumnFilter) {
+      if (!this.getBoolVal(this.option.enableColumnFilter, true)) {
         return;
       }
       const {prop, label, order} = column
@@ -499,6 +518,7 @@ export default {
         console.log(msg)
       })
     },
+    // 选中行发生变更
     handleCurrentChange(row) {
       this.choseRow = row;
       this.$emit('currentChange', {fatRow: row, row: isNull(row) ? null : row.row});
@@ -537,8 +557,7 @@ export default {
     },
     handleRowDblclick(row, column, event) {
       this.$emit('rowDblclick', {fatRow: row, column, event, row: row.row});
-      const {enableDblClickEdit} = this.option;
-      if (!enableDblClickEdit) {
+      if (!this.getBoolVal(this.option.enableDblClickEdit, true)) {
         return;
       }
       // 若当前编辑行已经处于编辑状态, 则直接emit并返回;
@@ -601,19 +620,6 @@ export default {
       }).catch(() => {
         console.debug('你已取消编辑')
       })
-    },
-    /**
-     * 【更多】触发
-     * @param command
-     */
-    emitMoreFeature(command) {
-      if (command === 'BATCH_EDIT') {
-        this.activeBatchEdit()
-      } else if (command === 'BATCH_UPDATE') {
-        this.activeBatchUpdate()
-      } else if (command === 'EXPORT') {
-        this.exportData()
-      }
     },
     /**
      * 激活批量编辑
@@ -722,6 +728,17 @@ export default {
       const dynamicHeight = getFullHeight(this.$refs.dynamic);
       const paginationHeight = getFullHeight(this.$refs.pagination);
       this.tableFlexHeight = totalHeight - titleHeight - quickHeight - operationHeight - dynamicHeight - paginationHeight - 2;
+    },
+    getBoolVal(boolValOrFun, defaultVal) {
+      const context = this.option.context
+      if (isFunction(boolValOrFun)) {
+        const result = boolValOrFun.call(context, this.scopeParam)
+        return isBoolean(result) ? result : defaultVal
+      }
+      if (isBoolean(boolValOrFun)) {
+        return boolValOrFun
+      }
+      return defaultVal
     }
   },
   beforeUnmount() {
