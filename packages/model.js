@@ -658,8 +658,8 @@ class FastTableOption {
                     pageQuery: pageQuery
                 }, {
                     responseType: 'blob'
-                }).then((response) => {
-                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                }).then((data) => {
+                    const url = window.URL.createObjectURL(new Blob([data]));
                     const link = document.createElement('a')
                     link.href = url;
                     link.setAttribute('download', `${title ? title : module}_${new Date().getTime()}.xlsx`)
