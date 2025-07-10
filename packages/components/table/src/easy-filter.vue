@@ -9,17 +9,26 @@
                v-bind="activeFilter.props"
                :size="size"
                @clear="handleClear" @keydown.enter="handleEnter"/>
-    <el-button type="primary" class="fc-easy-filter-btn" :size="size" icon="Search" @click="search"/>
-    <el-button type="info" plain :size="size" icon="RefreshLeft" @click="reset" />
+    <el-button type="primary" class="fc-easy-filter-btn" :size="size" :icon="Search" @click="search"/>
+    <el-button type="info" plain :size="size" :icon="RefreshLeft" @click="reset" />
   </div>
 </template>
 
 <script>
 import {nextTick} from "vue";
 import FastSelect from "../../select/src/fast-select.vue";
+import {RefreshLeft, Search} from "@element-plus/icons-vue";
 
 export default {
   name: "easy-filter",
+  computed: {
+    RefreshLeft() {
+      return RefreshLeft
+    },
+    Search() {
+      return Search
+    }
+  },
   components: {FastSelect},
   emits: ['search', 'reset'],
   props: {

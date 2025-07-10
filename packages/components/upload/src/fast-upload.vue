@@ -40,7 +40,9 @@
         <el-icon v-if="disabled">
           <Paperclip/>
         </el-icon>
-        <el-button link icon="Delete" @click="handleRemove(file)" style="padding: 2px; color: #f56c6c;" v-else/>
+        <el-icon @click="handleRemove(file)" style="cursor: pointer; padding: 2px; color: #f56c6c;" v-else>
+          <Delete/>
+        </el-icon>
         <el-link :href="file.url" style="margin-left: 3px;">{{ file.name }}</el-link>
       </div>
     </template>
@@ -62,6 +64,7 @@ import {
 import UploadMixin from "../../../mixins/upload.js"
 import FastTableOption from "../../../model"
 import {openDialog} from "../../../util/dialog"
+import {Delete} from "@element-plus/icons-vue"
 
 export default {
   name: "fast-upload",

@@ -25,9 +25,10 @@
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" icon="Plus" @click="toInsert" v-if="getBoolVal(option.insertable, true)">新建
+          <el-button :size="option.style.size" :icon="Plus" @click="toInsert" v-if="getBoolVal(option.insertable, true)">
+            新建
           </el-button>
-          <el-button type="danger" plain :size="option.style.size" icon="Delete" @click="deleteRow"
+          <el-button type="danger" plain :size="option.style.size" :icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
           </el-button>
           <el-button type="danger" :size="option.style.size" @click="deleteRows"
@@ -36,7 +37,7 @@
         </template>
         <template v-if="status === 'update' || status === 'insert'">
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
-          <el-button :size="option.style.size" icon="Plus" @click="toInsert"
+          <el-button :size="option.style.size" :icon="Plus" @click="toInsert"
                      v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
           </el-button>
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
@@ -52,13 +53,17 @@
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item @click="activeBatchEdit" v-if="option.updatable">
-                <el-icon><Edit/></el-icon>
+                <el-icon>
+                  <Edit/>
+                </el-icon>
                 <span>批量编辑</span>
               </el-dropdown-item>
               <!-- TODO 批量编辑、导出和自定义表格 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
               <el-dropdown-item @click="exportData">
-                <el-icon><Download/></el-icon>
+                <el-icon>
+                  <Download/>
+                </el-icon>
                 <span>导出</span>
               </el-dropdown-item>
               <template v-for="button in moreButtons">
@@ -118,15 +123,15 @@
 </template>
 
 <script>
-import {nextTick} from "vue";
-import {ElMessage, ElMessageBox} from 'element-plus';
-import {remove} from 'lodash-es';
-import QuickFilterForm from "./quick-filter-form.vue";
-import EasyFilter from "./easy-filter.vue";
-import DynamicFilterForm from "./dynamic-filter-form.vue";
-import DynamicFilterList from "./dynamic-filter-list.vue";
-import {PageQuery} from '../../../model';
-import FastTableOption from "../../../model";
+import {nextTick} from "vue"
+import {ElMessage, ElMessageBox} from 'element-plus'
+import {remove} from 'lodash-es'
+import QuickFilterForm from "./quick-filter-form.vue"
+import EasyFilter from "./easy-filter.vue"
+import DynamicFilterForm from "./dynamic-filter-form.vue"
+import DynamicFilterList from "./dynamic-filter-list.vue"
+import {PageQuery} from '../../../model'
+import FastTableOption from "../../../model"
 import {
   getFullHeight, getInnerHeight,
   ifBlank,
@@ -135,16 +140,16 @@ import {
   isFunction,
   isNull,
   noRepeatAdd
-} from "../../../util/util";
-import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport} from "./util";
-import {openDialog} from "../../../util/dialog";
-import {buildFinalComponentConfig} from "../../mapping";
-import RowForm from "./row-form.vue";
-import {ArrowDown, Download, Edit} from "@element-plus/icons-vue";
+} from "../../../util/util"
+import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport} from "./util"
+import {openDialog} from "../../../util/dialog"
+import {buildFinalComponentConfig} from "../../mapping"
+import RowForm from "./row-form.vue"
+import {Delete, Plus} from "@element-plus/icons-vue";
 
 export default {
   name: "FastTable",
-  components: {Download, ArrowDown, Edit, QuickFilterForm, EasyFilter, DynamicFilterList},
+  components: {QuickFilterForm, EasyFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
@@ -153,6 +158,12 @@ export default {
     }
   },
   computed: {
+    Delete() {
+      return Delete
+    },
+    Plus() {
+      return Plus
+    },
     // 状态: normal-常规状态; insert-新增状态; update-编辑状态
     status() {
       const {editRows} = this;
@@ -344,20 +355,19 @@ export default {
             FastTableOption.$http.post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
               this.exitEditStatus();
               const loadSuccess = this.option.loadSuccess;
-              loadSuccess.call(context, {query: this.pageQuery, res: res})
-                  .then(({records = [], total = 0}) => {
-                    this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
-                    this.total = total;
-                    nextTick(() => {
-                      this.setChoseRow(0); // 默认选中第一行
-                    })
-                  }).finally(() => {
+              loadSuccess.call(context, {query: this.pageQuery, res: res}).then(({records = [], total = 0}) => {
+                this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
+                this.total = total;
+                nextTick(() => {
+                  this.setChoseRow(0); // 默认选中第一行
+                })
+              }).finally(() => {
                 resolve()
               })
             }).catch(err => {
               const loadFail = this.option.loadFail;
               loadFail.call(context, {query: this.pageQuery, error: err}).then(() => {
-                ElMessage.success('加载失败:' + JSON.stringify(err));
+                ElMessage.error('加载失败:' + JSON.stringify(err));
               })
               reject(err);
             }).finally(() => {

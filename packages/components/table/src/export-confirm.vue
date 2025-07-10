@@ -15,15 +15,22 @@
     </el-table>
     <div class="footer">
       <span class="flex"></span>
-      <el-button icon="Download" size="default" type="primary" plain @click="exportData(false)">导出当前页</el-button>
-      <el-button icon="Download" size="default" type="primary" @click="exportData(true)">导出全部</el-button>
+      <el-button :icon="Download" size="default" type="primary" plain @click="exportData(false)">导出当前页</el-button>
+      <el-button :icon="Download" size="default" type="primary" @click="exportData(true)">导出全部</el-button>
     </div>
   </div>
 </template>
 
 <script>
+import {Download} from "@element-plus/icons-vue";
+
 export default {
   name: "export-confirm",
+  computed: {
+    Download() {
+      return Download
+    }
+  },
   emits: ['ok'],
   props: {
     columns: Array

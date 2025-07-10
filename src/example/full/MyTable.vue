@@ -62,7 +62,7 @@
                                    type="datetime"
                                    :quick-filter="false" :default-val_q="defaultQueryOfCreatedTime"
                                    value-format_e="YYYY-MM-DDTHH:mm:ss"
-                                   :default-time="[new Date(0, 0, 0, 0), new Date(0, 23, 59, 59)]"
+                                   :default-time_q="[new Date(0, 0, 0, 0, 0 ,0, 0), new Date(0, 0, 0, 23, 59, 59, 999)]"
                                    :editable="false"/>
     <el-table-column label="操作" width="60px" fixed="right">
       <template #default="scope">
@@ -76,8 +76,8 @@
     </template>
     <template #foot="scope">
       <div>
-        <el-button :size="scope.size" icon="Link" @click="expandButton(scope, 'code')">查看源码</el-button>
-        <el-button :size="scope.size" icon="Link" @click="expandButton(scope, 'doc')">查看文档</el-button>
+        <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'code')">查看源码</el-button>
+        <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'doc')">查看文档</el-button>
       </div>
     </template>
   </fast-table>
@@ -89,10 +89,15 @@ import {ElMessage, ElMessageBox} from 'element-plus';
 import {FastTableColumnImg, FastTableColumn, FastTableOption, util} from "../../../packages";
 import staticDict from './dict'
 import {pick} from "../../../packages/util/pick";
-import {Cpu, Plus} from "@element-plus/icons-vue";
+import {Cpu, Link, Plus} from "@element-plus/icons-vue";
 
 export default {
   name: "MyTable",
+  computed: {
+    Link() {
+      return Link
+    }
+  },
   props: {
     params: Object
   },

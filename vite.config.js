@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => {
@@ -27,10 +27,17 @@ export default defineConfig(({mode}) => {
             vue(),
             vueJsx(), // 支持使用jsx语法
             AutoImport({
-                resolvers: [ElementPlusResolver()],
+                resolvers: [ElementPlusResolver({
+                    importStyle: 'sass',
+                    resolveIcons: true // 使用时可以不用 import
+                })],
             }),
+            // 使得无需手动引入element-plus组件，自动识别按需引入
             Components({
-                resolvers: [ElementPlusResolver()], // 使得无需手动引入element-plus组件，自动识别按需引入
+                resolvers: [ElementPlusResolver({
+                    importStyle: 'sass',
+                    resolveIcons: true // 打包包含组件
+                })]
             })
         ],
         resolve: {
@@ -48,7 +55,7 @@ export default defineConfig(({mode}) => {
                 formats: ['es', 'cjs', 'umd']  // 输出 ESM, CJS 和 UMD 格式
             },
             rollupOptions: {
-                external: ['vue', 'element-plus'], // 避免打包 Vue 和 Element plus，使用 peerDependencies 来提供
+                external: ['vue', 'element-plus'],
                 output: {
                     globals: {
                         vue: 'Vue',

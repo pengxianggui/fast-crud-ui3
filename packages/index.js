@@ -1,4 +1,3 @@
-import {ElLoading} from 'element-plus'
 import FastCheckboxGroup from "./components/checkbox-group";
 import FastSelect from "./components/select";
 import FastUpload from "./components/upload";
@@ -61,7 +60,6 @@ const components = [
 ];
 
 const directives = [
-    ElLoading
 ]
 
 // 全局应用上下文

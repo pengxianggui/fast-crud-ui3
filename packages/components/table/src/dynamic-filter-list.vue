@@ -6,22 +6,26 @@
           <el-button link class="fc-dynamic-filter-open-btn" :class="{'strikethrough': f.disabled}">
             {{ ellipsis(label(f), 30) }}
           </el-button>
-          <el-button link class="fc-dynamic-filter-del-btn" icon="Close"
+          <el-button link class="fc-dynamic-filter-del-btn" :icon="Close"
                      @click.stop="delConfig(index)"></el-button>
         </div>
       </template>
       <component class="component" :is="f.component" v-model="f.val" v-bind="f.props"
                  v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
       <div class="fc-dynamic-filter-footer">
-        <el-button type="primary" size="small" icon="Search" @click="confirm">查询</el-button>
+        <el-button type="primary" size="small" :icon="Search" @click="confirm">查询</el-button>
         <el-button :type="f.disabled ? 'primary' : 'info'" plain size="small" @click="toggleFilter(f)">
           {{ f.disabled ? '启用' : '禁用' }}
         </el-button>
       </div>
     </el-popover>
     <template v-if="filters.length > 1">
-      <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters">清空</el-button>
-      <el-button class="fc-dynamic-filter-clear-btn" type="info" link style="padding: 0;" @click="toggleAllFilters">{{allDisabled ? '全启' : '全禁'}}</el-button>
+      <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters">
+        清空
+      </el-button>
+      <el-button class="fc-dynamic-filter-clear-btn" type="info" link style="padding: 0;" @click="toggleAllFilters">
+        {{ allDisabled ? '全启' : '全禁' }}
+      </el-button>
     </template>
   </div>
 </template>
@@ -30,6 +34,7 @@
 import {Opt} from "../../../model";
 import {escapeValToLabel} from "./util";
 import {ellipsis} from '../../../util/util'
+import {Close, Search} from "@element-plus/icons-vue"
 
 export default {
   name: "dynamic-filter-list",
@@ -45,6 +50,12 @@ export default {
     }
   },
   computed: {
+    Search() {
+      return Search
+    },
+    Close() {
+      return Close
+    },
     allDisabled() {
       return this.filters.every(f => f.disabled)
     }
@@ -191,6 +202,7 @@ export default {
   :deep(.fc-checkbox-group) {
     display: block;
   }
+
   :deep(.fc-checkbox-group .el-checkbox) {
     display: block;
   }

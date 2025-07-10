@@ -51,11 +51,11 @@
 </template>
 
 <script>
-import FastTableOption, {FilterComponentConfig, Query, Opt} from "../../../model";
-import {escapeValToLabel} from "./util";
-import {isEmpty, isObject, toStr} from "../../../util/util";
-import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue";
-import {Sort, SortDown, SortUp} from "@element-plus/icons-vue";
+import FastTableOption, {FilterComponentConfig, Query, Opt} from "../../../model"
+import {escapeValToLabel} from "./util"
+import {isEmpty, isObject, toStr} from "../../../util/util"
+import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"
+import {Sort, SortUp, SortDown} from "@element-plus/icons-vue"
 
 export default {
   name: "dynamic-filter-form",
@@ -112,11 +112,11 @@ export default {
       if (this.reuseCond) {
         distinctQuery.setConds(this.conds);
       }
-      FastTableOption.$http.post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then(({data = []}) => {
-        if (data.length > 1000) { // 为防止页面卡死, 最多显示1000个
-          data.splice(1001);
+      FastTableOption.$http.post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then((res) => {
+        if (res.length > 1000) { // 为防止页面卡死, 最多显示1000个
+          res.splice(1001);
         }
-        const distinctValues = data.filter(item => isObject(item) && item.hasOwnProperty(col)).map(item => item[col]);
+        const distinctValues = res.filter(item => isObject(item) && item.hasOwnProperty(col)).map(item => item[col]);
         this.distinctOptions = distinctValues.map(v => {
           return {
             value: v,

@@ -522,7 +522,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        ElMessage.success('新增失败:' + JSON.stringify(err));
+                        ElMessage.error('新增失败:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
@@ -567,7 +567,7 @@ class FastTableOption {
                         }).catch(err => {
                             reject(err);
                             deleteFail.call(context, {fatRows, rows: rows, error: err}).then(() => {
-                                ElMessage.success('删除失败:' + JSON.stringify(err));
+                                ElMessage.error('删除失败:' + JSON.stringify(err));
                             })
                         })
                     }).catch((err) => {
@@ -620,7 +620,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        ElMessage.success('更新失败:' + JSON.stringify(err));
+                        ElMessage.error('更新失败:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
