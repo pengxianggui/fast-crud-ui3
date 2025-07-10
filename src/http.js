@@ -1,8 +1,7 @@
 import axios from "axios";
 
-const mode = (import.meta.env.VITE_MODE);
 const http = axios.create({
-    baseURL: mode === 'backend' ? '' : '/api'
+    baseURL: '/api'
 });
 
 http.interceptors.request.use(

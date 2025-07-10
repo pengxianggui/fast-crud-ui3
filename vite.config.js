@@ -65,7 +65,7 @@ export default defineConfig(({mode}) => {
             },
             outDir: 'lib', // 指定输出目录为 lib
         } : {
-            outDir: mode === 'backend' ? '../demo/src/main/resources/static' : 'dist'
+            outDir: 'dist'
         },
         css: {
             preprocessorOptions: {
