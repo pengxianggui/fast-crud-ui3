@@ -300,7 +300,7 @@ class FastTableOption {
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
     createTimeField = ''; // 创建时间字段名。 TODO 兑现思路: 如果配置了，则内部动态构造3个存筛(当天/当周/当月)
-    sortField;
+    sortField; // 默认取创建时间字段名
     sortDesc = true;
     moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
     pagination = {
@@ -449,7 +449,8 @@ class FastTableOption {
         this.insertable = insertable;
         this.updatable = updatable;
         this.deletable = deletable;
-        this.sortField = sortField;
+        this.createTimeField = createTimeField;
+        this.sortField = defaultIfBlank(sortField, createTimeField);
         this.sortDesc = sortDesc;
         this.moreButtons = moreButtons;
         mergeValue(this.pagination, pagination, true, true)

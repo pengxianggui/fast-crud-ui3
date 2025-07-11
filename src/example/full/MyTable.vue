@@ -53,9 +53,9 @@
                                    :shortcuts="pickerOptionsE.shortcuts"
                                    required/>
     <fast-table-column-file label="简历" prop="resumeUrl" :multiple="true" :limit="3" :show-overflow-tooltip="false"/>
-    <fast-table-column-input prop="idCard" label="身份证号" min-width="180px" />
+    <fast-table-column-input prop="idCard" label="身份证号" min-width="180px"/>
     <fast-table-column-input prop="address" label="地址" min-width="200px"/>
-    <fast-table-column-input prop="phone" label="联系电话" min-width="150px" />
+    <fast-table-column-input prop="phone" label="联系电话" min-width="150px"/>
     <fast-table-column-date-picker label="创建时间" prop="createTime" width="200px"
                                    :disabled-date_q="pickerOptionsQ.disabledDate"
                                    :shortcuts_q="pickerOptionsQ.shortcuts"
@@ -72,7 +72,7 @@
     <template #button="scope">
       <el-button :size="scope.size" @click="tryPick(false)">Try Pick</el-button>
       <el-button :size="scope.size" @click="tryPick(true)">Try Pick(多选)</el-button>
-<!--      <div class="sick-msg">这是一段提示</div>-->
+      <!--      <div class="sick-msg">这是一段提示</div>-->
     </template>
     <template #foot="scope">
       <div>
@@ -122,8 +122,9 @@ export default {
         insertable: (scope) => true, // 支持一个返回布尔的函数
         updatable: true,
         deletable: true,
-        sortField: 'createTime',
-        sortDesc: true,
+        createTimeField: 'createTime', // 审计字段——创建时间
+        // sortField: 'createTime', // 默认为createTimeField值
+        // sortDesc: true, // 默认为true
         moreButtons: [
           {
             // 这是一个完整的配置，其中: label、click是必须的
@@ -140,7 +141,7 @@ export default {
           },
           {
             label: '插入多行(带默认值)',
-            click: (scope) => this.$refs['fastTable'].addRows([{name: '貂蝉', age: 21},{name: '吕布', age: 27}])
+            click: (scope) => this.$refs['fastTable'].addRows([{name: '貂蝉', age: 21}, {name: '吕布', age: 27}])
           },
           {
             label: '弹窗新增',
@@ -155,7 +156,7 @@ export default {
           {
             label: '隐藏掉',
             click: (scope) => console.log(scope),
-            showable: true,
+            showable: false,
             // showable: (scope) => true // 这样也可以, 就可以动态判断了，比如根据当前选中/勾选的值(怎么获取当前选中/勾选的值? 尝试打印下scope)
           }
         ],

@@ -364,7 +364,7 @@ export function easyOptParse(cond, optMapping = {}) {
 }
 
 /**
- * 向数组中去重添加元素, 如果重复, 则以item覆盖重复的元素(保持位置)。如果不存在重复元素，则添加，根据addToStart参数决定添加到数组的开头还是结果(push/unshift)
+ * 向数组中去重添加元素, 如果重复, 则以item覆盖重复的元素(保持位置)。如果不存在重复元素，则添加，根据addToStart参数决定添加到数组的开头还是结尾(push/unshift)
  * @param arr 数组
  * @param item 待添加的元素
  * @param repeatPredicate 去重断言函数, 返回去重判断的结果值(true/false)
@@ -379,7 +379,6 @@ export function noRepeatAdd(arr, item, repeatPredicate = (ele, item) => ele === 
         if (repeatPredicate(arr[i], item)) {
             existRepeat = true;
             arr.splice(i, 1, item);
-            continue;
         }
     }
     if (!existRepeat) {

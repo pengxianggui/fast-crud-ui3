@@ -15,9 +15,13 @@
     <div ref="operation" class="fc-fast-table-operation-bar">
       <div class="fc-operation-filter">
         <!-- 简筛区 -->
-        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad" @reset="resetFilter"
-                     v-if="easyFilters.length > 0"></easy-filter>
-        <!-- TODO 存筛区 -->
+        <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad"/>
+        <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
+                   @click="pageLoad"/>
+        <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
+        <!-- 存筛区 -->
+        <stored-filter :filters="storedFilters" :table-option="option" :create-time-field="option.createTimeField"
+                       :size="option.style.size" @search="pageLoad"/>
       </div>
       <div class="expand-button">
         <slot name="button" v-bind="scopeParam"></slot>
@@ -25,8 +29,8 @@
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" :icon="Plus" @click="toInsert" v-if="getBoolVal(option.insertable, true)">
-            新建
+          <el-button :size="option.style.size" :icon="Plus" @click="toInsert"
+                     v-if="getBoolVal(option.insertable, true)">新建
           </el-button>
           <el-button type="danger" plain :size="option.style.size" :icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
@@ -83,8 +87,7 @@
     </div>
     <div ref="dynamic" class="fc-dynamic-filter-wrapper">
       <!-- 动筛列表 -->
-      <dynamic-filter-list :filters="dynamicFilters" :size="option.style.size"
-                           @search="pageLoad"></dynamic-filter-list>
+      <dynamic-filter-list :filters="dynamicFilters" :size="option.style.size" @search="pageLoad"></dynamic-filter-list>
     </div>
     <div class="fc-fast-table-wrapper">
       <el-table v-bind="$attrs"
@@ -128,6 +131,7 @@ import {ElMessage, ElMessageBox} from 'element-plus'
 import {remove} from 'lodash-es'
 import QuickFilterForm from "./quick-filter-form.vue"
 import EasyFilter from "./easy-filter.vue"
+import StoredFilter from "./stored-filter.vue"
 import DynamicFilterForm from "./dynamic-filter-form.vue"
 import DynamicFilterList from "./dynamic-filter-list.vue"
 import {PageQuery} from '../../../model'
@@ -145,11 +149,11 @@ import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildPara
 import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
-import {Delete, Download, Edit, Plus} from "@element-plus/icons-vue";
+import {Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
 
 export default {
   name: "FastTable",
-  components: {Download, Edit, QuickFilterForm, EasyFilter, DynamicFilterList},
+  components: {Download, Edit, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
@@ -158,6 +162,12 @@ export default {
     }
   },
   computed: {
+    RefreshLeft() {
+      return RefreshLeft
+    },
+    Search() {
+      return Search
+    },
     Delete() {
       return Delete
     },
@@ -218,6 +228,7 @@ export default {
       quickFilters: [], // 快筛配置
       easyFilters: [], // 简筛配置
       dynamicFilters: [], // 动筛配置
+      storedFilters: [], // 存筛配置
       list: [], // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
       total: 0, // 表格总数
       tableFlexHeight: null, //表格的弹性高度(动态计算值), 初始值是null非常重要, 如果内部计算出现问题外部又没自定义高度,相当于没有设置height值, 默认展示效果
@@ -344,6 +355,9 @@ export default {
         // 添加动筛条件
         const dynamicConds = this.dynamicFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
         conds.push(...dynamicConds)
+        // 添加存筛条件
+        const storedConds = this.storedFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
+        conds.push(...storedConds)
         // 添加固定的预置条件
         conds.push(...this.option.conds);
         this.pageQuery.setConds(conds);
@@ -389,6 +403,7 @@ export default {
         this.quickFilters.forEach((f) => f.reset())
         this.easyFilters.forEach((f) => f.reset())
         this.dynamicFilters.length = 0
+        this.storedFilters.length = 0
         this.pageLoad()
       }).catch(() => {
         console.debug('你取消了重置操.')
@@ -792,6 +807,14 @@ export default {
     display: flex;
     justify-content: space-between;
     position: relative;
+
+    .fc-operation-filter {
+      display: flex;
+
+      & > :not(:first-child) {
+        margin-left: 5px;
+      }
+    }
 
     .fc-fast-table-operation-btn {
     }
