@@ -20,7 +20,7 @@
                    @click="pageLoad"/>
         <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
         <!-- 存筛区 -->
-        <stored-filter :filters="storedFilters" :table-option="option" :create-time-field="option.createTimeField"
+        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option" :create-time-field="option.createTimeField"
                        :size="option.style.size" @search="pageLoad"/>
       </div>
       <div class="expand-button">
@@ -35,7 +35,7 @@
           <el-button type="danger" plain :size="option.style.size" :icon="Delete" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
           </el-button>
-          <el-button type="danger" :size="option.style.size" @click="deleteRows"
+          <el-button type="danger" :size="option.style.size" :icon="Delete" @click="deleteRows"
                      v-if="checkedRows.length > 0 && option.deletable">删除
           </el-button>
         </template>
@@ -149,11 +149,11 @@ import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildPara
 import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
-import {Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
+import {ArrowDown, Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
 
 export default {
   name: "FastTable",
-  components: {Download, Edit, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
+  components: {ArrowDown, Download, Edit, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   props: {
     option: {
@@ -808,11 +808,20 @@ export default {
     justify-content: space-between;
     position: relative;
 
+    :deep(.el-button--default) {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
     .fc-operation-filter {
       display: flex;
+      align-items: start;
 
       & > :not(:first-child) {
         margin-left: 5px;
+      }
+      .fc-stored-btn-wrapper {
+        margin-left: 10px;
       }
     }
 

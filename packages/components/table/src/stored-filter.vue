@@ -1,7 +1,7 @@
 <template>
-  <div class="fc-search-btn-wrapper">
-    <el-dropdown @click="$emit('search')">
-      <el-button type="primary">
+  <div class="fc-stored-btn">
+    <el-dropdown @click="$emit('search')" :size="size">
+      <el-button type="primary" :size="size">
         <span v-if="currentGroup">{{ currentGroup.label }}</span>
         <el-icon v-else>
           <Star/>
@@ -27,7 +27,7 @@
 import {nextTick} from "vue"
 import {dayjs, ElMessage} from "element-plus"
 import {ArrowDown, Star} from "@element-plus/icons-vue"
-import {isEmpty} from "../../../util/util.js"
+import {getBeginOfDate, getBeginOfMonth, getBeginOfWeek, isEmpty} from "../../../util/util.js"
 import {buildFinalComponentConfig} from "../../mapping.js"
 import FastTableOption from "../../../model.js"
 
@@ -75,26 +75,32 @@ export default {
             props: {type: 'datetime'}
           }, 'FastTableColumnDatePicker', 'query', 'dynamic', this.tableOption)
       this.storeGroups.push({
-        key: 'LastOneDay', label: '1天内', click: (item) => {
-          this.searchByCreateTime(this.createTimeFilter, 1, item)
+        key: 'CurrentDay', label: '当天新建', click: (item) => {
+          this.searchByCreateTime(this.createTimeFilter, item, 'day')
         }
       })
       this.storeGroups.push({
-        key: 'LastOneWeek', label: '7天内', click: (item) => {
-          this.searchByCreateTime(this.createTimeFilter, 7, item)
+        key: 'CurrentWeek', label: '当周新建', click: (item) => {
+          this.searchByCreateTime(this.createTimeFilter, item, 'week')
         }
       })
       this.storeGroups.push({
-        key: 'LastOneMonth', label: '30天内', click: (item) => {
-          this.searchByCreateTime(this.createTimeFilter, 30, item)
+        key: 'CurrentMonth', label: '当月新建', click: (item) => {
+          this.searchByCreateTime(this.createTimeFilter, item, 'month')
         }
       })
     },
-    searchByCreateTime(createTimeFilter, day, item) {
+    searchByCreateTime(createTimeFilter, item, type) {
       const {props: {valueFormat}} = createTimeFilter
       const end = new Date()
-      const start = new Date()
-      start.setTime(end.getTime() - 3600 * 1000 * 24 * day)
+      let start
+      if (type === 'day') {
+        start = getBeginOfDate(end)
+      } else if (type === 'week') {
+        start = getBeginOfWeek(end)
+      } else if (type === 'month') {
+        start = getBeginOfMonth(end)
+      }
       createTimeFilter.val = [dayjs(start).format(valueFormat), dayjs(end).format(valueFormat)]
       this.emitSearch([createTimeFilter], item)
     },

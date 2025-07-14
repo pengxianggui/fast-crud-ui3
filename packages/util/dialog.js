@@ -15,7 +15,10 @@ import {getAppContext} from "../index.js"
  *  },
  *  dialogProps: {
  *      width: '50%',
- *      // 其它dialog支持的props...
+ *      // dialog支持的props...
+ *      ...
+ *      // 自定义的配置
+ *      okClose: true, // 弹出组件如果emit ok后是否关闭dialog, 默认关闭
  *      buttons: [
  *          {
  *              text: '确定',
@@ -42,7 +45,7 @@ import {getAppContext} from "../index.js"
  * @returns {Promise<unknown>}
  */
 export function openDialog({component, props = {}, dialogProps = {}}) {
-    const {buttons = [], ...validDialogProps} = dialogProps
+    const {buttons = [], okClose = true, ...validDialogProps} = dialogProps
 
     return new Promise((resolve, reject) => {
         const container = document.createElement('div')
@@ -60,8 +63,10 @@ export function openDialog({component, props = {}, dialogProps = {}}) {
                 }
 
                 const handleOk = (data) => {
-                    state.visible = false
-                    cleanup()
+                    if (okClose === true) {
+                        state.visible = false
+                        cleanup()
+                    }
                     resolve(data)
                 }
 

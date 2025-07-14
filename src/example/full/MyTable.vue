@@ -49,20 +49,17 @@
     <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px"
                                    :editable="({editRow}) => !(editRow.age > 35)" required/>
     <fast-table-column-date-picker label="生日" prop="birthday" quick-filter
-                                   :disabled-date="pickerOptionsE.disabledDate"
-                                   :shortcuts="pickerOptionsE.shortcuts"
+                                   :disabled-date="(time) => time.getTime() > Date.now()"
                                    required/>
     <fast-table-column-file label="简历" prop="resumeUrl" :multiple="true" :limit="3" :show-overflow-tooltip="false"/>
     <fast-table-column-input prop="idCard" label="身份证号" min-width="180px"/>
     <fast-table-column-input prop="address" label="地址" min-width="200px"/>
     <fast-table-column-input prop="phone" label="联系电话" min-width="150px"/>
     <fast-table-column-date-picker label="创建时间" prop="createTime" width="200px"
-                                   :disabled-date_q="pickerOptionsQ.disabledDate"
-                                   :shortcuts_q="pickerOptionsQ.shortcuts"
+                                   :disabled-date_q="(time) => time.getTime() > Date.now()"
                                    type="datetime"
                                    :quick-filter="false" :default-val_q="defaultQueryOfCreatedTime"
                                    value-format_e="YYYY-MM-DDTHH:mm:ss"
-                                   :default-time_q="[new Date(0, 0, 0, 0, 0 ,0, 0), new Date(0, 0, 0, 23, 59, 59, 999)]"
                                    :editable="false"/>
     <el-table-column label="操作" width="60px" fixed="right">
       <template #default="scope">

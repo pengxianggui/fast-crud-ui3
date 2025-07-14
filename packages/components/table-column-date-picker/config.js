@@ -10,7 +10,57 @@ const defaultQueryConfig = {
     props: {
         type: `daterange`,
         clearable: true,
-        valueFormat: DEFAULT_DATE_FORMAT
+        valueFormat: DEFAULT_DATE_FORMAT,
+        // (易用性提升)
+        shortcuts: [{
+            text: '最近1h',
+            value: () => {
+                const end = new Date()
+                const start = new Date(end)
+                start.setTime(start.getTime() - 3600 * 1000)
+                return [start, end]
+            }
+        }, {
+            text: '最近1天',
+            value: () => {
+                const end = new Date()
+                const start = new Date(end)
+                start.setTime(start.getTime() - 3600 * 1000 * 24)
+                return [start, end]
+            }
+        }, {
+            text: '最近1周',
+            value: () => {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                return [start, end]
+            }
+        }, {
+            text: '最近1月',
+            value: () => {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                return [start, end]
+            }
+        }, {
+            text: '最近3月',
+            value: () => {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                return [start, end]
+            }
+        }, {
+            text: '最近1年',
+            value: () => {
+                const end = new Date()
+                const start = new Date(end)
+                start.setFullYear(end.getFullYear() - 1)
+                return [start, end]
+            }
+        }]
     },
     condMapFn: (cond) => {
         const conds = []
@@ -47,9 +97,18 @@ export default {
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
+        if (type === 'dynamic') {
+            validProps.teleported = false // 防止动筛二选时popover关闭
+        }
         const {valueFormat} = validProps;
-        if (config.props.type === 'datetime' && isUndefined(valueFormat)) {
-            validProps.valueFormat = DEFAULT_DATETIME_FORMAT;
+        if (config.props.type === 'datetime') {
+            if (isUndefined(valueFormat)) {
+                validProps.valueFormat = DEFAULT_DATETIME_FORMAT;
+            }
+            // 限定时分秒的默认区间值(易用性提升)
+            validProps.defaultTime = [
+                new Date(0, 0, 0, 0, 0 ,0, 0),
+                new Date(0, 0, 0, 23, 59, 59, 999)]
         }
         config.val = val;
         config.props = {

@@ -648,7 +648,8 @@ class FastTableOption {
                 },
                 dialogProps: {
                     title: '导出设置',
-                    width: '60%'
+                    width: '60%',
+                    okClose: false
                 }
             }).then(({columns, all = false}) => {
                 // 导出数据

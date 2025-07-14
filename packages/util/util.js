@@ -502,6 +502,57 @@ export const dateFormat = function (val, format) {
 }
 
 /**
+ * 获取指定时间当天起始时间
+ * @param date 若为空，则取当前时间
+ * @return {Date}
+ */
+export const getBeginOfDate = function (date) {
+    let d
+    if (isEmpty(date)) {
+        d = new Date()
+    } else {
+        d = cloneDeep(date)
+    }
+    d.setHours(0, 0, 0, 0)
+    return d
+}
+
+/**
+ * 获取指定时间当周起始时间
+ * @param date
+ * @return {Date}
+ */
+export const getBeginOfWeek = function (date) {
+    let d
+    if (isEmpty(date)) {
+        d = new Date()
+    } else {
+        d = cloneDeep(date)
+    }
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    d.setDate(diff)
+    d.setHours(0, 0, 0, 0)
+    return d
+}
+
+/**
+ * 获取指定时间当月起始时间
+ * @param date
+ */
+export const getBeginOfMonth = function (date) {
+    let d
+    if (isEmpty(date)) {
+        d = new Date()
+    } else {
+        d = cloneDeep(date)
+    }
+    d.setDate(1);  // 设置为当月的 1 号
+    d.setHours(0, 0, 0, 0);
+    return d
+}
+
+/**
  * 从属性key中提取事件名。例如: onChange 提取出来就是change
  * @param key
  * @return {string|null}
