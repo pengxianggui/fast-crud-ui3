@@ -15,8 +15,7 @@ app.use(ElementPlus, {
     locale: zhCn
 })
 app.use(FastCrudUI, {
-    $http: http,
-    // fast-crud配置项
+    $http: http
 })
 // 注册element-plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
