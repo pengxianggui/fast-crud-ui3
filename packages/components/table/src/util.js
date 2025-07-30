@@ -7,7 +7,6 @@ import {
     isArray,
     isBoolean,
     isEmpty, isFunction,
-    isUndefined,
     merge
 } from "../../../util/util";
 
@@ -168,7 +167,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             label: label,
             col: col,
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
-            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'firstFilter', 'quickFilterBlock'])
+            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'firstFilter', 'quickFilterBlock', 'tableOption'])
         }
 
         try {
@@ -224,6 +223,13 @@ function filterConflictKey(props, columnVNode, ignoreKeys) {
             newProps[key] = value
             continue
         }
+
+        // 通过在FastTableColumn*中定义的prop中声明一个自定义属性skip为true，表示此属性需要透传到控件上，此法可替代目前的冲突策略。不过还没考虑清楚，先不启用
+        // if (_props[key]?.skip === true) {
+        //     newProps[key] = value
+        //     continue
+        // }
+
         if (allPropKeys.indexOf(key) > -1) {
             continue
         }
@@ -260,7 +266,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     } catch (e) {
         console.error(e)
     }
-    // build easy filters
+    // build dynamic filters
     try {
         param.dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', tableOption)
     } catch (e) {

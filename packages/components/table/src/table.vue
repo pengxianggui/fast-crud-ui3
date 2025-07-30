@@ -303,6 +303,7 @@ export default {
               (ele, item) => ele.col === item.col,
               props.firstFilter !== false)
         }
+        // TODO 漏处理dynamicFilters
         this.columnConfig[col] = {
           tableColumnComponentName: tableColumnComponentName,
           customConfig: customConfig,
@@ -425,15 +426,16 @@ export default {
       }
     },
     /**
-     * 激活行内新增
+     * 弹窗表单新增
      */
     addForm(row = {}) {
       if (!this.getBoolVal(this.option.insertable, true)) {
         return;
       }
       const {context, beforeToInsert} = this.option;
-      beforeToInsert.call(context).then(() => {
-        const fatRow = toTableRow(row, this.columnConfig, 'insert', 'form');
+      const rows = [row]
+      beforeToInsert.call(context, rows).then(() => {
+        const fatRow = toTableRow(rows[0], this.columnConfig, 'insert', 'form');
         openDialog({
           component: RowForm,
           props: {
@@ -474,7 +476,7 @@ export default {
         return;
       }
       const {context, beforeToInsert} = this.option;
-      beforeToInsert.call(context).then(() => {
+      beforeToInsert.call(context, rows).then(() => {
         const newRows = rows.map(r => toTableRow(r, this.columnConfig, 'insert', 'inline'));
         this.list.unshift(...newRows);
         this.addToEditRows(newRows);

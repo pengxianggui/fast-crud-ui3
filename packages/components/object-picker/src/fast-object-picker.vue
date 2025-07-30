@@ -97,10 +97,10 @@ export default {
       // this.openPick() // ESC退出后焦点又回到input，会导致ESC关不掉
     },
     openPick() {
-      const {beforeOpen} = this
+      const {beforeOpen, tableOption} = this
       beforeOpen().then(() => {
         pick({
-          option: this.tableOption,
+          option: tableOption,
           multiple: this.multiple,
           dialog: {
             title: this.title,

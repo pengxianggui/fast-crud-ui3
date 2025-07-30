@@ -334,7 +334,8 @@ class FastTableOption {
     beforeDeleteTip;
     beforeCancel; // 工能区中取消按钮点击前
     beforeExport; // 导出前
-    afterExport; // 导出后
+    exportSuccess; // 导出成功后
+    exportFail; // 导出失败后
 
     render; // 渲染函数, 当前table需要被pick时有用
     conds = []; // 固定的筛选条件，内部无法取消
@@ -367,13 +368,17 @@ class FastTableOption {
                     sortField = '',
                     sortDesc = true,
                     moreButtons = [],
-                    pagination = {},
+                    pagination = {
+                        layout: 'total, sizes, prev, pager, next, jumper',
+                        'page-sizes': [10, 20, 50, 100, 200],
+                        size: 10
+                    },
                     style = {},
                     beforeReset = ({query}) => Promise.resolve(),
                     beforeLoad = ({query}) => Promise.resolve(),
                     loadSuccess = ({query, res}) => Promise.resolve(res), // res为数据而非response
                     loadFail = ({query, error}) => Promise.resolve(),
-                    beforeToInsert = () => Promise.resolve(),
+                    beforeToInsert = (rows) => Promise.resolve(),
                     beforeInsert = ({fatRows, rows, editRows}) => Promise.resolve(editRows),
                     insertSuccess = ({fatRows, rows, editRows, res}) => Promise.resolve(),
                     insertFail = ({fatRows, rows, editRows, error}) => Promise.resolve(),
@@ -387,7 +392,8 @@ class FastTableOption {
                     deleteFail = ({fatRows, rows, error}) => Promise.resolve(),
                     beforeCancel = ({fatRows, rows, status}) => Promise.resolve(),
                     beforeExport = ({columns, pageQuery}) => Promise.resolve(columns),
-                    afterExport = () => Promise.resolve(),
+                    exportSuccess = ({columns, pageQuery, data}) => Promise.resolve(),
+                    exportFail = ({columns, pageQuery, error}) => Promise.resolve(),
                     render = () => [],
                     conds = []
                 }) {
@@ -425,7 +431,8 @@ class FastTableOption {
         assert(isFunction(beforeCancel), 'beforeCancel必须为函数')
         assert(isFunction(render), "render必须是一个函数")
         assert(isFunction(beforeExport), "beforeExport必须是一个函数")
-        assert(isFunction(afterExport), "afterExport必须是一个函数")
+        assert(isFunction(exportSuccess), "exportSuccess必须是一个函数")
+        assert(isFunction(exportFail), "exportFail必须是一个函数")
         assert(isArray(conds), "conds必须是Cond对象(或可转换为Cond对象的json)组成的数组")
 
         this.context = context;
@@ -480,7 +487,8 @@ class FastTableOption {
 
         this.render = render;
         this.beforeExport = beforeExport;
-        this.afterExport = afterExport;
+        this.exportSuccess = exportSuccess;
+        this.exportFail = exportFail;
         this.conds = conds.map(c => Cond.build(c));
     }
 
@@ -635,7 +643,7 @@ class FastTableOption {
         beforeExport.call(context, {
             columns: columnConfigs,
             pageQuery: pageQuery
-        }).then((columnConfigs) => {
+        }).then(() => {
             columnConfigs.forEach(colConf => {
                 if (!colConf.hasOwnProperty('exportable')) {
                     colConf.exportable = true
@@ -653,7 +661,7 @@ class FastTableOption {
                 }
             }).then(({columns, all = false}) => {
                 // 导出数据
-                const {title, module, exportUrl, afterExport} = this;
+                const {title, module, exportUrl, exportSuccess, exportFail} = this;
                 FastTableOption.$http.post(exportUrl, {
                     columns: columns,
                     all: all, // false-当前页; true-全部
@@ -668,9 +676,19 @@ class FastTableOption {
                     document.body.appendChild(link)
                     link.click()
                     link.remove()
-                    afterExport.call(context)
+                    exportSuccess.call(context, {
+                        columns: columnConfigs,
+                        pageQuery: pageQuery,
+                        data: data
+                    })
                 }).catch((err) => {
-                    ElMessage.error('导出失败:' + err.message)
+                    exportFail.call(context, {
+                        columns: columnConfigs,
+                        pageQuery: pageQuery,
+                        error: err
+                    }).then(() => {
+                        ElMessage.error('导出失败:' + err.message)
+                    })
                 })
             })
         })
