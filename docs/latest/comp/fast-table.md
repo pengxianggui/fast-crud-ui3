@@ -2,6 +2,8 @@
 
 **FastTable是FastCrud前端部分最核心的组件，没有之一**。
 
+## 状态{#status}
+
 :::tip
 FastTable组件内部有三种状态(status):
 

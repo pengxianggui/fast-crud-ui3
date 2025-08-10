@@ -5,7 +5,7 @@
             @blur="(event) => $emit('blur', event)"
             @change="(val) => $emit('change', val)"
             @click="handleClick"
-            @focus="handleFocus" />
+            @focus="handleFocus"/>
 </template>
 
 <script>
@@ -64,7 +64,10 @@ export default {
     },
     size: String,
     // pick弹窗的宽度
-    dialogWidth: String
+    dialogWidth: {
+      type: String,
+      default: () => '70%'
+    }
   },
   computed: {
     value: {

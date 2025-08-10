@@ -351,12 +351,19 @@ export function coverMerge(opt1, opt2, deep = true, ignoreNullAndUndefined = fal
     return opt1;
 }
 
+/**
+ * 解析语法彩蛋条件
+ * @param cond
+ * @param optMapping
+ * @return {*}
+ */
 export function easyOptParse(cond, optMapping = {}) {
-    for (const [op, opt] of Object.entries(optMapping)) {
-        const regex = new RegExp(`^${op}`);
+    for (const [reg, obj] of Object.entries(optMapping)) {
+        const regex = new RegExp(reg);
+        const {opt, valExtract} = obj
         if (regex.test(cond.val)) {
             cond.opt = opt;
-            cond.val = cond.val.substring(op.length);
+            cond.val = valExtract(cond);
             break;
         }
     }

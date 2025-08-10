@@ -20,7 +20,7 @@
                    @click="pageLoad"/>
         <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
         <!-- 存筛区 -->
-        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option" :create-time-field="option.createTimeField"
+        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option" :column-config="columnConfig"
                        :size="option.style.size" @search="pageLoad"/>
       </div>
       <div class="expand-button">

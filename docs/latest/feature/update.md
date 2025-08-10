@@ -4,4 +4,4 @@
 
 或者“更多 > 批量编辑” 针对当前表格中所有行激活编辑状态。
 
-![img_11](../../img/img_11.png)
+![img_11](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_11.png)

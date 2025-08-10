@@ -22,6 +22,8 @@ export const Opt = Object.freeze({
     IN: "in",
     NIN: "nin",
     LIKE: "like",
+    LLIKE: "llike",
+    RLIKE: "rlike",
     NLIKE: "nlike",
     NULL: "null",
     NNULL: "nnull",
@@ -316,6 +318,10 @@ class FastTableOption {
         quickFilterToggleExceed: 4,
         quickFilterSpan: 3 // 快筛每行几个筛选项
     };
+    render; // 渲染函数, 当前table需要被pick时有用
+    conds = []; // 固定的筛选条件，内部无法取消
+    storeFilters = []; // 开发层面预置的存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}], important: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效
+
     beforeReset;
     beforeLoad;
     loadSuccess;
@@ -336,9 +342,6 @@ class FastTableOption {
     beforeExport; // 导出前
     exportSuccess; // 导出成功后
     exportFail; // 导出失败后
-
-    render; // 渲染函数, 当前table需要被pick时有用
-    conds = []; // 固定的筛选条件，内部无法取消
 
     static $http;
 

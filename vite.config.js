@@ -13,7 +13,7 @@ export default defineConfig(({mode}) => {
     const isLibrary = (mode === 'library')
     return {
         server: {
-            host: 'localhost',
+            host: '0.0.0.0',
             port: 5173,
             proxy: {
                 '/api': {

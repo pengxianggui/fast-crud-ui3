@@ -11,12 +11,38 @@ const defaultQueryConfig = {
     },
     condMapFn: (cond) => {
         const operators = {
-            '>=': Opt.GE,
-            '<=': Opt.LE,
-            '!=': Opt.NE,
-            '=': Opt.EQ,
-            '>': Opt.GT,
-            '<': Opt.LT
+            '^>=': {
+                opt: Opt.GE,
+                valExtract: (cond) => cond.val.substring(2)
+            },
+            '^<=': {
+                opt: Opt.LE,
+                valExtract: (cond) => cond.val.substring(2)
+            },
+            '^!=': {
+                opt: Opt.NE,
+                valExtract: (cond) => cond.val.substring(2)
+            },
+            '^=': {
+                opt: Opt.EQ,
+                valExtract: (cond) => cond.val.substring(1)
+            },
+            '^>': {
+                opt: Opt.GT,
+                valExtract: (cond) => cond.val.substring(1)
+            },
+            '^<': {
+                opt: Opt.LT,
+                valExtract: (cond) => cond.val.substring(1)
+            },
+            '^\\*': {
+                opt: Opt.LLIKE,
+                valExtract: (cond) => cond.val.substring(1)
+            },
+            '\\*$': {
+                opt: Opt.RLIKE,
+                valExtract: (cond) => cond.val.substring(0, cond.val.length - 1)
+            }
         }
         easyOptParse(cond, operators);
         return [cond]

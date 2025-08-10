@@ -108,10 +108,16 @@ export default {
             tip += `${label} ${opt} ${val}`;
             break;
           case Opt.LIKE:
-            tip += `${label} 模糊匹配 ${val}`;
+            tip += `${label} 包含'${val}'`;
+            break;
+          case Opt.LLIKE:
+            tip += `${label}以'${val}'结尾`
+            break;
+          case Opt.RLIKE:
+            tip += `${label}以'${val}'打头`
             break;
           case Opt.NLIKE:
-            tip += `${label} 非模糊匹配 ${val}`;
+            tip += `${label} 不包含'${val}'`;
             break;
           case Opt.IN:
             tip += `${label} 包含 ${val}`;
@@ -196,7 +202,7 @@ export default {
 .component {
   margin: 10px 0;
   max-width: 420px;
-  max-height: 600px;
+  max-height: 300px;
   overflow: auto;
 
   :deep(.fc-checkbox-group) {

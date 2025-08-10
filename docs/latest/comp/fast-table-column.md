@@ -124,7 +124,7 @@
 ## FastTableColumnImg
 
 图片上传。`prop`参考`FastUpload`
-> `list-type` 无效
+> 设置`list-type` 无效
 
 ### 属性
 
@@ -142,7 +142,7 @@
 ## FastTableColumnFile
 
 文件上传。`prop`参考`FastUpload`
-> `list-type` 无效
+> 设置`list-type` 无效
 
 ### 属性
 
@@ -185,6 +185,10 @@
 
 对象选择。这个是`FastCrud`提供的一个基于[`FastObjectPicker`](/latest/comp/fast-object-picker)
 封装的列组件，非常实用, 可以弹出一个`FastTable`选择数据回填到底表中。
+
+:::tip
+`FastObjectPicker`基于`[pick](/latest/advance/pick)`方法, 点击了解更多。
+:::
 
 ### 属性
 

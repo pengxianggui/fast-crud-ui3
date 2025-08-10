@@ -18,9 +18,10 @@
     "major": "npm version major",
     "release": "npm run build:lib && npm run pub",
     "release:patch": "npm run patch && npm run build:lib && npm run pub",
-    "docs:dev": "vitepress dev docs",
+    "docs:dev": "vitepress dev docs --host 0.0.0.0",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "docs:deploy": "./docs/.vitepress/deploy.sh"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

@@ -11,7 +11,7 @@
 
 “简筛”是“简单筛选”的缩写。在页面呈现上，组件渲染区域很小很简单，所以称之为“简筛”
 
-![img_1](../../img/img_1.png)
+![img_1](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_1.png)
 
 默认情况下，所有属性表格列，都可在简筛区的属性下拉中出现，用户可针对指定字段进行筛选过滤。
 
@@ -19,11 +19,11 @@
 
 例如针对"创建时间"(列组件使用的是`FastTableColumnDatePicker`)， 则FastCrud会自动渲染DatePicker时间区间组件:
 
-![img_2](../../img/img_2.png)
+![img_2](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_2.png)
 
 针对“性别”字段(列组件使用的是`FastTableColumnSelect`)，则FastCrud会自动渲染下拉组件:
 
-![img_3](../../img/img_3.png)
+![img_3](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_3.png)
 
 其它相应列同理。
 
@@ -41,20 +41,20 @@
 ## 动筛
 
 ”动筛“是”动态筛选“的缩写, 顾名思义, 筛选项是可以动态添加和删除的。通过点击表头列，激活动筛面板：
-![img_4](../../img/img_4.png)
+![img_4](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_4.png)
 
 在动筛面板中，你可以针对当前字段设置排序、进行过滤筛选 以及空值查询/非空查询，此外还能查询数据库表中此字段的值(
 distinct去重)。
 > 还可勾选distinct值，进行in条件筛选
 
 输入过滤条件:
-![img_5](../../img/img_5.png)
+![img_5](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_5.png)
 
 点击确认:
-![img_6](../../img/img_6.png)
+![img_6](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_6.png)
 
 同理, 再追加一个<50的动筛项:
-![img.png](../../img/img_7.png)
+![img.png](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_7.png)
 
 如此便实现了 `18 < age < 50`的筛选目标。
 :::tip
@@ -79,7 +79,7 @@ distinct去重)。
 ```
 
 如此，FastCrud会自动在顶部直接呈现【姓名】的筛选输入项：
-![img_8](../../img/img_8.png)
+![img_8](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_8.png)
 
 快筛功能跟一般常见的筛选功能交互形式相同，**其最大缺点就是当筛选字段较多时，顶部的筛选面板就占了页面极大部分**。
 
@@ -104,7 +104,7 @@ distinct去重)。
 存筛的自定义功能仍在开发中...
 :::
 
-![img_9](../../img/img_9.png)
+![img_9](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_9.png)
 
 ## 文本输入框筛选之语法彩蛋
 
@@ -113,6 +113,8 @@ distinct去重)。
 - `=曹操`： 精确匹配
 - `~曹操`： 排除
 - `!=曹操`：精确排除
+- `*操`: 以"操"结尾(`1.5.2+`)
+- `曹*`: 以"曹"开头(`1.5.2+`)
 
 当列组件为`FastTableColumnNumber`时，还支持:
 

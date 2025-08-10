@@ -20,7 +20,7 @@
 添加依赖后，后端部分就算集成好了。
 
 > 此外，`FastCrud`还提供了一个**可选**的依赖，其作用是帮助你生成FastCrud推荐的代码(controller、service、mapper、entity),
-> 具体介绍详见"服务端 > 代码生成"章节
+> 具体介绍详见[代码生成](/latest/server/code-generate)章节
 
 ### 前端集成
 
@@ -107,7 +107,9 @@ public interface StudentMapper extends BaseMapper<Student> {
 ```
 
 :::warning
-注意这里的BaseMapper不是mybatisplus提供的，必须使用`FastCrud`提供的。
+注意这里的BaseMapper不是mybatisplus提供的，而是`fast-crud-spring-boot-starter`提供的,
+你也可以使用[MPJ](https://mybatis-plus-join.github.io/)中的MPJBaseMapper来替代，事实上`fast-crud-spring-boot-starter`
+中的BaseMapper也只是继承了MPJ中的`MPJBaseMapper`而已。
 :::
 
 考虑篇幅, Student.java
@@ -153,7 +155,7 @@ public interface StudentMapper extends BaseMapper<Student> {
 
 至此，前端部分开发完毕。运行后、前端, 并查看页面:
 
-![img.png](../img/img.png)
+![img.png](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_1.png)
 
 Nice！你完成了学生管理系统模块的开发，页面中可见的所有功能均已内置实现！实际业务中，接下来你要做的可能是开发一些功能按钮，以便实现特定业务逻辑。
 那你需要详细看下"组件介绍"章节。

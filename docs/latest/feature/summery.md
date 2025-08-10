@@ -8,6 +8,6 @@
 - 导出: 支持一定程度的自定义
 
 以前面的“学生管理模块为例”，功能分布如图:
-![img.png](../../img/img1.png)
+![img.png](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img1.png)
 
 针对筛选, 还有“快筛区”和“动筛区”没有显示， 在“查询”章节会进一步阐述。
