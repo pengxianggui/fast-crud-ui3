@@ -1,5 +1,7 @@
 import {cloneDeep, isEmpty as _isEmpty} from 'lodash-es'
 import moment from "moment/moment"
+import {ElMessage} from "element-plus";
+
 
 /**
  * 剪掉字符串指定的前缀, 如果不是此前缀开头，则直接返回str
@@ -14,10 +16,28 @@ export function cutPrefix(str, prefix) {
     return str.slice(prefix.length)
 }
 
-
+/**
+ * 断言
+ * @param cond
+ * @param msg
+ */
 export function assert(cond, msg) {
     if (!cond) {
         throw new Error(msg);
+    }
+}
+
+/**
+ * 断言并利用错误提示, 会抛出异常
+ * @param cond
+ * @param msg
+ */
+export function assertTip(cond, msg) {
+    try {
+        assert(cond, msg)
+    } catch (err) {
+        ElMessage.error(msg)
+        throw err
     }
 }
 
@@ -568,4 +588,22 @@ export function extractEventName(key) {
     if (isEmpty(key) || !key.startsWith('on')) return null;
     const raw = key.slice(2);
     return raw.charAt(0).toLowerCase() + raw.slice(1); // 保留驼峰
+}
+
+/**
+ * 保存到localStorage中
+ * @param key 会拼接"FC:"前缀
+ * @param value
+ */
+export function setToLocalStorage(key, value) {
+    localStorage.setItem(`FC:${key}`, value)
+}
+
+/**
+ * 从localStorage中获取
+ * @param key 会拼接"FC:"前缀
+ * @return {string}
+ */
+export function getFromLocalStorage(key) {
+    return localStorage.getItem(`FC:${key}`)
 }

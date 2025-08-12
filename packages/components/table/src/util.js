@@ -11,6 +11,8 @@ import {
 } from "../../../util/util";
 
 import Schema from 'async-validator'
+import {Opt} from "../../../model.js";
+import * as util from "../../../util/util.js";
 
 /**
  * 单个col值校验, 校验失败会添加class: valid-error并reject(errors), 成功则会移除可能存在的valid-error，并resolve
@@ -388,4 +390,188 @@ export function buildParamForExport(columnConfigs) {
             tableColumnComponentName: config.tableColumnComponentName,
         }
     })
+}
+
+/**
+ * 获取filter的条件显示
+ * @param filter
+ * @return {string}
+ */
+export function label(filter) {
+    const {label, component} = filter
+    if (!filter.isEffective()) {
+        filter.disabled = true
+        return `[${label}]无有效值`
+    }
+    const conds = filter.getConds();
+    let tip = '';
+    const {props} = filter
+    for (let i = 0; i < conds.length; i++) {
+        let {opt, val} = conds[i];
+        val = escapeValToLabel(component, val, props);
+        switch (opt) {
+            case Opt.EQ:
+            case Opt.GT:
+            case Opt.GE:
+            case Opt.LT:
+            case Opt.LE:
+                tip += `${label} ${opt} ${val}`;
+                break;
+            case Opt.LIKE:
+                tip += `${label} 包含'${val}'`;
+                break;
+            case Opt.LLIKE:
+                tip += `${label}以'${val}'结尾`
+                break;
+            case Opt.RLIKE:
+                tip += `${label}以'${val}'打头`
+                break;
+            case Opt.NLIKE:
+                tip += `${label} 不包含'${val}'`;
+                break;
+            case Opt.IN:
+                tip += `${label} 包含 ${val}`;
+                break;
+            case Opt.NIN:
+                tip += `${label} 不包含 ${val}`;
+                break;
+            case Opt.NULL:
+                tip += `${label} 为null`;
+                break;
+            case Opt.NNULL:
+                tip += `${label} 不为null`;
+                break;
+            case Opt.EMPTY:
+                tip += `${label} 为空`;
+                break;
+            case Opt.NEMPTY:
+                tip += `${label} 不为空`;
+                break;
+            case Opt.BTW:
+                tip += `${label} 在${val}之间`;
+                break;
+            default:
+                tip += `${label}未知的比较符`
+                break
+        }
+        if (i !== conds.length - 1) {
+            tip += " 且 "
+        }
+    }
+    return tip;
+}
+
+/**
+ * 设置自定义存筛，保存到localStorage, 只存条件
+ */
+export function setCustomFilterGroups(tableOption, filterGroups) {
+    const storedConds = filterGroups.map(g => {
+        return {
+            label: g.label,
+            conds: g.filters.map(f => {
+                return {
+                    col: f.col,
+                    opt: util.defaultIfBlank(f.opt, Opt.EQ),
+                    val: f.val
+                }
+            })
+        }
+    })
+    util.setToLocalStorage(`STORED_CONDS:${tableOption.id}`, JSON.stringify(storedConds))
+}
+
+/**
+ * 从localStorage中获取自定义存筛
+ * @param tableOption tableOption
+ * @param columnConfig localStorage中只存条件, 需要借助columnConfig进行重建
+ */
+export function getCustomFilterGroups(tableOption, columnConfig) {
+    try {
+        const condGroupsStr = util.getFromLocalStorage(`STORED_CONDS:${tableOption.id}`)
+        if (util.isEmpty(condGroupsStr)) {
+            return []
+        }
+        const condGroups = JSON.parse(condGroupsStr)
+        return buildFilterGroups(tableOption, columnConfig, condGroups, false)
+    } catch (err) {
+        console.error(err)
+        return []
+    }
+}
+
+/**
+ * 根据条件组创建筛选组
+ * @param tableOption tableOption
+ * @param columnConfig 列配置
+ * @param condGroups 条件组
+ * @param buildIn 是否为内建筛选组
+ * @return {*[]}
+ */
+export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn) {
+    const filterGroups = []
+    if (util.isEmpty(condGroups)) {
+        return filterGroups
+    }
+    for (let i = 0; i < condGroups.length; i++) {
+        const {label, conds = []} = condGroups[i]
+        if (util.isEmpty(label)) {
+            console.error('label can not be empty in storeFilters of tableOption')
+            continue
+        }
+        if (util.isEmpty(conds)) {
+            console.error('conds can not be empty in storeFilters of tableOption')
+            continue
+        }
+        if (!util.isArray(conds)) {
+            console.error('conds must be a array in storeFilters of tableOption')
+            continue
+        }
+        const filterGroup = {
+            label: label,
+            filters: [],
+            buildIn: buildIn,
+            compatible: true
+        }
+        try {
+            for (let j = 0; j < conds.length; j++) {
+                const {col, opt, val} = conds[j]
+                const filter = getFilterComponent(col, columnConfig, tableOption)
+                if (!util.isNull(filter)) {
+                    filter.opt = opt
+                    filter.val = val
+                    filterGroup.filters.push(filter)
+                } else {
+                    filterGroup.compatible = false
+                }
+            }
+        } catch (err) {
+            console.error(err)
+            filterGroup.filters = []
+            filterGroup.compatible = false
+        } finally {
+            filterGroups.push(filterGroup)
+        }
+    }
+    return filterGroups
+}
+
+/**
+ * 从columnConfig中针对指定col构造一个Filter
+ * @param col
+ * @param columnConfig
+ * @param tableOption
+ * @return {创建Filter对象|null}
+ */
+export function getFilterComponent(col, columnConfig, tableOption) {
+    if (util.isObject(columnConfig) && util.isObject(columnConfig[col]) && util.isObject(columnConfig[col]['customConfig'])) {
+        const {customConfig, tableColumnComponentName} = columnConfig[col]
+        try {
+            return buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', tableOption)
+        } catch (err) {
+            console.error(err)
+            return null;
+        }
+    }
+    console.warn(`The column is invalid or filtering is not enabled: ${col}`)
+    return null
 }

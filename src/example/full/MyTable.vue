@@ -22,8 +22,8 @@
                            width="300px"/>
     <fast-table-column-input label="姓名" prop="name" first-filter required/>
     <fast-table-column-number label="年龄" prop="age" required quick-filter
-                              :min="18" :max="60"
-                              :rules="[{type: 'number', min: 18, max: 60, message: '年龄必须在[18,60]之间'}]"
+                              :min="16" :max="60"
+                              :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               @change="handleAgeChange"/>
     <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" quick-filter required>
       <template #header="{column, $index}">
@@ -122,6 +122,10 @@ export default {
         createTimeField: 'createTime', // 审计字段——创建时间
         // sortField: 'createTime', // 默认为createTimeField值
         // sortDesc: true, // 默认为true
+        condGroups: [ // 开发预置条件组——存筛
+            {label: '成年男性', conds: [{col: 'age', opt: '>', val: 18}, {col: 'sex', opt: 'in', val: ['1']}]},
+            {label: '吴国女性', conds: [{col: 'state', opt: 'in', val: ['3']}, {col: 'sex', opt: 'in', val: ['0']}]}
+        ],
         moreButtons: [
           {
             // 这是一个完整的配置，其中: label、click是必须的

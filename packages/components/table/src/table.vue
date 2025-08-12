@@ -817,7 +817,7 @@ export default {
 
     .fc-operation-filter {
       display: flex;
-      align-items: start;
+      align-items: center;
 
       & > :not(:first-child) {
         margin-left: 5px;

@@ -7,7 +7,7 @@ import {
     isBoolean,
     isEmpty, isFunction,
     isString,
-    isUndefined, isObject
+    isUndefined, isObject, dateFormat
 } from "./util/util.js";
 import {openDialog} from "./util/dialog";
 import ExportConfirm from "./components/table/src/export-confirm.vue";
@@ -281,18 +281,19 @@ export class EditComponentConfig {
 // 定义 FastTableOption 类
 class FastTableOption {
     context;
-    title = '';
-    module = '';
-    pageUrl = '';
-    listUrl = '';
-    insertUrl = '';
-    batchInsertUrl = '';
-    updateUrl = '';
-    batchUpdateUrl = '';
-    deleteUrl = '';
-    batchDeleteUrl = '';
-    uploadUrl = ''; // 文件上传接口
-    exportUrl = ''; // 数据导出接口
+    id = ''; // 用于在全局标识唯一FastTable实例：涉及一些localStorage数据, 默认取值为${baseUrl}
+    title = ''; // 标题: 显示在表头上方
+    baseUrl = ''; // 内部接口的根url
+    pageUrl = ''; // 分页url: 默认为${baseUrl}/page
+    listUrl = ''; // 列表url: 默认为${baseUrl}/list
+    insertUrl = ''; // 新增url: 默认为${baseUrl}/insert
+    batchInsertUrl = ''; // 批量新增url: 默认为${baseUrl}/insert/batch
+    updateUrl = ''; // 更新url: 默认为${baseUrl}/update
+    batchUpdateUrl = ''; // 批量更新url: 默认为${baseUrl}/update/batch
+    deleteUrl = ''; // 删除url: 默认为${baseUrl}/delete
+    batchDeleteUrl = ''; // 批量删除url: 默认为${baseUrl}/delete/batch
+    uploadUrl = ''; // 文件上传接口: 默认为${baseUrl}/upload
+    exportUrl = ''; // 数据导出接口: 默认为${baseUrl}/export
     enableDblClickEdit = true;
     enableMulti = true; // 启用多选
     enableColumnFilter = true; // 启用列过滤：即动筛
@@ -301,9 +302,9 @@ class FastTableOption {
     insertable = true; // 是否支持内置新建
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
-    createTimeField = ''; // 创建时间字段名。 TODO 兑现思路: 如果配置了，则内部动态构造3个存筛(当天/当周/当月)
-    sortField; // 默认取创建时间字段名
-    sortDesc = true;
+    createTimeField = ''; // 创建时间字段名: 如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
+    sortField; // 排序字段: 默认取创建时间字段名
+    sortDesc = true; // 默认降序
     moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
     pagination = {
         layout: 'total, sizes, prev, pager, next, jumper', 'page-sizes': [10, 20, 50, 100, 200], size: 10
@@ -320,7 +321,7 @@ class FastTableOption {
     };
     render; // 渲染函数, 当前table需要被pick时有用
     conds = []; // 固定的筛选条件，内部无法取消
-    storeFilters = []; // 开发层面预置的存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}], important: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效
+    condGroups = []; // 开发层面预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}], important: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效
 
     beforeReset;
     beforeLoad;
@@ -347,8 +348,10 @@ class FastTableOption {
 
     constructor({
                     context,
+                    id = '',
                     title = '',
-                    module = '',
+                    module = '', // @deprecated 1.6, 替换为baseUrl
+                    baseUrl = '',
                     pageUrl = '',
                     listUrl = '',
                     insertUrl = '',
@@ -377,6 +380,9 @@ class FastTableOption {
                         size: 10
                     },
                     style = {},
+                    render = () => [],
+                    conds = [],
+                    condGroups = [],
                     beforeReset = ({query}) => Promise.resolve(),
                     beforeLoad = ({query}) => Promise.resolve(),
                     loadSuccess = ({query, res}) => Promise.resolve(res), // res为数据而非response
@@ -396,12 +402,12 @@ class FastTableOption {
                     beforeCancel = ({fatRows, rows, status}) => Promise.resolve(),
                     beforeExport = ({columns, pageQuery}) => Promise.resolve(columns),
                     exportSuccess = ({columns, pageQuery, data}) => Promise.resolve(),
-                    exportFail = ({columns, pageQuery, error}) => Promise.resolve(),
-                    render = () => [],
-                    conds = []
+                    exportFail = ({columns, pageQuery, error}) => Promise.resolve()
                 }) {
         assert(isString(title), 'title必须为字符串')
+        assert(isString(id), 'id必须为字符串')
         assert(isString(module), 'module必须为字符串')
+        assert(isString(baseUrl), 'baseUrl必须是字符串')
         assert(isBoolean(enableDblClickEdit) || isFunction(enableDblClickEdit), 'enableDblClickEdit必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableMulti) || isFunction(enableMulti), 'enableMulti必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableColumnFilter) || isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
@@ -437,20 +443,22 @@ class FastTableOption {
         assert(isFunction(exportSuccess), "exportSuccess必须是一个函数")
         assert(isFunction(exportFail), "exportFail必须是一个函数")
         assert(isArray(conds), "conds必须是Cond对象(或可转换为Cond对象的json)组成的数组")
+        assert(isArray(condGroups), 'condGroups必须是数组')
 
         this.context = context;
         this.title = title;
-        this.module = module;
-        this.pageUrl = defaultIfBlank(pageUrl, module + '/page');
-        this.listUrl = defaultIfBlank(listUrl, module + '/list');
-        this.insertUrl = defaultIfBlank(insertUrl, module + '/insert');
-        this.batchInsertUrl = defaultIfBlank(batchInsertUrl, module + '/insert/batch');
-        this.updateUrl = defaultIfBlank(updateUrl, module + '/update');
-        this.batchUpdateUrl = defaultIfBlank(batchUpdateUrl, module + '/update/batch');
-        this.deleteUrl = defaultIfBlank(deleteUrl, module + '/delete');
-        this.batchDeleteUrl = defaultIfBlank(batchDeleteUrl, module + '/delete/batch');
-        this.uploadUrl = defaultIfBlank(uploadUrl, module + '/upload');
-        this.exportUrl = defaultIfBlank(exportUrl, module + '/export');
+        this.baseUrl = defaultIfBlank(baseUrl, module);
+        this.id = defaultIfBlank(id, this.baseUrl)
+        this.pageUrl = defaultIfBlank(pageUrl, this.baseUrl + '/page');
+        this.listUrl = defaultIfBlank(listUrl, this.baseUrl + '/list');
+        this.insertUrl = defaultIfBlank(insertUrl, this.baseUrl + '/insert');
+        this.batchInsertUrl = defaultIfBlank(batchInsertUrl, this.baseUrl + '/insert/batch');
+        this.updateUrl = defaultIfBlank(updateUrl, this.baseUrl + '/update');
+        this.batchUpdateUrl = defaultIfBlank(batchUpdateUrl, this.baseUrl + '/update/batch');
+        this.deleteUrl = defaultIfBlank(deleteUrl, this.baseUrl + '/delete');
+        this.batchDeleteUrl = defaultIfBlank(batchDeleteUrl, this.baseUrl + '/delete/batch');
+        this.uploadUrl = defaultIfBlank(uploadUrl, this.baseUrl + '/upload');
+        this.exportUrl = defaultIfBlank(exportUrl, this.baseUrl + '/export');
         this.enableDblClickEdit = enableDblClickEdit;
         this.enableMulti = enableMulti;
         this.enableColumnFilter = enableColumnFilter;
@@ -465,6 +473,8 @@ class FastTableOption {
         this.moreButtons = moreButtons;
         mergeValue(this.pagination, pagination, true, true)
         mergeValue(this.style, style, true, true)
+        this.conds = conds.map(c => Cond.build(c));
+        this.condGroups = condGroups;
 
         this.beforeReset = beforeReset;
         this.beforeLoad = beforeLoad;
@@ -492,7 +502,6 @@ class FastTableOption {
         this.beforeExport = beforeExport;
         this.exportSuccess = exportSuccess;
         this.exportFail = exportFail;
-        this.conds = conds.map(c => Cond.build(c));
     }
 
     /**
@@ -664,7 +673,7 @@ class FastTableOption {
                 }
             }).then(({columns, all = false}) => {
                 // 导出数据
-                const {title, module, exportUrl, exportSuccess, exportFail} = this;
+                const {title, exportUrl, exportSuccess, exportFail} = this;
                 FastTableOption.$http.post(exportUrl, {
                     columns: columns,
                     all: all, // false-当前页; true-全部
@@ -675,7 +684,8 @@ class FastTableOption {
                     const url = window.URL.createObjectURL(new Blob([data]));
                     const link = document.createElement('a')
                     link.href = url;
-                    link.setAttribute('download', `${title ? title : module}_${new Date().getTime()}.xlsx`)
+                    const dateStr = dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
+                    link.setAttribute('download', `${title ? title : 'download'}_${dateStr}.xlsx`)
                     document.body.appendChild(link)
                     link.click()
                     link.remove()

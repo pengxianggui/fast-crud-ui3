@@ -32,7 +32,7 @@
 
 <script>
 import {Opt} from "../../../model";
-import {escapeValToLabel} from "./util";
+import {label} from "./util";
 import {ellipsis} from '../../../util/util'
 import {Close, Search} from "@element-plus/icons-vue"
 
@@ -87,69 +87,7 @@ export default {
       this.filters.forEach(f => f.disabled = !allDisabled)
       this.confirm()
     },
-    label(filter) {
-      const {label, component} = filter
-      if (!filter.isEffective()) {
-        filter.disabled = true
-        return `[${label}]无有效值`
-      }
-      const conds = filter.getConds();
-      let tip = '';
-      const {props} = filter
-      for (let i = 0; i < conds.length; i++) {
-        let {opt, val} = conds[i];
-        val = escapeValToLabel(component, val, props);
-        switch (opt) {
-          case Opt.EQ:
-          case Opt.GT:
-          case Opt.GE:
-          case Opt.LT:
-          case Opt.LE:
-            tip += `${label} ${opt} ${val}`;
-            break;
-          case Opt.LIKE:
-            tip += `${label} 包含'${val}'`;
-            break;
-          case Opt.LLIKE:
-            tip += `${label}以'${val}'结尾`
-            break;
-          case Opt.RLIKE:
-            tip += `${label}以'${val}'打头`
-            break;
-          case Opt.NLIKE:
-            tip += `${label} 不包含'${val}'`;
-            break;
-          case Opt.IN:
-            tip += `${label} 包含 ${val}`;
-            break;
-          case Opt.NIN:
-            tip += `${label} 不包含 ${val}`;
-            break;
-          case Opt.NULL:
-            tip += `${label} 为null`;
-            break;
-          case Opt.NNULL:
-            tip += `${label} 不为null`;
-            break;
-          case Opt.EMPTY:
-            tip += `${label} 为空`;
-            break;
-          case Opt.NEMPTY:
-            tip += `${label} 不为空`;
-            break;
-          case Opt.BTW:
-            tip += `${label} 在${val}之间`;
-            break;
-          default:
-            tip += `${label}未知的比较符`
-            break
-        }
-        if (i !== conds.length - 1) {
-          tip += " 且 "
-        }
-      }
-      return tip;
-    }
+    label
   }
 }
 </script>

@@ -81,7 +81,6 @@ export default {
 <style scoped lang="scss">
 .fc-easy-filter {
   display: flex;
-  align-items: start;
 
   .fc-easy-filter-column {
     width: 120px;

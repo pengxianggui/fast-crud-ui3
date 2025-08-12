@@ -12,8 +12,9 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="item in storeGroups" :key="item.key"
-                            :style="{color: (currentGroup && (item.key === currentGroup.key)) ? '#3f99f5 !important' : ''}"
+          <el-dropdown-item v-for="item in storeGroups" :key="item.label"
+                            :style="{color: (currentGroup && (item.label === currentGroup.label)) ? '#3f99f5 !important' : ''}"
+                            :disabled="!item.compatible"
                             @click="handleClick(item)">{{ item.label }}
           </el-dropdown-item>
           <!-- TODO 其它自定义存筛 -->
@@ -25,19 +26,13 @@
 </template>
 <script>
 import {nextTick} from "vue"
-import {dayjs, ElMessage} from "element-plus"
+import {dayjs} from "element-plus"
 import {ArrowDown, Star} from "@element-plus/icons-vue"
-import {
-  assert,
-  getBeginOfDate,
-  getBeginOfMonth,
-  getBeginOfWeek,
-  isArray,
-  isEmpty,
-  isFunction, isNull, isObject
-} from "../../../util/util.js"
-import {buildFinalComponentConfig} from "../../mapping.js"
+import * as util from "../../../util/util.js"
 import FastTableOption from "../../../model.js"
+import {openDialog} from "../../../util/dialog.js";
+import StoredFilterManager from "./stored-filter-manager.vue";
+import {buildFilterGroups, getFilterComponent, getCustomFilterGroups} from "./util.js";
 
 export default {
   name: "stored-filter",
@@ -51,16 +46,12 @@ export default {
   },
   data() {
     return {
-      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], editable: false, disabled: false, compatible: true}
+      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true}
       currentGroup: null
     }
   },
   mounted() {
-    nextTick(() => {
-      this.initCreateTimeFilter()
-      // TODO 解析tableOption.storeFilters，构造开发者预定义的存筛项: 关键在于利用其中配置的conds构造filters
-      // TODO 从localStorage加载用户定义的存筛项：关键在于兼容性标记
-    })
+    nextTick(() => this.init())
   },
   watch: {
     'filters.length'(newLength) {
@@ -70,65 +61,67 @@ export default {
     }
   },
   methods: {
-    getCustomConfig(col) {
-      const {columnConfig} = this
-      if (isObject(columnConfig) && isObject(columnConfig[col]) && isObject(columnConfig[col]['customConfig'])) {
-        const {customConfig, tableColumnComponentName} = columnConfig[col]
-        try {
-          return buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', this.tableOption)
-        } catch (err) {
-          console.error(err)
-          return null;
-        }
-      }
-      console.warn(`The column is invalid or filtering is not enabled: ${col}`)
-      return null
+    init() {
+      this.storeGroups.length = 0
+      this.initCreateTimeFilter() // 基于创建时间构造内置存筛
+      this.initDevCustomFilter() // 构造开发者预定义存筛
+      this.initUserCustomFilter() // 构造用户自定义存筛
+      this.storeGroups.sort((a, b) => b.compatible - a.compatible)
     },
     initCreateTimeFilter() {
       const {createTimeField} = this.tableOption
-      if (isEmpty(createTimeField)) {
+      if (util.isEmpty(createTimeField)) {
         return
       }
       const getFilters = (type) => {
-        const createTimeFilter = this.getCustomConfig(createTimeField)
-        if (isNull(createTimeFilter)) {
+        const createTimeFilter = getFilterComponent(createTimeField, this.columnConfig, this.tableOption)
+        if (util.isNull(createTimeFilter)) {
           return []
         }
         const {props: {valueFormat}} = createTimeFilter
         const end = new Date()
         let start
         if (type === 'day') {
-          start = getBeginOfDate(end)
+          start = util.getBeginOfDate(end)
         } else if (type === 'week') {
-          start = getBeginOfWeek(end)
+          start = util.getBeginOfWeek(end)
         } else if (type === 'month') {
-          start = getBeginOfMonth(end)
+          start = util.getBeginOfMonth(end)
         }
         createTimeFilter.val = [dayjs(start).format(valueFormat), dayjs(end).format(valueFormat)]
         return [createTimeFilter]
       }
 
       this.storeGroups.push({
-        key: 'CurrentDay', label: '当天新建', filters: () => {
+        label: '当天新建', buildIn: true, compatible: true, filters: () => {
           return getFilters('day')
         }
       })
       this.storeGroups.push({
-        key: 'CurrentWeek', label: '当周新建', filters: () => {
+        label: '当周新建', buildIn: true, compatible: true, filters: () => {
           return getFilters('week')
         }
       })
       this.storeGroups.push({
-        key: 'CurrentMonth', label: '当月新建', filters: () => {
+        label: '当月新建', buildIn: true, compatible: true, filters: () => {
           return getFilters('month')
         }
       })
     },
+    initDevCustomFilter() {
+      const {condGroups = []} = this.tableOption
+      const filterGroups = buildFilterGroups(this.tableOption, this.columnConfig, condGroups, true)
+      this.storeGroups.push(...filterGroups)
+    },
+    initUserCustomFilter() {
+      const filterGroups = getCustomFilterGroups(this.tableOption, this.columnConfig)
+      this.storeGroups.push(...filterGroups)
+    },
     handleClick(group) {
       this.filters.length = 0 // important
-      if (!this.currentGroup || this.currentGroup.key !== group.key) {
-        const filters = isFunction(group.filters) ? group.filters.call(this.tableOption.context) : group.filters
-        assert(isArray(filters), `the filters prop of group(${group.key}) is wrong type, it should be a array, or a function that return a array`)
+      if (!this.currentGroup || this.currentGroup.label !== group.label) {
+        const filters = util.isFunction(group.filters) ? group.filters.call(this.tableOption.context) : group.filters
+        util.assert(util.isArray(filters), `the filters prop of group(${group.label}) is wrong type, it should be a array, or a function that return a array`)
         this.filters.push(...filters)
         this.currentGroup = group
       } else {
@@ -137,7 +130,21 @@ export default {
       this.$emit('search')
     },
     toCustom() {
-      ElMessage.info('敬请期待..')
+      openDialog({
+        component: StoredFilterManager,
+        props: {
+          tableOption: this.tableOption,
+          columnConfig: this.columnConfig,
+          storeGroups: this.storeGroups
+        },
+        dialogProps: {
+          title: '自定义组合筛选',
+          width: '60%'
+        }
+      }).then(() => {
+        this.init()
+      })
+
     }
   }
 }
