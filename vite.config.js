@@ -28,14 +28,14 @@ export default defineConfig(({mode}) => {
             vueJsx(), // 支持使用jsx语法
             AutoImport({
                 resolvers: [ElementPlusResolver({
-                    importStyle: 'sass',
+                    importStyle: false, // 不在库里引入ElementPlus样式
                     resolveIcons: true // 使用时可以不用 import
                 })],
             }),
             // 使得无需手动引入element-plus组件，自动识别按需引入
             Components({
                 resolvers: [ElementPlusResolver({
-                    importStyle: 'sass',
+                    importStyle: false, // 不在库里引入ElementPlus样式
                     resolveIcons: true // 打包包含组件
                 })]
             })
