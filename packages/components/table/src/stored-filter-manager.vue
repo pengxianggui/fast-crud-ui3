@@ -16,7 +16,7 @@
           <el-button type="danger" link @click="delStoreGroup(g)" v-if="!g.buildIn">删除</el-button>
         </template>
         <div class="fc-dynamic-filter-list">
-          <el-popover class="fc-stored-filter-item-cond" popper-style="max-width: none; width: auto;"
+          <el-popover class="fc-stored-filter-item-cond" popper-style="max-width: none; width: auto; z-index: 3000"
                       v-for="(f, index) in g.filters" :key="f.col + '.' + index" :disabled="g.buildIn">
             <template v-slot:reference>
               <div class="fc-dynamic-filter-btns">

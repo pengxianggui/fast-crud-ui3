@@ -20,7 +20,8 @@
                    @click="pageLoad"/>
         <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
         <!-- 存筛区 -->
-        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option" :column-config="columnConfig"
+        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option"
+                       :column-config="columnConfig"
                        :size="option.style.size" @search="pageLoad"/>
       </div>
       <div class="expand-button">
@@ -90,37 +91,43 @@
       <dynamic-filter-list :filters="dynamicFilters" :size="option.style.size" @search="pageLoad"></dynamic-filter-list>
     </div>
     <div class="fc-fast-table-wrapper">
-      <el-table v-bind="$attrs"
-                :data="list"
-                ref="table"
-                :row-style="rowStyle"
-                highlight-current-row
-                @current-change="handleCurrentChange"
-                @row-click="handleRowClick"
-                @row-dblclick="handleRowDblclick"
-                @select="handleSelect"
-                @selection-change="handleSelectionChange"
-                @select-all="handleSelectAll"
-                v-loading="loading"
-                :key="tableKey"
-                :height="heightTable"
-                :size="option.style.size"
-                border>
-        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
-        <slot></slot>
-      </el-table>
+      <!-- TODO 本希望打包后的语言能由第三方系统的ElementPlus而定，但是不成功。这里先固定中文 -->
+      <el-config-provider :locale="zhCn">
+        <el-table v-bind="$attrs"
+                  :data="list"
+                  ref="table"
+                  :row-style="rowStyle"
+                  highlight-current-row
+                  @current-change="handleCurrentChange"
+                  @row-click="handleRowClick"
+                  @row-dblclick="handleRowDblclick"
+                  @select="handleSelect"
+                  @selection-change="handleSelectionChange"
+                  @select-all="handleSelectAll"
+                  v-loading="loading"
+                  :key="tableKey"
+                  :height="heightTable"
+                  :size="option.style.size"
+                  border>
+          <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
+          <slot></slot>
+        </el-table>
+      </el-config-provider>
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
       <slot name="foot" v-bind="scopeParam">
         <span></span>
       </slot>
-      <el-pagination v-model:page-size="pageQuery.size"
-                     v-model:current-page="pageQuery.current"
-                     :page-sizes="option.pagination['page-sizes']"
-                     :total="total"
-                     @current-change="pageLoad"
-                     @size-change="pageLoad"
-                     :layout="option.pagination.layout"></el-pagination>
+      <!-- TODO 本希望打包后的语言能由第三方系统的ElementPlus而定，但是不成功。这里先固定中文 -->
+      <el-config-provider :locale="zhCn">
+        <el-pagination v-model:page-size="pageQuery.size"
+                       v-model:current-page="pageQuery.current"
+                       :page-sizes="option.pagination['page-sizes']"
+                       :total="total"
+                       @current-change="pageLoad"
+                       @size-change="pageLoad"
+                       :layout="option.pagination.layout"></el-pagination>
+      </el-config-provider>
     </div>
   </div>
 </template>
@@ -150,6 +157,7 @@ import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
 import {ArrowDown, Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
+import zhCn from "element-plus/es/locale/lang/zh-cn";
 
 export default {
   name: "FastTable",
@@ -162,6 +170,9 @@ export default {
     }
   },
   computed: {
+    zhCn() {
+      return zhCn
+    },
     RefreshLeft() {
       return RefreshLeft
     },
@@ -822,6 +833,7 @@ export default {
       & > :not(:first-child) {
         margin-left: 5px;
       }
+
       .fc-stored-btn-wrapper {
         margin-left: 10px;
       }
