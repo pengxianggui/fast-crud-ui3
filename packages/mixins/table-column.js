@@ -13,9 +13,14 @@ export default {
             required: true
         },
         filter: {
-            type: Boolean,
+            type: [Boolean, Number],
             default: () => true
         },
+        quickFilter: {
+            type: [Boolean, Number],
+            default: () => false
+        },
+        // deprecated: 1.6.0
         firstFilter: {
             type: Boolean,
             default: () => false
@@ -56,7 +61,7 @@ export default {
             return status === 'normal' ? row[this.prop] : editRow[this.prop];
         },
         headCellClick(column) {
-            if (this.filter) {
+            if (this.filter !== false) {
                 this.openDynamicFilterForm(this.columnProp)
             }
         },

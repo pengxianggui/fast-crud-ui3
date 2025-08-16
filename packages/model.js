@@ -201,6 +201,7 @@ export class FilterComponentConfig {
     disabled; // 是否禁用: 表示该筛选项是否可用
     type; // quick, easy, dynamic
     condMapFn = (cond) => [cond];
+    index = 99; // 排序
 
     /**
      * 构造函数

@@ -55,6 +55,7 @@ export function rowValid(fatRows, context) {
             }
         });
     }
+    // TODO 支持unique校验: 校验fatRows中是否违反unique约束, 此外再借助后端接口/exist校验表中数据是否违反unique约束
     return Promise.all(validPromises)
 }
 
@@ -160,21 +161,22 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
         const props = {...defaultProps, ...customProps}
 
         const param = {}
-        const {filter = true, showOverflowTooltip, minWidth, ...leftProp} = props
-        const {label, prop: col} = leftProp
+        const {showOverflowTooltip, minWidth, ...leftProp} = props
+        const {label, prop: col, filter, quickFilter, firstFilter} = leftProp
         if (isEmpty(col)) { // 操作列
             continue
         }
         const customConfig = {
             label: label,
             col: col,
+            filter: filter,
+            quickFilter: quickFilter,
+            firstFilter: firstFilter, // deprecated: 1.6.0
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
-            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'firstFilter', 'quickFilterBlock', 'tableOption'])
+            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption'])
         }
-
         try {
-            // TODO filter、quickFilter支持Number类型，值越小，排序越靠前，filter对快筛、简筛都生效，quickFilter对快筛生效(优先级高于filter)
-            if (filter) {
+            if (filter !== false) {
                 buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption);
             }
             buildEditComponentConfig(param, tableColumnComponentName, customConfig, tableOption);
@@ -252,12 +254,22 @@ function filterConflictKey(props, columnVNode, ignoreKeys) {
  * @param tableOption
  */
 function buildFilterComponentConfig(param, tableColumnComponentName, customConfig, tableOption) {
-    const {quickFilter = false, ...validProp} = customConfig.props;
-    customConfig.props = validProp
+    const {filter, quickFilter, firstFilter, props} = customConfig
+    customConfig.props = props
+    if (filter === false) {
+        return
+    }
+
     // build quick filters
     if (quickFilter !== false) {
         try {
             param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick', tableOption);
+            if (firstFilter !== false) { // deprecated: 1.6.0
+                param.quickFilter.index = 0
+            }
+            if (util.isNumber(quickFilter)) {
+                param.quickFilter.index = quickFilter
+            }
         } catch (e) {
             console.error(e)
         }
@@ -265,16 +277,15 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     // build easy filters
     try {
         param.easyFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'easy', tableOption);
+        if (firstFilter !== false) { // deprecated: 1.6.0
+            param.easyFilter.index = 0
+        }
+        if (util.isNumber(filter)) {
+            param.easyFilter.index = filter
+        }
     } catch (e) {
         console.error(e)
     }
-    // build dynamic filters
-    try {
-        param.dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', tableOption)
-    } catch (e) {
-        console.error(e)
-    }
-
 }
 
 /**

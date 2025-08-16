@@ -5,15 +5,17 @@
       <el-button type="success" plain @click="saveStoreGroup">保存</el-button>
     </div>
     <template v-for="g in groups">
-      <el-card class="fc-stored-filter-item" shadow="hover" header-class="fc-stored-filter-item-header"
-               v-if="hiddenBuildIn === false || g.buildIn === false">
+      <el-card class="fc-stored-filter-item" shadow="hover" v-if="hiddenBuildIn === false || g.buildIn === false">
         <template #header>
-          <div style="display: flex">
-            <el-input class="fc-stored-filter-item-label" placeholder="请输入组合名" v-model="g.label"
-                      :disabled="g.buildIn"/>&nbsp;
-            <el-alert type="warning" :closable="false" show-icon v-if="!g.compatible">此筛选组不兼容, 请修改</el-alert>
+          <div class="fc-stored-filter-item-header">
+            <div style="display: flex">
+              <el-input class="fc-stored-filter-item-label" placeholder="请输入组合名" v-model="g.label"
+                        :disabled="g.buildIn"/>&nbsp;
+              <el-alert type="warning" :closable="false" show-icon v-if="!g.compatible">此筛选组不兼容, 请修改
+              </el-alert>
+            </div>
+            <el-button type="danger" link @click="delStoreGroup(g)" v-if="!g.buildIn">删除</el-button>
           </div>
-          <el-button type="danger" link @click="delStoreGroup(g)" v-if="!g.buildIn">删除</el-button>
         </template>
         <div class="fc-dynamic-filter-list">
           <el-popover class="fc-stored-filter-item-cond" popper-style="max-width: none; width: auto; z-index: 3000"

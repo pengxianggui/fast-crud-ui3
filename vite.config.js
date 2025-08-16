@@ -55,7 +55,7 @@ export default defineConfig(({mode}) => {
                 formats: ['es', 'cjs', 'umd']  // 输出 ESM, CJS 和 UMD 格式
             },
             rollupOptions: {
-                external: ['vue', 'element-plus'],
+                external: ['vue', /^element-plus(\/.*)?$/],
                 output: {
                     globals: {
                         vue: 'Vue',

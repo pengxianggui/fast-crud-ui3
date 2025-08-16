@@ -13,19 +13,19 @@
     </template>
     <fast-table-column label="ID" prop="id"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
-    <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10"
+    <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10" filter
                            :before-remove="handleGalleryBeforeRemove"
                            :on-success="handleGalleryUploadSuccess"
                            :on-remove="handleGalleryRemove"
                            :response-handler="handleGalleryResponseHandle"
                            :on-change="handleGalleryChange"
                            width="300px"/>
-    <fast-table-column-input label="姓名" prop="name" first-filter required/>
-    <fast-table-column-number label="年龄" prop="age" required quick-filter
+    <fast-table-column-input label="姓名" prop="name" :filter="0" required/>
+    <fast-table-column-number label="年龄" prop="age" required :quick-filter="3"
                               :min="16" :max="60"
                               :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               @change="handleAgeChange"/>
-    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" quick-filter required>
+    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" :quick-filter="1" required>
       <template #header="{column, $index}">
         <span>{{ $index + '.' + column.label }}</span>
       </template>

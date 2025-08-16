@@ -24,7 +24,7 @@
                        :column-config="columnConfig"
                        :size="option.style.size" @search="pageLoad"/>
       </div>
-      <div class="expand-button">
+      <div class="fc-fast-table-expand-button">
         <slot name="button" v-bind="scopeParam"></slot>
       </div>
       <!-- 按钮功能区 -->
@@ -41,6 +41,7 @@
           </el-button>
         </template>
         <template v-if="status === 'update' || status === 'insert'">
+          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除</el-button>
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
           <el-button :size="option.style.size" :icon="Plus" @click="toInsert"
                      v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
@@ -63,7 +64,7 @@
                 </el-icon>
                 <span>批量编辑</span>
               </el-dropdown-item>
-              <!-- TODO 批量编辑、导出和自定义表格 -->
+              <!-- TODO 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
               <el-dropdown-item @click="exportData">
                 <el-icon>
@@ -91,43 +92,37 @@
       <dynamic-filter-list :filters="dynamicFilters" :size="option.style.size" @search="pageLoad"></dynamic-filter-list>
     </div>
     <div class="fc-fast-table-wrapper">
-      <!-- TODO 本希望打包后的语言能由第三方系统的ElementPlus而定，但是不成功。这里先固定中文 -->
-      <el-config-provider :locale="zhCn">
-        <el-table v-bind="$attrs"
-                  :data="list"
-                  ref="table"
-                  :row-style="rowStyle"
-                  highlight-current-row
-                  @current-change="handleCurrentChange"
-                  @row-click="handleRowClick"
-                  @row-dblclick="handleRowDblclick"
-                  @select="handleSelect"
-                  @selection-change="handleSelectionChange"
-                  @select-all="handleSelectAll"
-                  v-loading="loading"
-                  :key="tableKey"
-                  :height="heightTable"
-                  :size="option.style.size"
-                  border>
-          <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
-          <slot></slot>
-        </el-table>
-      </el-config-provider>
+      <el-table v-bind="$attrs"
+                :data="list"
+                ref="table"
+                :row-style="rowStyle"
+                highlight-current-row
+                @current-change="handleCurrentChange"
+                @row-click="handleRowClick"
+                @row-dblclick="handleRowDblclick"
+                @select="handleSelect"
+                @selection-change="handleSelectionChange"
+                @select-all="handleSelectAll"
+                v-loading="loading"
+                :key="tableKey"
+                :height="heightTable"
+                :size="option.style.size"
+                border>
+        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
+        <slot></slot>
+      </el-table>
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
       <slot name="foot" v-bind="scopeParam">
         <span></span>
       </slot>
-      <!-- TODO 本希望打包后的语言能由第三方系统的ElementPlus而定，但是不成功。这里先固定中文 -->
-      <el-config-provider :locale="zhCn">
-        <el-pagination v-model:page-size="pageQuery.size"
-                       v-model:current-page="pageQuery.current"
-                       :page-sizes="option.pagination['page-sizes']"
-                       :total="total"
-                       @current-change="pageLoad"
-                       @size-change="pageLoad"
-                       :layout="option.pagination.layout"></el-pagination>
-      </el-config-provider>
+      <el-pagination v-model:page-size="pageQuery.size"
+                     v-model:current-page="pageQuery.current"
+                     :page-sizes="option.pagination['page-sizes']"
+                     :total="total"
+                     @current-change="pageLoad"
+                     @size-change="pageLoad"
+                     :layout="option.pagination.layout"></el-pagination>
     </div>
   </div>
 </template>
@@ -144,6 +139,7 @@ import DynamicFilterList from "./dynamic-filter-list.vue"
 import {PageQuery} from '../../../model'
 import FastTableOption from "../../../model"
 import {
+  defaultIfEmpty,
   getFullHeight, getInnerHeight,
   ifBlank,
   isBoolean,
@@ -157,7 +153,6 @@ import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
 import {ArrowDown, Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
-import zhCn from "element-plus/es/locale/lang/zh-cn";
 
 export default {
   name: "FastTable",
@@ -170,9 +165,6 @@ export default {
     }
   },
   computed: {
-    zhCn() {
-      return zhCn
-    },
     RefreshLeft() {
       return RefreshLeft
     },
@@ -220,6 +212,10 @@ export default {
     // “更多”按钮扩展
     moreButtons() {
       return this.option.moreButtons
+    },
+    // 处于编辑激活状态的行,包括insert和update
+    editRows() {
+      return this.list.filter(r => r.status !== 'normal')
     }
   },
   data() {
@@ -233,7 +229,6 @@ export default {
       loading: false, // 表格数据是否正加载中
       choseRow: null, // 当前选中的行记录
       checkedRows: [], // 代表多选时勾选的行记录
-      editRows: [], // 处于编辑状态的行, 包括新增和更新
       pageQuery: pageQuery, // 分页查询构造参数
       columnConfig: {}, // 列对应的配置。key: column prop属性名, value为通过fast-table-column*定义的属性(外加tableColumnComponentName属性)
       quickFilters: [], // 快筛配置
@@ -253,7 +248,6 @@ export default {
     }
   },
   beforeMount() {
-
   },
   mounted() {
     this.buildComponentConfig()
@@ -274,12 +268,11 @@ export default {
   },
   methods: {
     /**
-     * 添加到编辑行
-     * @param fatRow
+     * 添加到编辑行: 编辑行改为computed自动计算, 无需添加, 保留此方法便于触发针对新增的编辑行的校验
+     * @param fatRows
      */
-    addToEditRows(fatRow) {
-      this.editRows.push(...fatRow);
-      rowValid(this.editRows, this.option.context).catch((errors) => {
+    addToEditRows(fatRows) {
+      rowValid(fatRows, this.option.context).catch((errors) => {
       }); // 立即校验一下以便标识出必填等字段
     },
     /**
@@ -306,15 +299,14 @@ export default {
           const {props = {}} = quickFilter;
           noRepeatAdd(this.quickFilters, quickFilter,
               (ele, item) => ele.col === item.col,
-              props.firstFilter !== false)
+              props.firstFilter !== false) // deprecated: 1.6.0
         }
         if (easyFilter) {
           const {props = {}} = easyFilter;
           noRepeatAdd(this.easyFilters, easyFilter,
               (ele, item) => ele.col === item.col,
-              props.firstFilter !== false)
+              props.firstFilter !== false) // deprecated: 1.6.0
         }
-        // TODO 漏处理dynamicFilters
         this.columnConfig[col] = {
           tableColumnComponentName: tableColumnComponentName,
           customConfig: customConfig,
@@ -322,6 +314,9 @@ export default {
           inlineItemConfig: inlineItemConfig
         };
       })
+      // 排序
+      this.quickFilters.sort((f1, f2) => f1.index - f2.index)
+      this.easyFilters.sort((f1, f2) => f1.index - f2.index)
     },
     /**
      * 暂只支持单列排序, 原因: 1.通过option指定的默认排序不好回显在表头; 2.多字段排序会导致操作比较繁琐
@@ -667,13 +662,13 @@ export default {
         ElMessage.warning('请先退出编辑状态')
         return;
       }
-      const {context, beforeToUpdate} = this.option;
+      const {context, beforeToUpdate} = this.option
       beforeToUpdate.call(context, {
         fatRows: this.list,
         rows: this.list.map(r => r.row),
         editRows: this.list.map(r => r.editRow)
       }).then(() => {
-        this.list.forEach(r => r.status = 'update');
+        this.list.forEach(r => r.status = 'update')
         this.addToEditRows(this.list);
       }).catch(() => {
         console.debug('你已取消编辑')
@@ -702,11 +697,30 @@ export default {
         r.status = 'normal'
         r.editRow = {...r.row} // 重置editRow
       })
-      this.editRows.length = 0
+      // this.editRows.length = 0
       // if (isNormal === false) { // 编辑状态时(尤其新建状态), 控制表格重新渲染, 避免一些“残留”。升级vue3后没看到什么残留，而且退出编辑都刷新页面并不好
       // this.reRender();
       // this.pageLoad()
       // }
+    },
+    /**
+     * 移除新建的行
+     */
+    removeNewRows() {
+      if (this.status !== 'insert' || this.editRows.length === 0) {
+        return
+      }
+      const beRemoveRows = defaultIfEmpty(this.checkedRows, [this.choseRow])
+      if (beRemoveRows.some(r => r.status !== 'insert')) {
+        ElMessage.warning('只能移除新建的行')
+        return
+      }
+      ElMessageBox.confirm(`确定移除这${beRemoveRows.length}条记录吗？`, '移除确认', {}).then(() => {
+        remove(this.list, item => beRemoveRows.indexOf(item) > -1)
+        if (this.editRows.length === 0) {
+          this.exitEditStatus()
+        }
+      })
     },
     /**
      * 保存编辑的行: 包括新增或更新状态的行。内部会将保存成功的记录的行状态置为normal
@@ -741,7 +755,7 @@ export default {
      * 批量更新记录
      */
     activeBatchUpdate() {
-      // TODO 2.0 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
+      // TODO 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
     },
     /**
      * 导出数据
@@ -819,6 +833,7 @@ export default {
     margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
     position: relative;
 
     :deep(.el-button--default) {
@@ -828,7 +843,6 @@ export default {
 
     .fc-operation-filter {
       display: flex;
-      align-items: center;
 
       & > :not(:first-child) {
         margin-left: 5px;
@@ -848,7 +862,6 @@ export default {
   }
 
   .fc-fast-table-wrapper {
-    //height: auto;
     :deep(.el-table__cell) {
       padding: 0;
     }

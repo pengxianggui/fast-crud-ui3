@@ -1,5 +1,5 @@
 <template>
-  <div class="fc-table-column-head-cell" :class="{'filter': column.filter}">
+  <div class="fc-table-column-head-cell" :class="{'filter': column.filter !== false}">
     <slot></slot>
     <el-icon v-if="column.order === 'asc' || column.order === 'desc'" class="sort-icon">
       <SortUp v-if="column.order === 'asc'"/>
@@ -9,8 +9,11 @@
 </template>
 
 <script>
+import {SortDown, SortUp} from "@element-plus/icons-vue"
+
 export default {
   name: "fast-table-head-cell",
+  components: {SortDown, SortUp},
   props: {
     column: Object
   }
@@ -19,7 +22,10 @@ export default {
 
 <style scoped lang="scss">
 .fc-table-column-head-cell {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   height: 38px;
   line-height: 38px;
   margin: 0 10px;

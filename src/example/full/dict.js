@@ -23,8 +23,16 @@ const stateOptions = [
         code: '3'
     },
     {
-        name: '东汉',
+        name: '汉',
         code: '4'
+    },
+    {
+        name: '晋',
+        code: '5'
+    },
+    {
+        name: '无',
+        code: '0'
     }
 ]
 

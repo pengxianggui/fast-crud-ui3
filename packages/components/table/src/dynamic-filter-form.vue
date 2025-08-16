@@ -14,8 +14,8 @@
     <div class="fc-dynamic-filter-distinct-wrapper">
       <div class="title">
         <div>
-          <span>DISTINCT：</span>
-          <el-checkbox v-model="reuseCond" @change="distinctLoad">复用已生效的条件</el-checkbox>
+          <span>去重筛选：</span>
+          <el-checkbox size="small" type="info" v-model="reuseCond" @change="distinctLoad">复用已生效的条件</el-checkbox>
         </div>
         <el-button link
                    :style="{'color': distinctOptionAsc === '' ? 'gray': '#409EFF', 'padding': 0}"
@@ -198,6 +198,7 @@ export default {
     margin-bottom: 5px;
     font-size: 13px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
   }
 

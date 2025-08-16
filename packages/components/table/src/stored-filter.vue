@@ -17,7 +17,6 @@
                             :disabled="!item.compatible"
                             @click="handleClick(item)">{{ item.label }}
           </el-dropdown-item>
-          <!-- TODO 其它自定义存筛 -->
           <el-dropdown-item divided @click="toCustom">自定义</el-dropdown-item>
         </el-dropdown-menu>
       </template>
