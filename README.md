@@ -1,7 +1,7 @@
 # fast-crud-ui3
 
 > [fast-crud-ui](https://github.com/pengxianggui/fast-crud-ui)的vue3升级支持版本
-> 
+>
 > 后端: [传送门](https://github.com/pengxianggui/fast-crud)
 
 ## 说明:
@@ -31,7 +31,9 @@ Upload, Row, Col, Button, Empty, Popover, Form, FormItem, Dropdown, DropdownMenu
 - FastTableColumnImg: 图片列组件
 - FastTableColumnFile: 文件列组件
 - FastTableColumnObject: 对象选择组件
-> 你也可以直接使用原生的el-table-column，但是需要注意的是由于行数据被封装, 所以需要解构一下: {row, editRow},使用row来做单元格数据展示
+
+> 你也可以直接使用原生的el-table-column，但是需要注意的是由于行数据被封装, 所以需要解构一下: {row, editRow},使用row来做单元格数据展示,
+> 详见[文档](http://fastcrud-doc.pengxg.cc/latest/comp/fast-table-column.html#%E5%85%AC%E5%85%B1%E6%8F%92%E6%A7%BD)
 
 ## 快速开始
 
@@ -103,4 +105,4 @@ app.mount('#app')
 </script>
 ```
 
-更多使用文档参见: [这里](http://pengxg.cc/tags/fast-crud-ui), 版本迭代参见[这里](https://github.com/pengxianggui/fast-crud/blob/main/ChangeLog.md)
+更多使用文档参见: [这里](http://fastcrud-doc.pengxg.cc)。
