@@ -100,8 +100,6 @@ distinct去重)。
 
 :::warning
 存筛目前内置了根据创建时间的筛选(当天、当周、当月)，需要配置创建时间字段(告诉FastCrud哪个字段是创建时间字段), 具体参见[FastTable](/latest/comp/fast-table)章节。
-
-存筛的自定义功能仍在开发中...
 :::
 
 ![img_9](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_9.png)
