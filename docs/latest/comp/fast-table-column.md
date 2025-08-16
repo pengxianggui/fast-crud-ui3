@@ -6,21 +6,22 @@
 
 这些列组件有一些通用的prop配置项：
 
-| 属性               | 说明                                                     | 类型                                                                     | 默认值     |
-|------------------|--------------------------------------------------------|------------------------------------------------------------------------|---------|
-| **prop**         | 同Element                                               | `String`                                                               | -       |
-| **label**        | 同Element                                               | `String`                                                               | -       |
-| filter           | 此项是否支持过滤查询                                             | `Boolean`                                                              | `true`  |
-| firstFilter      | 在简筛、快筛中是否排第一个                                          | `Boolean`                                                              | `false` |
-| quickFilterBlock | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果) | `Boolean`                                                              | `false` |
-| editable         | 此列是否可编辑(针对`FastTableColumn`无效)                         | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
-| required         | 编辑状态时此列是否必填                                            | `Boolean`                                                              | `false` |
-| rules            | 编辑状态时针对此项的表单验证(同Element ElFormItem)                    | `Array`                                                                | `[]`    |
+| 属性               | 说明                                                                         | 类型                                                                     | 默认值     |
+|------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------|---------|
+| **prop**         | 同Element                                                                   | `String`                                                               | -       |
+| **label**        | 同Element                                                                   | `String`                                                               | -       |
+| filter           | 是否支持过滤查询(若为false, 简筛、快筛都将关闭)。`1.5.4+`支持Number类型, 值越小简筛排序越靠前                | `Boolean\| Number`                                                     | `true`  |
+| quickFilter      | 在filter非false的前提下, 是否支持快筛。`1.5.4+`支持Number类型, 值越小快筛排序越靠前                   | `Boolean\|Number`                                                      | `false` |
+| ~~firstFilter~~  | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除 | `Boolean`                                                              | `false` |
+| quickFilterBlock | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                     | `Boolean`                                                              | `false` |
+| editable         | 此列是否可编辑(针对`FastTableColumn`无效)                                             | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
+| required         | 编辑状态时此列是否必填                                                                | `Boolean`                                                              | `false` |
+| rules            | 编辑状态时针对此项的表单验证(同Element ElFormItem)                                        | `Array`                                                                | `[]`    |
 
 :::tip
 
 1. 除了`prop`、`label`外，其它`el-table-column`支持的属性仍然完全支持
-2. 依然可以在`<fast-table>`标签里使用`<el-table-column`,
+2. 依然可以在`<fast-table>`标签里使用`<el-table-column>`,
    只是注意scope中的row不再是element原本的数据行，而是一个[FatRow](/latest/advance/fat-row)
    :::
 
