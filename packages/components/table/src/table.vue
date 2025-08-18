@@ -30,20 +30,20 @@
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" :icon="Plus" @click="toInsert"
+          <el-button :size="option.style.size" @click="toInsert"
                      v-if="getBoolVal(option.insertable, true)">新建
           </el-button>
-          <el-button type="danger" plain :size="option.style.size" :icon="Delete" @click="deleteRow"
+          <el-button type="danger" plain :size="option.style.size" @click="deleteRow"
                      v-if="checkedRows.length === 0 && option.deletable">删除
           </el-button>
-          <el-button type="danger" :size="option.style.size" :icon="Delete" @click="deleteRows"
+          <el-button type="danger" :size="option.style.size" @click="deleteRows"
                      v-if="checkedRows.length > 0 && option.deletable">删除
           </el-button>
         </template>
         <template v-if="status === 'update' || status === 'insert'">
           <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除</el-button>
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
-          <el-button :size="option.style.size" :icon="Plus" @click="toInsert"
+          <el-button :size="option.style.size" @click="toInsert"
                      v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
           </el-button>
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
@@ -152,7 +152,7 @@ import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildPara
 import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
-import {ArrowDown, Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
+import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
 
 export default {
@@ -171,12 +171,6 @@ export default {
     },
     Search() {
       return Search
-    },
-    Delete() {
-      return Delete
-    },
-    Plus() {
-      return Plus
     },
     // 状态: normal-常规状态; insert-新增状态; update-编辑状态
     status() {
@@ -421,15 +415,15 @@ export default {
      * insert前校验
      */
     toInsert() {
-      const {editType} = this.option;
+      const {editType} = this.option
       if (this.status !== 'normal' && this.status !== 'insert') {
-        console.warn(`当前FastTable处于${this.status}状态, 不允许新增`);
-        return;
+        console.warn(`当前FastTable处于${this.status}状态, 不允许新增`)
+        return
       }
       if (editType === 'form') {
-        this.addForm();
+        this.addForm()
       } else {
-        this.addRow();
+        this.addRow()
       }
     },
     /**
@@ -487,6 +481,7 @@ export default {
         const newRows = rows.map(r => toTableRow(r, this.columnConfig, 'insert', 'inline'));
         this.list.unshift(...newRows);
         this.addToEditRows(newRows);
+        this.setChoseRow(0);
       }).catch(() => {
         console.debug('你已取消新建')
       })
@@ -711,7 +706,11 @@ export default {
       if (this.status !== 'insert' || this.editRows.length === 0) {
         return
       }
-      const beRemoveRows = defaultIfEmpty(this.checkedRows, [this.choseRow])
+      const beRemoveRows = defaultIfEmpty(this.checkedRows, this.choseRow === null ? [] : [this.choseRow])
+      if (isEmpty(beRemoveRows)) {
+        ElMessage.warning('请选择要移除的新建行')
+        return
+      }
       if (beRemoveRows.some(r => r.status !== 'insert')) {
         ElMessage.warning('只能移除新建的行')
         return
@@ -721,6 +720,7 @@ export default {
         if (this.editRows.length === 0) {
           this.exitEditStatus()
         }
+        this.setChoseRow(0)
       })
     },
     /**

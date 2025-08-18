@@ -83,11 +83,24 @@ export default {
   display: flex;
 
   .fc-easy-filter-column {
-    width: 120px;
+    width: 100px;
+
+    :deep(.el-select__wrapper) {
+      box-shadow: inset 0 1px 0 0 #DCDFE6, inset 0 -1px 0 0 #DCDFE6, inset 1px 0 0 0 #DCDFE6; // 阴影模拟边框, 无"右边框"
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
   }
 
   .fc-easy-filter-value {
     width: 280px;
+  }
+
+  .fc-easy-filter-value :deep(.el-input__wrapper),
+  :deep(.fc-easy-filter-value.el-input__wrapper),
+  :deep(.fc-easy-filter-value .el-select__wrapper) {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
   }
 }
 </style>
