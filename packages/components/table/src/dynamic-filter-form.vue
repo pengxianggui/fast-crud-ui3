@@ -56,6 +56,7 @@ import {escapeValToLabel} from "./util"
 import {isEmpty, isObject, toStr} from "../../../util/util"
 import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"
 import {Sort, SortUp, SortDown} from "@element-plus/icons-vue"
+import {post} from "../../../util/http.js";
 
 export default {
   name: "dynamic-filter-form",
@@ -112,7 +113,7 @@ export default {
       if (this.reuseCond) {
         distinctQuery.setConds(this.conds);
       }
-      FastTableOption.$http.post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then((res) => {
+      post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then((res) => {
         if (res.length > 1000) { // 为防止页面卡死, 最多显示1000个
           res.splice(1001);
         }

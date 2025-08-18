@@ -153,6 +153,7 @@ import {openDialog} from "../../../util/dialog"
 import {buildFinalComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
 import {ArrowDown, Delete, Download, Edit, Plus, RefreshLeft, Search} from "@element-plus/icons-vue";
+import {post} from "../../../util/http.js";
 
 export default {
   name: "FastTable",
@@ -373,7 +374,7 @@ export default {
         return new Promise((resolve, reject) => {
           beforeLoad.call(context, {query: this.pageQuery}).then(() => {
             this.loading = true;
-            FastTableOption.$http.post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
+            post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
               this.exitEditStatus();
               const loadSuccess = this.option.loadSuccess;
               loadSuccess.call(context, {query: this.pageQuery, res: res}).then(({records = [], total = 0}) => {

@@ -11,6 +11,7 @@ import {
 } from "./util/util.js";
 import {openDialog} from "./util/dialog";
 import ExportConfirm from "./components/table/src/export-confirm.vue";
+import {post} from "./util/http.js";
 
 export const Opt = Object.freeze({
     EQ: "=",
@@ -525,7 +526,7 @@ class FastTableOption {
                 editRows: editRows
             }).then((postData) => {
                 const {insertUrl, batchInsertUrl, insertSuccess, insertFail} = this;
-                const postPromise = (postData.length === 1 ? FastTableOption.$http.post(insertUrl, postData[0]) : FastTableOption.$http.post(batchInsertUrl, postData))
+                const postPromise = (postData.length === 1 ? post(insertUrl, postData[0]) : post(batchInsertUrl, postData))
                 postPromise.then(res => {
                     resolve();
                     insertSuccess.call(context, {
@@ -576,7 +577,7 @@ class FastTableOption {
                     const {beforeDelete} = this;
                     beforeDelete.call(context, {fatRows: fatRows, rows: rows}).then((postData) => {
                         const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this;
-                        const postPromise = (postData.length === 1 ? FastTableOption.$http.post(deleteUrl, postData[0]) : FastTableOption.$http.post(batchDeleteUrl, postData))
+                        const postPromise = (postData.length === 1 ? post(deleteUrl, postData[0]) : post(batchDeleteUrl, postData))
                         postPromise.then(res => {
                             resolve(); // 始终刷新
                             deleteSuccess.call(context, {
@@ -623,7 +624,7 @@ class FastTableOption {
                 editRows: editRows
             }).then((postData) => {
                 const {updateUrl, batchUpdateUrl, updateSuccess, updateFail} = this;
-                const postPromise = (postData.length === 1 ? FastTableOption.$http.post(updateUrl, postData[0]) : FastTableOption.$http.post(batchUpdateUrl, postData))
+                const postPromise = (postData.length === 1 ? post(updateUrl, postData[0]) : post(batchUpdateUrl, postData))
                 postPromise.then(res => {
                     resolve();
                     updateSuccess.call(context, {
@@ -675,7 +676,7 @@ class FastTableOption {
             }).then(({columns, all = false}) => {
                 // 导出数据
                 const {title, exportUrl, exportSuccess, exportFail} = this;
-                FastTableOption.$http.post(exportUrl, {
+                post(exportUrl, {
                     columns: columns,
                     all: all, // false-当前页; true-全部
                     pageQuery: pageQuery
