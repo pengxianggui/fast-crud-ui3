@@ -1,4 +1,5 @@
 import FastTableOption from "../model.js";
+import {v4 as uuidv4} from 'uuid'
 
 /**
  * 发起post请求
@@ -9,7 +10,7 @@ import FastTableOption from "../model.js";
 export function post(url, data) {
     return FastTableOption.$http.post(url, data, {
         headers: {
-            'Fc-Request-Id': crypto.randomUUID()
+            'Fc-Request-Id': uuidv4()
         }
     })
 }
