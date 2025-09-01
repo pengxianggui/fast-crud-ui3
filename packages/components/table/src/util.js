@@ -546,7 +546,7 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
         }
         try {
             for (let j = 0; j < conds.length; j++) {
-                const {col, opt, val} = conds[j]
+                const {col, opt = Opt.EQ, val} = conds[j]
                 const filter = getFilterComponent(col, columnConfig, tableOption)
                 if (!util.isNull(filter)) {
                     filter.opt = opt
