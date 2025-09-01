@@ -138,7 +138,8 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
         size: tableOption.style.size
     }
 
-    for (const columnVNode of tableColumnVNodes) {
+    for (let i = tableColumnVNodes.length - 1; i >= 0; i--) { // 逆序遍历确保简筛顺序
+        const columnVNode = tableColumnVNodes[i]
         const {
             props: _props,
             type: {
@@ -265,7 +266,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
         try {
             param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick', tableOption);
             if (firstFilter !== false) { // deprecated: 1.6.0
-                param.quickFilter.index = 0
+                param.quickFilter.index = 99
             }
             if (util.isNumber(quickFilter)) {
                 param.quickFilter.index = quickFilter
@@ -278,7 +279,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     try {
         param.easyFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'easy', tableOption);
         if (firstFilter !== false) { // deprecated: 1.6.0
-            param.easyFilter.index = 0
+            param.easyFilter.index = 99
         }
         if (util.isNumber(filter)) {
             param.easyFilter.index = filter
