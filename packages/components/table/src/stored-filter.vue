@@ -2,7 +2,7 @@
   <div class="fc-stored-btn">
     <el-dropdown @click="$emit('search')" :size="size">
       <el-button type="primary" :size="size">
-        <span v-if="currentGroup">{{ currentGroup.label }}</span>
+        <span v-if="showLabel">{{ showLabel }}</span>
         <el-icon v-else>
           <Star/>
         </el-icon>&nbsp;
@@ -12,10 +12,15 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
+<!--          <el-dropdown-item @click="clear">清空</el-dropdown-item>-->
           <el-dropdown-item v-for="item in storeGroups" :key="item.label"
-                            :style="{color: (currentGroup && (item.label === currentGroup.label)) ? '#3f99f5 !important' : ''}"
+                            :style="{color: (indexOfCurrentGroups(item) > -1) ? '#3f99f5 !important' : ''}"
                             :disabled="!item.compatible"
-                            @click="handleClick(item)">{{ item.label }}
+                            @click="handleClick(item, $event)">
+            <el-icon v-show="(indexOfCurrentGroups(item) > -1)">
+              <Select/>
+            </el-icon>
+            <span>{{ item.label }}</span>
           </el-dropdown-item>
           <el-dropdown-item divided @click="toCustom">自定义</el-dropdown-item>
         </el-dropdown-menu>
@@ -26,16 +31,16 @@
 <script>
 import {nextTick} from "vue"
 import {dayjs} from "element-plus"
-import {ArrowDown, Star} from "@element-plus/icons-vue"
+import {ArrowDown, Star, Select} from "@element-plus/icons-vue"
 import * as util from "../../../util/util.js"
 import FastTableOption from "../../../model.js"
 import {openDialog} from "../../../util/dialog.js";
 import StoredFilterManager from "./stored-filter-manager.vue";
-import {buildFilterGroups, getFilterComponent, getCustomFilterGroups} from "./util.js";
+import {buildFilterGroups, getFilterComponent, getCustomFilterGroups} from "./util.js"
 
 export default {
   name: "stored-filter",
-  components: {ArrowDown, Star},
+  components: {ArrowDown, Star, Select},
   emits: ['search'],
   props: {
     filters: Array,
@@ -46,7 +51,16 @@ export default {
   data() {
     return {
       storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true} TODO 1.5.8 支持二级存筛 subStoreGroups, 例如: 一级存筛——成年人, 下面可以继续分男性/女性
-      currentGroup: null
+      currentGroups: []
+    }
+  },
+  computed: {
+    showLabel() {
+      if (util.isEmpty(this.currentGroups)) {
+        return ''
+      }
+      const showGroup = this.currentGroups[this.currentGroups.length - 1]
+      return showGroup.label + (this.currentGroups.length > 1 ? `+${this.currentGroups.length}` : '')
     }
   },
   mounted() {
@@ -55,7 +69,7 @@ export default {
   watch: {
     'filters.length'(newLength) {
       if (newLength === 0) {
-        this.currentGroup = null
+        this.currentGroups.length = 0
       }
     }
   },
@@ -116,15 +130,21 @@ export default {
       const filterGroups = getCustomFilterGroups(this.tableOption, this.columnConfig)
       this.storeGroups.push(...filterGroups)
     },
-    handleClick(group) { // TODO 1.5.8 支持按住ctrl/command点击可以选多个
+    handleClick(group, e) {
+      const idx = this.indexOfCurrentGroups(group)
+      if (idx > -1) { // 取消
+        this.currentGroups.splice(idx, 1)
+      } else {
+        if (!(e.ctrlKey || e.metaKey)) { // 支持按住ctrl/command点击可以选多个
+          this.currentGroups.length = 0
+        }
+        this.currentGroups.push(group)
+      }
       this.filters.length = 0 // important
-      if (!this.currentGroup || this.currentGroup.label !== group.label) {
-        const filters = util.isFunction(group.filters) ? group.filters.call(this.tableOption.context) : group.filters
+      for (const g of this.currentGroups) {
+        const filters = util.isFunction(g.filters) ? g.filters.call(this.tableOption.context) : g.filters
         util.assert(util.isArray(filters), `the filters prop of group(${group.label}) is wrong type, it should be a array, or a function that return a array`)
         this.filters.push(...filters)
-        this.currentGroup = group
-      } else {
-        this.currentGroup = null
       }
       this.$emit('search')
     },
@@ -144,13 +164,18 @@ export default {
         this.init()
       })
 
+    },
+    indexOfCurrentGroups(storeGroup) {
+      if (util.isEmpty(this.currentGroups)) {
+        return -1
+      }
+      return this.currentGroups.findIndex(c => c.label === storeGroup.label)
+    },
+    clear() {
+      this.currentGroups.length = 0
+      this.filters.length = 0
+      this.$emit('search')
     }
   }
 }
 </script>
-
-<style scoped lang="scss">
-.fc-high-light {
-  background-color: #9dd3ff;
-}
-</style>
