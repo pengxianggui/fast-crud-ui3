@@ -15,19 +15,19 @@
 
     <template #default="{row, column, $index}">
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-        <span>{{ showLabel(row) }}</span>
+        <fast-content-dialog :value="showLabel(row)" :show-length="showLength"/>
       </slot>
     </template>
   </el-table-column>
 </template>
 
 <script>
-import FastTableHeadCell from '../../table-head-cell/src/table-head-cell.vue'
 import tableColumn from "../../../mixins/table-column"
+import FastContentDialog from "../../content-dialog/src/fast-content-dialog.vue";
 
 export default {
   name: "FastTableColumn",
-  components: {FastTableHeadCell},
+  components: {FastContentDialog},
   mixins: [tableColumn],
   props: {
     minWidth: {

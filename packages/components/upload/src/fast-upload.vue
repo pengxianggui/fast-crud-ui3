@@ -59,7 +59,8 @@ import {
   getFirstUrlFromFileItems,
   defaultIfBlank,
   cutPrefix,
-  isString
+  isString,
+  isUrl
 } from "../../../util/util"
 import UploadMixin from "../../../mixins/upload.js"
 import FastTableOption from "../../../model"
@@ -214,7 +215,7 @@ export default {
      * @return {*}
      */
     disposeUrl(url, append) {
-      if (!isString(url) || isEmpty(url) || url.startsWith('http://') || url.startsWith('https://')) {
+      if (!isString(url) || isEmpty(url) || isUrl(url)) {
         return url
       }
       return append ? this.apiPrefix + url : cutPrefix(url, this.apiPrefix)

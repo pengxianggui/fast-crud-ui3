@@ -756,7 +756,7 @@ export default {
      * 批量更新记录
      */
     activeBatchUpdate() {
-      // TODO 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
+      // TODO 1.5.10 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
     },
     /**
      * 导出数据
@@ -768,7 +768,7 @@ export default {
      * 自定义表格
      */
     customTable() {
-      // TODO 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
+      // TODO 1.5.10 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
     },
     /**
      * 计算表格自适高度: tableFlexHeight
@@ -868,7 +868,7 @@ export default {
     }
 
     :deep(td.fc-table-column > .cell) {
-      padding: 0 3px;
+      padding: 0 10px;
 
       .fc-table-inline-edit-component {
         width: 100%;

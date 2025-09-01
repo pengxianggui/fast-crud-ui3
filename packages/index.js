@@ -1,4 +1,6 @@
 import FastCheckboxGroup from "./components/checkbox-group";
+import FastContentDialog from "./components/content-dialog/src/fast-content-dialog.vue";
+import FastJsonViewer from "./components/json-viewer/src/fast-json-viewer.vue";
 import FastSelect from "./components/select";
 import FastUpload from "./components/upload";
 import FastObjectPicker from './components/object-picker'
@@ -102,6 +104,8 @@ const util = {
 
 export {
     FastCheckboxGroup,
+    FastContentDialog,
+    FastJsonViewer,
     FastSelect,
     FastUpload,
     FastObjectPicker,

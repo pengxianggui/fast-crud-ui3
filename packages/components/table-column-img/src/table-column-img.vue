@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import FastTableHeadCell from "../../table-head-cell/src/table-head-cell.vue";
 import FastUpload from "../../upload/src/fast-upload.vue";
 import tableColumn from "../../../mixins/table-column";
 import UploadMixin from "../../../mixins/upload.js";
@@ -52,7 +51,7 @@ import {isFunction} from "../../../util/util.js";
 
 export default {
   name: "FastTableColumnImg",
-  components: {FastTableHeadCell, FastUpload},
+  components: {FastUpload},
   mixins: [tableColumn, UploadMixin],
   props: {
     minWidth: {

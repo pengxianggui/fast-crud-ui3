@@ -45,7 +45,7 @@ export default {
   },
   data() {
     return {
-      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true}
+      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true} TODO 1.5.8 支持二级存筛 subStoreGroups, 例如: 一级存筛——成年人, 下面可以继续分男性/女性
       currentGroup: null
     }
   },
@@ -116,7 +116,7 @@ export default {
       const filterGroups = getCustomFilterGroups(this.tableOption, this.columnConfig)
       this.storeGroups.push(...filterGroups)
     },
-    handleClick(group) {
+    handleClick(group) { // TODO 1.5.8 支持按住ctrl/command点击可以选多个
       this.filters.length = 0 // important
       if (!this.currentGroup || this.currentGroup.label !== group.label) {
         const filters = util.isFunction(group.filters) ? group.filters.call(this.tableOption.context) : group.filters

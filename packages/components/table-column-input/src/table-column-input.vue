@@ -17,7 +17,7 @@
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
         <div v-if="!canEdit(row, column, $index)">
           <slot name="normal" v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-            <span>{{ showLabel(row) }}</span>
+            <fast-content-dialog :value="showLabel(row)" :show-length="showLength"/>
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
@@ -37,12 +37,10 @@
 </template>
 
 <script>
-import FastTableHeadCell from "../../table-head-cell/src/table-head-cell.vue";
 import tableColumn from "../../../mixins/table-column";
 
 export default {
   name: "FastTableColumnInput",
-  components: {FastTableHeadCell},
   mixins: [tableColumn],
   props: {
     minWidth: {

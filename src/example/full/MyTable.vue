@@ -44,7 +44,7 @@
     <fast-table-column label="仰慕者Id" prop="loveId"/>
     <fast-table-column-object label="仰慕者姓名" prop="loveName"
                               :table-option="loveOption" show-field="name" :pick-map="{id: 'loveId'}"/>
-    <fast-table-column-textarea label="简介" prop="info"/>
+    <fast-table-column-textarea label="简介" prop="info" :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" active-text="Y" inactive-text="N" quick-filter required/>
     <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px"
                                    :editable="({editRow}) => !(editRow.age > 35)" required/>

@@ -1,8 +1,11 @@
-import {colEditable} from "../components/table/src/util";
+import {colEditable} from "../components/table/src/util"
+import FastTableHeadCell from "../components/table/src/table-head-cell.vue"
+import FastContentDialog from "../components/content-dialog/src/fast-content-dialog.vue";
 
 export default {
     inject: ['openDynamicFilterForm', 'tableStyle', 'context'],
     emits: ['change', 'focus', 'blur', 'input', 'clear'],
+    components: {FastTableHeadCell, FastContentDialog},
     props: {
         prop: {
             type: String,
@@ -32,6 +35,13 @@ export default {
         quickFilterBlock: {
             type: Boolean,
             default: () => false
+        },
+        /**
+         * 显示的字符长度, 超长时会显示"...", 并支持弹窗预览完整信息
+         */
+        showLength: {
+            type: Number,
+            default: () => Number.MAX_VALUE
         }
     },
     data() {

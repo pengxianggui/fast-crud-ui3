@@ -167,6 +167,80 @@ export function isSampleType(val) {
 }
 
 /**
+ * 是否是json字符串
+ * @param val
+ */
+export function isJsonStr(val) {
+    if (!isString(val)) {
+        return false
+    }
+    try {
+        const obj = JSON.parse(val)
+        return obj !== null && isObject(obj)
+    } catch (e) {
+        return false
+    }
+}
+
+/**
+ * 转换为json, 若无法转换则抛出异常
+ * @param val
+ * @return {*}
+ */
+export function toJson(val) {
+    if (isObject(val)) {
+        return val
+    }
+    if (isJsonStr(val)) {
+        return JSON.parse(val)
+    }
+    throw new Error(`Can't convert to json: ${val}`)
+}
+
+/**
+ * 是否是http或https打头的url
+ * @param val
+ * @return {*|boolean}
+ */
+export function isUrl(val) {
+    if (!isString(val)) {
+        return false
+    }
+    return val.startsWith('http://') || val.startsWith('https://')
+}
+
+/**
+ * 判断一个值是否超过长度
+ * @param val 可能是字符串、数字、json等
+ * @param width 长度,px像素值(Number类型)
+ * @param font 字体设置。默认 "14px Arial", 不同字体大小会影响计算
+ */
+export function isOverLength(val, width, font = '14px Arial') {
+    if (val == null) return false;
+
+    // 转成字符串
+    let str;
+    if (typeof val === "object") {
+        try {
+            str = JSON.stringify(val);
+        } catch (e) {
+            str = String(val);
+        }
+    } else {
+        str = String(val);
+    }
+
+    // 创建canvas上下文测量文字宽度
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    context.font = font;
+
+    const textWidth = context.measureText(str).width;
+
+    return textWidth > width;
+}
+
+/**
  * 返回值的类型:
  * [object String]、[object Number]、[object Object]、[object Boolean]、
  * [object Array]、[object Function]、[object Null]、[object Undefined]
