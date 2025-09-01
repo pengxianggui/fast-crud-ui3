@@ -6,17 +6,18 @@
 
 这些列组件有一些通用的prop配置项：
 
-| 属性               | 说明                                                                         | 类型                                                                     | 默认值     |
-|------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------|---------|
-| **prop**         | 同Element                                                                   | `String`                                                               | -       |
-| **label**        | 同Element                                                                   | `String`                                                               | -       |
-| filter           | 是否支持过滤查询(若为false, 简筛、快筛都将关闭)。`1.5.4+`支持Number类型, 值越小简筛排序越靠前                | `Boolean\| Number`                                                     | `true`  |
-| quickFilter      | 在filter非false的前提下, 是否支持快筛。`1.5.4+`支持Number类型, 值越小快筛排序越靠前                   | `Boolean\|Number`                                                      | `false` |
-| ~~firstFilter~~  | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除 | `Boolean`                                                              | `false` |
-| quickFilterBlock | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                     | `Boolean`                                                              | `false` |
-| editable         | 此列是否可编辑(针对`FastTableColumn`无效)                                             | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
-| required         | 编辑状态时此列是否必填                                                                | `Boolean`                                                              | `false` |
-| rules            | 编辑状态时针对此项的表单验证(同Element ElFormItem)                                        | `Array`                                                                | `[]`    |
+| 属性                   | 说明                                                                                               | 类型                                                                     | 默认值     |
+|----------------------|--------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|---------|
+| **prop**             | 同Element                                                                                         | `String`                                                               | -       |
+| **label**            | 同Element                                                                                         | `String`                                                               | -       |
+| filter               | 是否支持过滤查询(若为false, 简筛、快筛都将关闭)。`1.5.4+`支持Number类型, 值越小简筛排序越靠前                                      | `Boolean\| Number`                                                     | `true`  |
+| quickFilter          | 在filter非false的前提下, 是否支持快筛。`1.5.4+`支持Number类型, 值越小快筛排序越靠前                                         | `Boolean\|Number`                                                      | `false` |
+| ~~firstFilter~~      | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除                       | `Boolean`                                                              | `false` |
+| quickFilterBlock     | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                                           | `Boolean`                                                              | `false` |
+| editable             | 此列是否可编辑(针对`FastTableColumn`无效)                                                                   | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
+| required             | 编辑状态时此列是否必填                                                                                      | `Boolean`                                                              | `false` |
+| showLength(`1.5.7+`) | 设置一个长度值，当单元格显示字符长度超过此值且无法显示全时会省略并支持点击弹窗预览完整内容(支持json预览), 注意: `FastColumnImg`和`FastColumnFile`不支持 | `Number`                                                               | `-`     |
+| rules                | 编辑状态时针对此项的表单验证(同Element ElFormItem)                                                              | `Array`                                                                | `[]`    |
 
 :::tip
 
