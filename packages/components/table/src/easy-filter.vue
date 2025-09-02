@@ -85,7 +85,8 @@ export default {
   .fc-easy-filter-column {
     width: 100px;
 
-    :deep(.el-select__wrapper) {
+    :deep(.el-select__wrapper),
+    :deep(.el-input__wrapper) {
       box-shadow: inset 0 1px 0 0 #DCDFE6, inset 0 -1px 0 0 #DCDFE6, inset 1px 0 0 0 #DCDFE6; // 阴影模拟边框, 无"右边框"
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
