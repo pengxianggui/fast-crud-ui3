@@ -38,8 +38,7 @@ import {getAppContext} from "../index.js"
  *              }
  *          }
  *          // 其它自定义按钮
- *      ],
- *      // TODO 支持event
+ *      ]
  *  }
  * })
  * @returns {Promise<unknown>}

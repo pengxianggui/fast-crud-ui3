@@ -64,7 +64,7 @@
                 </el-icon>
                 <span>批量编辑</span>
               </el-dropdown-item>
-              <!-- TODO 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
+              <!-- TODO 1.6 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
               <el-dropdown-item @click="exportData">
                 <el-icon>
@@ -756,7 +756,7 @@ export default {
      * 批量更新记录
      */
     activeBatchUpdate() {
-      // TODO 1.5.10 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
+      // TODO 1.6 激活勾选，针对勾选的记录弹出批量更新弹窗，可指定要更新的字段和值，点击确定应用于这些记录
     },
     /**
      * 导出数据
@@ -768,7 +768,7 @@ export default {
      * 自定义表格
      */
     customTable() {
-      // TODO 1.5.10 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
+      // TODO 1.6 自定义表格: 可自定义——表格标题、默认简筛字段、默认排序字段和排序方式、各列宽、冻结哪些列等
     },
     /**
      * 计算表格自适高度: tableFlexHeight
