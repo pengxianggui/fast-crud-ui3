@@ -82,8 +82,8 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 |size|尺寸。将影响表格内所有相关控件，取值参考Element| `String` |`default`|
 |formLabelWidth|表单标签宽度。影响范围: 弹窗表单、快筛表单| `String` |`auto`|
 |formLayout|弹窗表单的字段布局, 例如:`id,avatarUrl,name\|age\|sex,createTime`表示第一行是id和avatarUrl各占50%,第二行是name、age、sex各占33.3%, 第三行是createTime独占一行| `String` | - |
-|quickFilterToggle|快筛项过多时，是否折叠| `Boolean` |false|
-|quickFilterToggleExceed|quickFilterToggle为true时, 快筛项多于此值时产生"收缩/展开"| `Number` |4|
+|quickFilterToggle(`@remove 1.5.9`)|快筛项过多时，是否折叠| `Boolean` |false|
+|quickFilterToggleExceed(`@remove 1.5.9`)|quickFilterToggle为true时, 快筛项多于此值时产生"收缩/展开"| `Number` |4|
 |quickFilterSpan|快筛表单的布局, 表示每行几个筛选项| `Number` |3|
 
 ### conds
