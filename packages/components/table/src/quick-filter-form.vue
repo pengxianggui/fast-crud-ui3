@@ -1,10 +1,12 @@
 <template>
-  <el-form :inline="true" :label-width="formLabelWidth" class="fc-quick-filter-form" :style="formStyle">
+  <el-form ref="quickFilterForm" :inline="true" :label-width="formLabelWidth" class="fc-quick-filter-form"
+           :style="formStyle">
     <el-form-item v-for="filter in visibleFilters"
                   :key="filter.col"
                   :prop="filter.col"
-                  :label="filter.label + '：'"
+                  :label="filter.label + ':'"
                   :style="filter.props && filter.props.quickFilterBlock !== false ? formItemBlockStyle : ''"
+                  :class="{'fc-block': filter.props && filter.props.quickFilterBlock !== false}"
                   class="fc-quick-filter-form-item">
       <component :size="size" :is="filter.component" v-model="filter.val" v-bind="filter.props"/>
     </el-form-item>
@@ -23,6 +25,7 @@
 
 <script>
 import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
+import {buildGridTemplateAreas} from "../../../util/util.js";
 
 export default {
   name: "quick-filter-form",
@@ -56,6 +59,7 @@ export default {
   data() {
     return {
       showNum: 3, // 收缩展示数量
+      showFormItems: [], // 显示的formItem, 元素对象格式为 {block: Boolean}
       expand: false // 展开？
     }
   },
@@ -83,9 +87,11 @@ export default {
       return expand ? filters : filters.slice(0, this.showNum);
     },
     formStyle() {
+      const gridTemplateAreas = buildGridTemplateAreas(this.rowSpan, this.showFormItems)
       return {
         display: 'grid',
         gridTemplateColumns: `repeat(${this.rowSpan}, 1fr)`,
+        gridTemplateAreas: gridTemplateAreas,
         gap: '10px 20px'
       }
     },
@@ -94,6 +100,19 @@ export default {
         gridColumn: `span ${this.rowSpan}`
       }
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      if (this.$refs.quickFilterForm) {
+        const formItemEls = this.$refs.quickFilterForm.$el.querySelectorAll(".el-form-item")
+        // console.log(formItemEls)
+        this.showFormItems = Array.prototype.map.call(formItemEls, e => {
+          return {
+            block: e.classList.contains('fc-block')
+          }
+        })
+      }
+    })
   },
   methods: {
     expColl() {

@@ -7,7 +7,7 @@
               @selection-change="handleSelectionChange"
               @select-all="handleSelectAll">
     <template #quickFilter="{size}">
-      <el-form-item label="自定义筛选项">
+      <el-form-item label="自定义筛选项" style="grid-area: c1;/*grid-column: c2/c3*/">
         <el-input :size="size" v-model="customQueryParam.keyword" placeholder="同时筛选姓名和仰慕者姓名"/>
       </el-form-item>
     </template>
@@ -25,7 +25,8 @@
                               :min="16" :max="60"
                               :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               @change="handleAgeChange"/>
-    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" :quick-filter="1" required>
+    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" :quick-filter="1"
+                              required>
       <template #header="{column, $index}">
         <span>{{ $index + '.' + column.label }}</span>
       </template>
@@ -123,8 +124,8 @@ export default {
         // sortField: 'createTime', // 默认为createTimeField值
         // sortDesc: true, // 默认为true
         condGroups: [ // 开发预置条件组——存筛
-            {label: '成年男性', conds: [{col: 'age', opt: '>', val: 18}, {col: 'sex', opt: 'in', val: ['1']}]},
-            {label: '吴国女性', conds: [{col: 'state', opt: 'in', val: ['3']}, {col: 'sex', opt: 'in', val: ['0']}]}
+          {label: '成年男性', conds: [{col: 'age', opt: '>', val: 18}, {col: 'sex', opt: 'in', val: ['1']}]},
+          {label: '吴国女性', conds: [{col: 'state', opt: 'in', val: ['3']}, {col: 'sex', opt: 'in', val: ['0']}]}
         ],
         moreButtons: [
           {
@@ -441,6 +442,7 @@ export default {
   position: absolute;
   left: 0;
 }
+
 :deep(.fc-fast-table-operation-bar) {
   //height: 50px;
 }
