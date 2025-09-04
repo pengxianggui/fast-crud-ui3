@@ -6,8 +6,6 @@
       <quick-filter-form :filters="quickFilters"
                          :form-label-width="option.style.formLabelWidth"
                          :size="option.style.size"
-                         :toggle-enable="option.style.quickFilterToggle"
-                         :toggle-num="option.style.quickFilterToggleExceed"
                          :row-span="option.style.quickFilterSpan">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>

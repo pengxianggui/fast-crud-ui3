@@ -11,15 +11,6 @@
       <component :size="size" :is="filter.component" v-model="filter.val" v-bind="filter.props"/>
     </el-form-item>
     <slot></slot>
-    <div class="fc-quick-filter-form-btns" v-if="toggleEnable">
-      <el-button link :size="size" @click="expColl" v-if="filters.length > toggleNum">
-        <span>{{ expand ? '收起' : '展开' }}</span>
-        <el-icon>
-          <ArrowUp v-if="expand"/>
-          <ArrowDown v-else/>
-        </el-icon>
-      </el-button>
-    </div>
   </el-form>
 </template>
 
@@ -39,14 +30,6 @@ export default {
       type: Array,
       default: () => []
     },
-    toggleEnable: {
-      type: Boolean,
-      default: false
-    },
-    toggleNum: {
-      type: Number,
-      default: 4
-    },
     rowSpan: {
       type: Number,
       default: 3
@@ -59,8 +42,7 @@ export default {
   data() {
     return {
       showNum: 3, // 收缩展示数量
-      showFormItems: [], // 显示的formItem, 元素对象格式为 {block: Boolean}
-      expand: false // 展开？
+      showFormItems: [] // 显示的formItem, 元素对象格式为 {block: Boolean}
     }
   },
   computed: {
@@ -69,7 +51,7 @@ export default {
      * @return {*[]}
      */
     visibleFilters() {
-      const {toggleEnable, expand, filters = []} = this;
+      const {filters = []} = this;
       // 确保独占一行的快筛项排前面
       filters.sort((a, b) => {
         const {props: propsA} = a;
@@ -81,10 +63,7 @@ export default {
         }
         return 0;
       });
-      if (!toggleEnable) {
-        return filters
-      }
-      return expand ? filters : filters.slice(0, this.showNum);
+      return filters
     },
     formStyle() {
       const gridTemplateAreas = buildGridTemplateAreas(this.rowSpan, this.showFormItems)
@@ -105,7 +84,6 @@ export default {
     this.$nextTick(() => {
       if (this.$refs.quickFilterForm) {
         const formItemEls = this.$refs.quickFilterForm.$el.querySelectorAll(".el-form-item")
-        // console.log(formItemEls)
         this.showFormItems = Array.prototype.map.call(formItemEls, e => {
           return {
             block: e.classList.contains('fc-block')
@@ -113,11 +91,6 @@ export default {
         })
       }
     })
-  },
-  methods: {
-    expColl() {
-      this.expand = !this.expand;
-    }
   }
 }
 </script>
