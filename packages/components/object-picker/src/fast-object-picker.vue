@@ -31,7 +31,7 @@ export default {
       type: Function,
       default: (pickData, showField) => {
         if (isArray(pickData)) {
-          return pickData.map(item => item[showField]).join(',')
+          return pickData.map(row => row[showField]).join(',')
         } else {
           return pickData[showField]
         }
@@ -110,7 +110,8 @@ export default {
             width: this.dialogWidth,
             appendToBody: this.appendToBody
           }
-        }).then(({row}) => {
+        }).then((data) => {
+          const row = isArray(data) ? data.map((item) => item.row) : data.row
           // 赋值value
           this.value = this.valueCovert(row, this.showField)
           if (this.multiple !== true && isObject(row)) {
