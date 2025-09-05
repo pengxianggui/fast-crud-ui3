@@ -15,6 +15,11 @@ export default {
             type: String,
             required: true
         },
+        // TODO 1.5.9 兑现hidden, 以实现某一列不显示, 仍然可以参与生成筛选项
+        hidden: {
+            type: Boolean,
+            default: () => false
+        },
         filter: {
             type: [Boolean, Number],
             default: () => true
