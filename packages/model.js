@@ -317,7 +317,8 @@ class FastTableOption {
         size: 'default',  // 尺寸
         formLabelWidth: 'auto', // 表单标签宽度:
         formLayout: null, // 表单布局: 只作用于form表单, 对快筛和行内编辑无效
-        quickFilterSpan: 3 // 快筛每行几个筛选项
+        quickFilterSpan: 3, // 快筛每行几个筛选项
+        quickFilterGridGap: '10px 20px', // 快筛项之间的间距(grid布局中的gap)
     };
     render; // 渲染函数, 当前table需要被pick时有用
     conds = []; // 固定的筛选条件，内部无法取消

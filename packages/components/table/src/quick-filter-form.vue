@@ -32,7 +32,11 @@ export default {
     },
     rowSpan: {
       type: Number,
-      default: 3
+      default: () => 3
+    },
+    gridGap: {
+      type: String,
+      default: () => '10px 20px'
     },
     size: {
       type: String,
@@ -71,7 +75,7 @@ export default {
         display: 'grid',
         gridTemplateColumns: `repeat(${this.rowSpan}, 1fr)`,
         gridTemplateAreas: gridTemplateAreas,
-        gap: '10px 20px'
+        gap: this.gridGap
       }
     },
     formItemBlockStyle() {
@@ -104,6 +108,9 @@ export default {
 .fc-quick-filter-form {
   .fc-quick-filter-form-btns {
     margin-left: 10px;
+  }
+  :deep(.el-form-item__content > *) {
+    flex: 1;
   }
 }
 
