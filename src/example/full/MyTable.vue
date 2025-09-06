@@ -293,7 +293,7 @@ export default {
             h(FastTableColumn, {prop: 'id', label: 'id'}),
             h(FastTableColumnImg, {prop: 'avatarUrl', label: '头像'}),
             h(FastTableColumn, {prop: 'name', label: '姓名1', filter: 0}),
-            h(FastTableColumnSelect, {prop: 'state', label: '蜀国', options: this.stateOptions})
+            h(FastTableColumnSelect, {prop: 'state', label: '蜀国', options: this.stateOptions,  valKey:"code", labelKey:"name"})
           ]
         }
       }),

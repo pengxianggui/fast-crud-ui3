@@ -93,7 +93,6 @@ export default {
   },
   methods: {
     handleChange(filter) {
-      debugger
       const {props: {quickFilterConfig = {}}} = filter
       const {onChange} = quickFilterConfig
       if (!isFunction(onChange)) {
@@ -107,7 +106,6 @@ export default {
       onChange.call(context, filter.val, this.formModel, filter, filtersMap)
     },
     handleClick(filter) {
-      debugger
       const {props: {quickFilterConfig = {}}} = filter
       const {onClick} = quickFilterConfig
       if (!isFunction(onClick)) {

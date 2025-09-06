@@ -245,8 +245,10 @@ export default {
       this.pageLoad()
     }
     if (this.option.style.flexHeight) {
+      const observer = new ResizeObserver(() => this.calTableHeight())
       nextTick(() => {
-        this.calTableHeight() // TODO 1.5.9 通过插槽扩展的自定义快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误
+        observer.observe(this.$refs.quick) // FIX: 快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误, 通过这个解决此问题
+        this.calTableHeight()
         window.addEventListener('resize', this.calTableHeight)
       })
       this.$watch('dynamicFilters.length', () => { // 动态过滤器变化时可能高度改变, 重新计算高度
@@ -776,6 +778,13 @@ export default {
       const dynamicHeight = getFullHeight(this.$refs.dynamic);
       const paginationHeight = getFullHeight(this.$refs.pagination);
       this.tableFlexHeight = totalHeight - titleHeight - quickHeight - operationHeight - dynamicHeight - paginationHeight - 2;
+      // console.log(`totalHeight: ${totalHeight}`)
+      // console.log(`titleHeight: ${titleHeight}`)
+      // console.log(`quickHeight: ${quickHeight}`)
+      // console.log(`operationHeight: ${operationHeight}`)
+      // console.log(`dynamicHeight: ${dynamicHeight}`)
+      // console.log(`paginationHeight: ${paginationHeight}`)
+      // console.log(`tableFlexHeight: ${this.tableFlexHeight}`)
     },
     getBoolVal(boolValOrFun, defaultVal) {
       if (isFunction(boolValOrFun)) {

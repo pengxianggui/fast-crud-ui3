@@ -1,5 +1,5 @@
 <template>
-  <!-- 1.5.9 使用 el-select 以便更好的支持搜索以及多选(可借助el-select的远程搜索模式实现——避免下拉) -->
+  <!-- 使用 el-select 以便更好的支持搜索以及多选(可借助el-select的远程搜索模式实现——避免下拉) -->
   <el-select v-model="value"
              :clearable="clearable"
              :placeholder="placeholder"
@@ -32,12 +32,9 @@ export default {
       type: FastTableOption,
       required: true
     },
-    // 回显到input上的字段 @deprecated 1.6 使用valKey替代
-    showField: String,
-    // 替代showField, 指定"值"key
-    valKey: String,
-    // 当控件需要"值显"不一致时, 指定"显"key
-    labelKey: String, // 1.5.9 兑现
+    showField: String, // 回显到控件上的字段 @deprecated 1.6 使用valKey替代
+    valKey: String, // 替代showField, 指定"值"key
+    labelKey: String, // 当控件需要"值显"不一致时, 指定"显"key
     pickObject: Object, // 单选时, pick选择后回填到的目标object上
     pickMap: Object, // 单选时, pick选择后回填到目标object上时，指导字段对应关系: key为pick的数据的字段名, value为pickObject中的字段名
     valueCovert: { // 针对showField取值的值转换, 对于多选时, 会讲showField的多个值用英文逗号分隔后返回，作为组件v-model值
