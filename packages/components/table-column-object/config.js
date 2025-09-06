@@ -1,39 +1,22 @@
-import {easyOptParse, isUndefined, merge, ternary} from "../../util/util";
-import {Opt} from "../../model";
+import {easyOptParse, isArray, isSampleType, isUndefined, merge, ternary} from "../../util/util";
+import {Cond, Opt} from "../../model";
 
 const defaultQueryConfig = {
-    component: 'el-input',
-    opt: Opt.LIKE,
+    component: 'fast-object-picker',
+    opt: Opt.EQ,
     val: null, // 默认值
     props: {
         clearable: true,
-        placeholder: '请输入...'
+        placeholder: '请点选..'
     },
     condMapFn: (cond) => {
-        const operators = {
-            '^!=': {
-                opt: Opt.NE,
-                valExtract: (cond) => cond.val.substring(2)
-            },
-            '^=': {
-                opt: Opt.EQ,
-                valExtract: (cond) => cond.val.substring(1)
-            },
-            '^~': {
-                opt: Opt.NLIKE,
-                valExtract: (cond) => cond.val.substring(1)
-            },
-            '^\\*': {
-                opt: Opt.LLIKE,
-                valExtract: (cond) => cond.val.substring(1)
-            },
-            '\\*$': {
-                opt: Opt.RLIKE,
-                valExtract: (cond) => cond.val.substring(0, cond.val.length - 1)
-            }
+        if (isArray(cond.val) && cond.val.length > 0) {
+            return [new Cond(cond.col, Opt.IN, cond.val)]
         }
-        easyOptParse(cond, operators)
-        return [cond]
+        if (isSampleType(cond.val)) {
+            return [new Cond(cond.col, Opt.EQ, cond.val)]
+        }
+        return []
     }
 }
 const defaultEditConfig = {
