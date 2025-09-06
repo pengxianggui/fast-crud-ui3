@@ -22,6 +22,7 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 | context                 | 当前组件的引用，一般配this。否则，在钩子函数中无法正常获取当前组件数据或方法                   | `Component`                                               | -                                                                                                   |
 | id(`1.5.2+`)            | 表格id,应当保证同站点唯一。此值将用于`FastTable`在localStorage中存储某些数据时标识唯一性  | `String`                                                  | `${baseUrl}`                                                                                        |
 | title                   | 表格标题名。配置后将显示在表格上方                                          | `String`                                                  | -                                                                                                   |
+| showTitle(`1.5.9+`)     | 是否显示表格标题(也得title有值)                                        | `Boolean`                                                 | `true`                                                                                              |
 | module                  | 模块，也即后端接口的根path。(`@deprecate 1.6`, 使用baseUrl代替)            | `String`                                                  | -                                                                                                   |
 | baseUrl(`1.5.2+`)       | 其它接口url的根path                                              | `String`                                                  | `${module}`                                                                                         |
 | pageUrl                 | 分页接口地址。如需自定义则配置                                            | `String`                                                  | `${baseUrl}/page`                                                                                   |
@@ -85,6 +86,7 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 |quickFilterToggle(`@remove 1.5.9`)|快筛项过多时，是否折叠| `Boolean` |false|
 |quickFilterToggleExceed(`@remove 1.5.9`)|quickFilterToggle为true时, 快筛项多于此值时产生"收缩/展开"| `Number` |4|
 |quickFilterSpan|快筛表单的布局, 表示每行几个筛选项| `Number` |3|
+|quickFilterGridGap(`1.5.9+`)|快筛表单项的间隙, 同grid布局中的gap| `String` |`10px 20px`|
 
 ### conds
 

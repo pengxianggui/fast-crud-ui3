@@ -57,6 +57,8 @@ FastTable提供了丰富的配置、插槽、方法。
 | button      | 自定义功能按钮 | `{size: String, choseRow: Object, checkedRows: Array, editRows: Array}` |
 | foot        | 自定义功能按钮 | `{size: String, choseRow: Object, checkedRows: Array, editRows: Array}` |
 
+> 针对`quickFilter`插槽扩展的自定义快筛项, 可以利用`grid-area`对自定义快筛项进行定位。grid区域命名规则是: 第一行 a1,a2,a3, ..; 第二行 b1,b2,b3,..。此项`1.5.9+`支持
+
 ## 事件
 
 | 事件名              | 说明                          | 类型                                                 |
