@@ -119,7 +119,7 @@ export default {
       this.$emit('focus', event)
       // this.openPick() // ESC退出后焦点又回到input，会导致ESC关不掉
     },
-    openPick() {
+    openPick() { // TODO 修复多选时, 勾选部分后重新搜索导致已勾选的丢失
       const {beforeOpen, tableOption} = this
       beforeOpen().then(() => {
         pick({
