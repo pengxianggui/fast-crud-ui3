@@ -1,6 +1,6 @@
 <template>
   <div class="fc-fast-table">
-    <div ref="title" class="fc-fast-table-title" v-if="option.title">{{ option.title }}</div>
+    <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
     <div ref="quick" class="fc-quick-filter-wrapper" v-if="quickFilters.length > 0">
       <!-- 快筛 -->
       <quick-filter-form :filters="quickFilters"

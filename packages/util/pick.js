@@ -25,6 +25,8 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
     option.updatable = false;
     option.deletable = false;
     option.enableMulti = (multiple === true);
+    const title = option.title
+    option.showTitle = false
 
     const DynamicFastTable = defineComponent({
         name: 'DynamicFastTable',
@@ -76,12 +78,12 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
         ]
     );
 
-    console.log(DynamicFastTable)
     return openDialog.call(this, {
         component: DynamicFastTable,
         props: {},
         dialogProps: {
             ...dialog,
+            title: title,
             buttons: buttons
         }
     })

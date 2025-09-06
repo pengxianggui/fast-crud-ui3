@@ -285,6 +285,7 @@ class FastTableOption {
     context;
     id = ''; // 用于在全局标识唯一FastTable实例：涉及一些localStorage数据, 默认取值为${baseUrl}
     title = ''; // 标题: 显示在表头上方
+    showTitle = true; // 是否显示标题
     baseUrl = ''; // 内部接口的根url
     pageUrl = ''; // 分页url: 默认为${baseUrl}/page
     listUrl = ''; // 列表url: 默认为${baseUrl}/list
@@ -351,6 +352,7 @@ class FastTableOption {
                     context,
                     id = '',
                     title = '',
+                    showTitle = true,
                     module = '', // @deprecated 1.6, 替换为baseUrl
                     baseUrl = '',
                     pageUrl = '',
@@ -406,6 +408,7 @@ class FastTableOption {
                     exportFail = ({columns, pageQuery, error}) => Promise.resolve()
                 }) {
         assert(isString(title), 'title必须为字符串')
+        assert(isBoolean(showTitle), 'showTitle必须为布尔值')
         assert(isString(id), 'id必须为字符串')
         assert(isString(module), 'module必须为字符串')
         assert(isString(baseUrl), 'baseUrl必须是字符串')
