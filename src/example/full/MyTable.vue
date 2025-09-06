@@ -42,9 +42,9 @@
                               :default-val_q="['1', '2', '3']"
                               :disable-val="['4']"
                               required/>
-    <fast-table-column label="仰慕者Id" prop="loveId"/>
-    <fast-table-column-object label="仰慕者姓名" prop="loveName"
-                              :table-option="loveOption" show-field="name" :pick-map="{id: 'loveId'}"/>
+    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter
+                              :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}" :multiple="true"/>
+    <fast-table-column label="仰慕者姓名" prop="loveName"/>
     <fast-table-column-textarea label="简介" prop="info" :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" active-text="Y" inactive-text="N" quick-filter required/>
     <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px"
@@ -285,6 +285,7 @@ export default {
       }),
       loveOption: new FastTableOption({
         module: 'student',
+        title: '人员列表',
         conds: [
           // 预筛
           // {col: 'name', opt: '=', val: '利威尔'} // 写法一
@@ -294,7 +295,7 @@ export default {
           return [
             h(FastTableColumn, {prop: 'id', label: 'id'}),
             h(FastTableColumnImg, {prop: 'avatarUrl', label: '头像'}),
-            h(FastTableColumn, {prop: 'name', label: '姓名1', firstFilter: true})
+            h(FastTableColumn, {prop: 'name', label: '姓名1', filter: 0})
           ]
         }
       }),

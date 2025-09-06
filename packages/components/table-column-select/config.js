@@ -8,11 +8,11 @@ const defaultQueryConfig = {
     props: {
         clearable: true,
         multiple: true,
-        placeholder: '请选择...'
+        placeholder: '请选择..'
     },
     condMapFn: (cond) => {
         if (isArray(cond.val) && cond.val.length > 0) {
-            return [cond]
+            return [new Cond(cond.col, Opt.IN, cond.val)]
         }
         if (isSampleType(cond.val)) {
             return [new Cond(cond.col, Opt.EQ, cond.val)]
