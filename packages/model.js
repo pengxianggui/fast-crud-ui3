@@ -283,6 +283,7 @@ export class EditComponentConfig {
 // 定义 FastTableOption 类
 class FastTableOption {
     context;
+    ref; // TODO 待实现 FastTable组件的ref引用
     id = ''; // 用于在全局标识唯一FastTable实例：涉及一些localStorage数据, 默认取值为${baseUrl}
     title = ''; // 标题: 显示在表头上方
     showTitle = true; // 是否显示标题
@@ -306,6 +307,10 @@ class FastTableOption {
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
     createTimeField = ''; // 创建时间字段名: 如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
+    parent = { // TODO 待实现 父子表级联(父表取choseRow作为选中的行)
+        option: FastTableOption, // 父表的option
+        map: Object // 指定映射关系, 例如: {parentId: 'id'} —— 表示当前option中的parentId值关联 parent.option的id值, 以此作为构建当前表的预置筛选条件, 限定关联条件; 支持多个关联key映射
+    };
     sortField; // 排序字段: 默认取创建时间字段名
     sortDesc = true; // 默认降序
     moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }

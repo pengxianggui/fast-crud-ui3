@@ -15,7 +15,7 @@ export default {
             type: String,
             required: true
         },
-        // TODO 1.5.9 兑现hidden, 以实现某一列不显示, 仍然可以参与生成筛选项
+        // TODO 兑现hidden, 以实现某一列不显示, 仍然可以参与生成筛选项
         hidden: {
             type: Boolean,
             default: () => false
@@ -27,6 +27,11 @@ export default {
         quickFilter: {
             type: [Boolean, Number],
             default: () => false
+        },
+        // TODO 兑现columnFilter: 目前filter作为某列筛选的总开关, 无法实现“保留quickFilter但禁用columnFilter”
+        columnFilter: {
+            type: [Boolean, Number],
+            default: () => true
         },
         // deprecated: 1.6.0
         firstFilter: {
