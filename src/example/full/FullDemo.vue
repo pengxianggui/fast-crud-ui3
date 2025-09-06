@@ -1,57 +1,60 @@
 <template>
   <div class="demo">
-<!--    <div class="param">-->
-<!--      <h5>行为配置</h5>-->
-<!--      <el-switch size="small" v-model="params.editType" @change="(val) => updateOption('editType', val)"-->
-<!--                 inactive-value="inline" inactive-color="#13ce66" inactive-text="行内编辑"-->
-<!--                 active-value="form" active-color="#ff4949" active-text="表单编辑"></el-switch>-->
-<!--      <el-checkbox v-model="params.pageLoadable">允许加载分页</el-checkbox>-->
-<!--      <el-checkbox v-model="params.insertable" @change="(val) => updateOption('insertable', val)">允许新增-->
-<!--      </el-checkbox>-->
-<!--      <el-checkbox v-model="params.updatable" @change="(val) => updateOption('updatable', val)">允许更新</el-checkbox>-->
-<!--      <el-checkbox v-model="params.deletable" @change="(val) => updateOption('deletable', val)">允许删除</el-checkbox>-->
-<!--      <el-checkbox v-model="params.enableColumnFilter" @change="(val) => updateOption('enableColumnFilter', val)">-->
-<!--        允许表头动态筛选-->
-<!--      </el-checkbox>-->
-<!--      <el-checkbox v-model="params.enableMulti" @change="(val) => updateOption('enableMulti', val)">启用多选-->
-<!--      </el-checkbox>-->
-<!--      <el-checkbox v-model="params.enableDblClickEdit" @change="(val) => updateOption('enableDblClickEdit', val)">-->
-<!--        启用双击编辑-->
-<!--      </el-checkbox>-->
+    <div class="param">
+      <h5>行为配置</h5>
+      <el-switch size="small" v-model="params.editType" @change="(val) => updateOption('editType', val)"
+                 inactive-value="inline" inactive-color="#13ce66" inactive-text="行内编辑"
+                 active-value="form" active-color="#ff4949" active-text="表单编辑"></el-switch>
+      <el-checkbox v-model="params.pageLoadable">允许加载分页</el-checkbox>
+      <el-checkbox v-model="params.insertable" @change="(val) => updateOption('insertable', val)">允许新增
+      </el-checkbox>
+      <el-checkbox v-model="params.updatable" @change="(val) => updateOption('updatable', val)">允许更新</el-checkbox>
+      <el-checkbox v-model="params.deletable" @change="(val) => updateOption('deletable', val)">允许删除</el-checkbox>
+      <el-checkbox v-model="params.enableColumnFilter" @change="(val) => updateOption('enableColumnFilter', val)">
+        允许表头动态筛选
+      </el-checkbox>
+      <el-checkbox v-model="params.enableMulti" @change="(val) => updateOption('enableMulti', val)">启用多选
+      </el-checkbox>
+      <el-checkbox v-model="params.enableDblClickEdit" @change="(val) => updateOption('enableDblClickEdit', val)">
+        启用双击编辑
+      </el-checkbox>
+      <el-checkbox v-model="params.enableCascading" @change="(val) => updateOption('enableCascading', val)">
+        快筛项级联(属国/仰慕者)
+      </el-checkbox>
 
-<!--      <h5>外观配置</h5>-->
-<!--      <div class="line">-->
-<!--        <label>尺寸</label>-->
-<!--        <fast-select class="comp" size="small" :options="sizeOptions" v-model="params.size" @change="(val) => updateOptionStyle('size', val)"/>-->
-<!--      </div>-->
-<!--      <div class="line">-->
-<!--        <label>行高</label>-->
-<!--        <el-slider class="comp" v-model="params.bodyRowHeight" :min="30" :max="100"-->
-<!--                   @change="(val) => updateOptionStyle('bodyRowHeight', val + 'px')"></el-slider>-->
-<!--      </div>-->
-<!--      <el-checkbox v-model="params.fixedAvatar">固定头像列</el-checkbox>-->
-<!--      <el-checkbox v-model="params.flexHeight" @change="(val) => updateOptionStyle('flexHeight', val)">-->
-<!--        表格高度弹性自适应-->
-<!--      </el-checkbox>-->
+      <h5>外观配置</h5>
+      <div class="line">
+        <label>尺寸</label>
+        <fast-select class="comp" size="small" :options="sizeOptions" v-model="params.size" @change="(val) => updateOptionStyle('size', val)"/>
+      </div>
+      <div class="line">
+        <label>行高</label>
+        <el-slider class="comp" v-model="params.bodyRowHeight" :min="30" :max="100"
+                   @change="(val) => updateOptionStyle('bodyRowHeight', val + 'px')"></el-slider>
+      </div>
+      <el-checkbox v-model="params.fixedAvatar">固定头像列</el-checkbox>
+      <el-checkbox v-model="params.flexHeight" @change="(val) => updateOptionStyle('flexHeight', val)">
+        表格高度弹性自适应
+      </el-checkbox>
 
-<!--      <h5>钩子函数应用</h5>-->
-<!--      <el-checkbox v-model="params.loadSuccessTip">分页加载成功提示</el-checkbox>-->
-<!--      <el-checkbox v-model="params.customLoadFailTip">自定义加载失败提示</el-checkbox>-->
-<!--      <el-checkbox v-model="params.notDelete">不能删除诸葛亮(不弹窗)</el-checkbox>-->
-<!--      <el-checkbox v-model="params.notDeleteAfterConfirm">不允许删除赵云(弹窗后)</el-checkbox>-->
-<!--      <el-checkbox v-model="params.disableDefultDeleteSuccessTip">删除吕蒙时庆祝</el-checkbox>-->
-<!--      <el-checkbox v-model="params.customDeleteFailTip">自定义删除失败提示</el-checkbox>-->
-<!--      <el-checkbox v-model="params.customInsertSuccessTip">自定义插入成功提示</el-checkbox>-->
-<!--      <el-checkbox v-model="params.customInsertFailTip">自定义插入失败提示</el-checkbox>-->
-<!--      <el-checkbox v-model="params.disableUpdate">曹操不允许编辑</el-checkbox>-->
-<!--      <el-checkbox v-model="params.disableUpdateToHd">名字不允许改为皇帝</el-checkbox>-->
-<!--      <el-checkbox v-model="params.disableInsertSmy">不允许添加司马懿</el-checkbox>-->
-<!--      <el-checkbox v-model="params.disableCancelWhenUpdate">更新时不允许取消</el-checkbox>-->
+      <h5>钩子函数应用</h5>
+      <el-checkbox v-model="params.loadSuccessTip">分页加载成功提示</el-checkbox>
+      <el-checkbox v-model="params.customLoadFailTip">自定义加载失败提示</el-checkbox>
+      <el-checkbox v-model="params.notDelete">不能删除诸葛亮(不弹窗)</el-checkbox>
+      <el-checkbox v-model="params.notDeleteAfterConfirm">不允许删除赵云(弹窗后)</el-checkbox>
+      <el-checkbox v-model="params.disableDefultDeleteSuccessTip">删除吕蒙时庆祝</el-checkbox>
+      <el-checkbox v-model="params.customDeleteFailTip">自定义删除失败提示</el-checkbox>
+      <el-checkbox v-model="params.customInsertSuccessTip">自定义插入成功提示</el-checkbox>
+      <el-checkbox v-model="params.customInsertFailTip">自定义插入失败提示</el-checkbox>
+      <el-checkbox v-model="params.disableUpdate">曹操不允许编辑</el-checkbox>
+      <el-checkbox v-model="params.disableUpdateToHd">名字不允许改为皇帝</el-checkbox>
+      <el-checkbox v-model="params.disableInsertSmy">不允许添加司马懿</el-checkbox>
+      <el-checkbox v-model="params.disableCancelWhenUpdate">更新时不允许取消</el-checkbox>
 
-<!--      <h5>事件</h5>-->
-<!--      <el-checkbox v-model="params.autoSetGraduatedWhenAgeChange">超50岁自动毕业</el-checkbox>-->
-<!--      <el-checkbox v-model="params.noEditLuckWhenAgeGT35">超35岁不允许编辑幸运时刻</el-checkbox>-->
-<!--    </div>-->
+      <h5>事件</h5>
+      <el-checkbox v-model="params.autoSetGraduatedWhenAgeChange">超50岁自动毕业</el-checkbox>
+      <el-checkbox v-model="params.noEditLuckWhenAgeGT35">超35岁不允许编辑幸运时刻</el-checkbox>
+    </div>
 
     <my-table ref="myTable" :params="params" class="table"></my-table>
   </div>
@@ -84,6 +87,8 @@ export default {
         enableMulti: true,
         // 启用双击编辑
         enableDblClickEdit: true,
+        // 启用快筛项级联(蜀国和仰慕者)
+        enableCascading: true,
         // 默认尺寸
         size: 'default',
         bodyRowHeight: 45,

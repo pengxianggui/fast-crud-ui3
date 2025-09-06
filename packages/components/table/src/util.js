@@ -174,7 +174,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             quickFilter: quickFilter,
             firstFilter: firstFilter, // deprecated: 1.6.0
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
-            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption'])
+            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption', 'quickFilterConfig'])
         }
         try {
             if (filter !== false) {
@@ -568,11 +568,11 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
 }
 
 /**
- * 从columnConfig中针对指定col构造一个Filter
+ * 从columnConfig中针对指定col构造一个Filter, 返回null表示
  * @param col
  * @param columnConfig
  * @param tableOption
- * @return {创建Filter对象|null}
+ * @return FilterComponentConfig
  */
 export function getFilterComponent(col, columnConfig, tableOption) {
     if (util.isObject(columnConfig) && util.isObject(columnConfig[col]) && util.isObject(columnConfig[col]['customConfig'])) {

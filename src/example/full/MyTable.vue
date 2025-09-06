@@ -13,20 +13,19 @@
     </template>
     <fast-table-column label="ID" prop="id"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
-    <fast-table-column-img prop="gallery" label="相册" :multiple="true" :limit="10" filter
+    <fast-table-column-img prop="gallery" label="相册" filter width="300px"
+                           :multiple="true" :limit="10"
                            :before-remove="handleGalleryBeforeRemove"
                            :on-success="handleGalleryUploadSuccess"
                            :on-remove="handleGalleryRemove"
                            :response-handler="handleGalleryResponseHandle"
-                           :on-change="handleGalleryChange"
-                           width="300px"/>
+                           :on-change="handleGalleryChange"/>
     <fast-table-column-input label="姓名" prop="name" :filter="0" required/>
-    <fast-table-column-number label="年龄" prop="age" required :quick-filter="3"
+    <fast-table-column-number label="年龄" prop="age" required :quick-filter="3" :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               :min="16" :max="60"
-                              :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               @change="handleAgeChange"/>
-    <fast-table-column-select label="性别" prop="sex" :options="sexOptions" :multiple_q="true" :quick-filter="1"
-                              required>
+    <fast-table-column-select label="性别" prop="sex" :quick-filter="1" required
+                              :options="sexOptions" :multiple_q="true">
       <template #header="{column, $index}">
         <span>{{ $index + '.' + column.label }}</span>
       </template>
@@ -36,22 +35,20 @@
         <span v-else></span>
       </template>
     </fast-table-column-select>
-    <fast-table-column-select label="属国" prop="state" :options="stateOptions"
-                              :quick-filter="true" quick-filter-block quick-filter-checkbox
-                              val-key="code" label-key="name"
-                              :default-val_q="['1', '2', '3']"
-                              :disable-val="['4']"
-                              required/>
-    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter
-                              :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}" :multiple="true"/>
+    <fast-table-column-select label="属国" prop="state" required :quick-filter="true" quick-filter-block
+                              :options="stateOptions" quick-filter-checkbox val-key="code" label-key="name"
+                              :default-val_q="['1', '2', '3']" :disable-val="['4']"/>
+    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter :quick-filter-config="loveIdQuickFilterConfig"
+                              :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
+                              :multiple_q="true"/>
     <fast-table-column label="仰慕者姓名" prop="loveName"/>
-    <fast-table-column-textarea label="简介" prop="info" :show-length="20"/>
-    <fast-table-column-switch label="已毕业" prop="graduated" active-text="Y" inactive-text="N" quick-filter required/>
-    <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px"
-                                   :editable="({editRow}) => !(editRow.age > 35)" required/>
-    <fast-table-column-date-picker label="生日" prop="birthday" quick-filter
-                                   :disabled-date="(time) => time.getTime() > Date.now()"
-                                   required/>
+    <fast-table-column-textarea label="简介" prop="info"
+                                :show-length="20"/>
+    <fast-table-column-switch label="已毕业" prop="graduated" required
+                              active-text="Y" inactive-text="N" quick-filter/>
+    <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px" required :editable="({editRow}) => !(editRow.age > 35)"/>
+    <fast-table-column-date-picker label="生日" prop="birthday" quick-filter required
+                                   :disabled-date="(time) => time.getTime() > Date.now()"/>
     <fast-table-column-file label="简历" prop="resumeUrl" :multiple="true" :limit="3" :show-overflow-tooltip="false"/>
     <fast-table-column-input prop="idCard" label="身份证号" min-width="180px"/>
     <fast-table-column-input prop="address" label="地址" min-width="200px"/>
@@ -84,7 +81,7 @@
 <script>
 import {h, markRaw} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus';
-import {FastTableColumnImg, FastTableColumn, FastTableOption, util} from "../../../packages";
+import {FastTableColumnImg, FastTableColumn, FastTableColumnSelect, FastTableOption, util} from "../../../packages";
 import staticDict from './dict'
 import {pick} from "../../../packages/util/pick";
 import {Cpu, Link, Plus} from "@element-plus/icons-vue";
@@ -291,17 +288,30 @@ export default {
           // {col: 'name', opt: '=', val: '利威尔'} // 写法一
           // new Cond('name', 'like', '利威尔') // 写法二
         ],
-        render() {
+        render: () => {
           return [
             h(FastTableColumn, {prop: 'id', label: 'id'}),
             h(FastTableColumnImg, {prop: 'avatarUrl', label: '头像'}),
-            h(FastTableColumn, {prop: 'name', label: '姓名1', filter: 0})
+            h(FastTableColumn, {prop: 'name', label: '姓名1', filter: 0}),
+            h(FastTableColumnSelect, {prop: 'state', label: '蜀国', options: this.stateOptions})
           ]
         }
       }),
       tableKey: 0,
       defaultQueryOfCreatedTime: [monthAgo, now],
-      ...staticDict
+      ...staticDict,
+      loveIdQuickFilterConfig: {
+        onClick: (model, filter, filtersMap) => {
+          if (this.params.enableCascading === true && !util.isEmpty(model.state)) {
+            filter.props.tableOption.addCond({col: 'state', opt: 'in', val: model.state})
+          } else {
+            filter.props.tableOption.removeCond('state')
+          }
+        },
+        onChange: (val, model, filter, filtersMap) => {
+          ElMessage.info(`仰慕者快筛项值更新:${val}`)
+        }
+      }
     }
   },
   methods: {

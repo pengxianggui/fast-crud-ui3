@@ -44,7 +44,7 @@ export class Cond {
 
     constructor(col, opt, val) {
         assert(isString(col) && !isEmpty(col), 'col必须为有效字符串')
-        assert(Object.values(Opt).indexOf(opt) > -1, 'opt无效!')
+        assert(Object.values(Opt).indexOf(opt) > -1, `opt无效:${opt}`)
         this.col = col;
         this.opt = opt;
         this.val = val;
@@ -64,7 +64,10 @@ export class Cond {
         if (condJson instanceof Cond) {
             return condJson;
         }
-        return new Cond(condJson.col, defaultIfBlank(condJson.opt, Opt.EQ), condJson.val);
+        assert(isObject(condJson), 'cond不是json格式!')
+        const {col, opt = Opt.EQ, val} = condJson
+        assert(!isEmpty(col), 'cond格式不正确: 无col属性或其值为空!')
+        return new Cond(col, defaultIfBlank(opt, Opt.EQ), val);
     }
 }
 
@@ -511,6 +514,31 @@ class FastTableOption {
         this.beforeExport = beforeExport;
         this.exportSuccess = exportSuccess;
         this.exportFail = exportFail;
+    }
+
+    /**
+     * 向内置条件组中增加条件
+     * @param cond
+     * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
+     */
+    addCond(cond, repeatable = false) {
+        const c = Cond.build(cond)
+        if (repeatable === false) {
+            this.removeCond(c.col)
+        }
+        this.conds.push(c)
+    }
+
+    /**
+     * 从内置条件组中移除条件
+     * @param col
+     */
+    removeCond(col) {
+        for (let i = this.conds.length - 1; i >= 0; i--) {
+            if (this.conds[i].col === col) {
+                this.conds.splice(i, 1)
+            }
+        }
     }
 
     /**

@@ -3,11 +3,7 @@
     <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
     <div ref="quick" class="fc-quick-filter-wrapper" v-if="quickFilters.length > 0">
       <!-- 快筛 -->
-      <quick-filter-form :filters="quickFilters"
-                         :form-label-width="option.style.formLabelWidth"
-                         :size="option.style.size"
-                         :row-span="option.style.quickFilterSpan"
-                         :grid-gap="option.style.quickFilterGridGap">
+      <quick-filter-form :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
@@ -250,7 +246,7 @@ export default {
     }
     if (this.option.style.flexHeight) {
       nextTick(() => {
-        this.calTableHeight()
+        this.calTableHeight() // TODO 1.5.9 通过插槽扩展的自定义快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误
         window.addEventListener('resize', this.calTableHeight)
       })
       this.$watch('dynamicFilters.length', () => { // 动态过滤器变化时可能高度改变, 重新计算高度

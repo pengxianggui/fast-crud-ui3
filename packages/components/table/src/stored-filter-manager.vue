@@ -98,7 +98,9 @@ export default {
     label,
     handleAddCond(col, storeGroup) {
       const filter = getFilterComponent(col, this.columnConfig, this.tableOption)
-      storeGroup.filters.push(filter)
+      if (!util.isEmpty(filter)) {
+        storeGroup.filters.push(filter)
+      }
     },
     delConfig(index, filters) {
       filters.splice(index, 1)

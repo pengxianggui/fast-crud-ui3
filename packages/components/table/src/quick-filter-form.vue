@@ -1,5 +1,5 @@
 <template>
-  <el-form ref="quickFilterForm" :inline="true" :label-width="formLabelWidth" class="fc-quick-filter-form"
+  <el-form ref="quickFilterForm" :inline="true" :label-width="option.style.formLabelWidth" class="fc-quick-filter-form"
            :style="formStyle">
     <el-form-item v-for="filter in visibleFilters"
                   :key="filter.col"
@@ -8,7 +8,8 @@
                   :style="filter.props && filter.props.quickFilterBlock !== false ? formItemBlockStyle : ''"
                   :class="{'fc-block': filter.props && filter.props.quickFilterBlock !== false}"
                   class="fc-quick-filter-form-item">
-      <component :size="size" :is="filter.component" v-model="filter.val" v-bind="filter.props"/>
+      <component :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
+                 @change="handleChange(filter)" @click="handleClick(filter)"/>
     </el-form-item>
     <slot></slot>
   </el-form>
@@ -16,31 +17,17 @@
 
 <script>
 import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
-import {buildGridTemplateAreas} from "../../../util/util.js";
+import {buildGridTemplateAreas, isFunction} from "../../../util/util.js";
+import {FastTableOption} from "../../../index.js";
 
 export default {
   name: "quick-filter-form",
   components: {ArrowDown, ArrowUp},
   props: {
-    formLabelWidth: {
-      type: String,
-      default: () => 'auto'
-    },
+    option: FastTableOption,
     filters: {
       type: Array,
       default: () => []
-    },
-    rowSpan: {
-      type: Number,
-      default: () => 3
-    },
-    gridGap: {
-      type: String,
-      default: () => '10px 20px'
-    },
-    size: {
-      type: String,
-      default: () => 'small'
     }
   },
   data() {
@@ -70,18 +57,26 @@ export default {
       return filters
     },
     formStyle() {
-      const gridTemplateAreas = buildGridTemplateAreas(this.rowSpan, this.showFormItems)
+      const rowSpan = this.option.style.quickFilterSpan
+      const gridGap = this.option.style.quickFilterGridGap
+      const gridTemplateAreas = buildGridTemplateAreas(rowSpan, this.showFormItems)
       return {
         display: 'grid',
-        gridTemplateColumns: `repeat(${this.rowSpan}, 1fr)`,
+        gridTemplateColumns: `repeat(${rowSpan}, 1fr)`,
         gridTemplateAreas: gridTemplateAreas,
-        gap: this.gridGap
+        gap: gridGap
       }
     },
     formItemBlockStyle() {
+      const rowSpan = this.option.style.quickFilterSpan
       return {
-        gridColumn: `span ${this.rowSpan}`
+        gridColumn: `span ${rowSpan}`
       }
+    },
+    formModel() {
+      const model = {}
+      this.filters.forEach(f => model[f.col] = f.val)
+      return model
     }
   },
   mounted() {
@@ -95,6 +90,36 @@ export default {
         })
       }
     })
+  },
+  methods: {
+    handleChange(filter) {
+      debugger
+      const {props: {quickFilterConfig = {}}} = filter
+      const {onChange} = quickFilterConfig
+      if (!isFunction(onChange)) {
+        return
+      }
+      const filtersMap = this.filters.reduce((result, item) => {
+        result[item.col] = item
+        return result
+      }, {})
+      const context = this.option.context
+      onChange.call(context, filter.val, this.formModel, filter, filtersMap)
+    },
+    handleClick(filter) {
+      debugger
+      const {props: {quickFilterConfig = {}}} = filter
+      const {onClick} = quickFilterConfig
+      if (!isFunction(onClick)) {
+        return
+      }
+      const filtersMap = this.filters.reduce((result, item) => {
+        result[item.col] = item
+        return result
+      }, {})
+      const context = this.option.context
+      onClick.call(context, this.formModel, filter, filtersMap)
+    }
   }
 }
 </script>

@@ -28,6 +28,8 @@ export default {
             type: [Boolean, Number],
             default: () => false
         },
+        // 快筛更多配置: 解决筛选项级联问题
+        quickFilterConfig: Object, // {onChange: Function, onClick: Function}
         // TODO 兑现columnFilter: 目前filter作为某列筛选的总开关, 无法实现“保留quickFilter但禁用columnFilter”
         columnFilter: {
             type: [Boolean, Number],

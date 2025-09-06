@@ -87,6 +87,11 @@ export default {
       options: [] // pick勾选的选项
     }
   },
+  mounted() {
+    if (!isEmpty(this.modelValue)) { // 有初始值, 先构造一个选项以便正常显示
+      this.options = [{label: this.modelValue, value: this.modelValue}]
+    }
+  },
   computed: {
     value: {
       get() {
@@ -139,7 +144,9 @@ export default {
             return {value: item[valKey], label: item[labelKey]}
           })
           // 赋值value
-          this.value = this.valueCovert(data, valKey)
+          const newVal = this.valueCovert(data, valKey)
+          this.value = newVal
+          this.$emit('change', newVal)
           if (this.multiple !== true && isObject(data)) {
             // 赋值pickObject
             Object.entries(this.pickMap).forEach(([pickFieldName, formFieldName]) => {
