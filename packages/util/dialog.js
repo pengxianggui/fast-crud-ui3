@@ -44,6 +44,8 @@ import {getAppContext} from "../index.js"
  * @returns {Promise<unknown>}
  */
 export function openDialog({component, props = {}, dialogProps = {}}) {
+    // TODO 即使okClose设置为false, 第二次及之后触发ok事件并执行resolve后，外部仍然无法第二次走then逻辑, 因为promise已经成为终态了。
+    //  若未来这个问题必须解决，一个可行的方案是：由promise改成传入回调函数: handleOk和handleCancel
     const {buttons = [], okClose = true, ...validDialogProps} = dialogProps
 
     return new Promise((resolve, reject) => {

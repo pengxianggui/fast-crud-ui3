@@ -706,7 +706,7 @@ class FastTableOption {
                 dialogProps: {
                     title: '导出设置',
                     width: '60%',
-                    okClose: false
+                    // okClose: false
                 }
             }).then(({columns, all = false}) => {
                 // 导出数据
@@ -718,7 +718,7 @@ class FastTableOption {
                 }, {
                     responseType: 'blob'
                 }).then((data) => {
-                    const url = window.URL.createObjectURL(new Blob([data]));
+                    const url = window.URL.createObjectURL(data);
                     const link = document.createElement('a')
                     link.href = url;
                     const dateStr = dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
