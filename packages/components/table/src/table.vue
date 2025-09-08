@@ -1,7 +1,7 @@
 <template>
   <div class="fc-fast-table">
     <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
-    <div ref="quick" class="fc-quick-filter-wrapper" v-if="quickFilters.length > 0">
+    <div ref="quick" class="fc-quick-filter-wrapper">
       <!-- 快筛 -->
       <quick-filter-form :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
@@ -215,6 +215,7 @@ export default {
       pageQuery.addOrder(this.option.sortField, !this.option.sortDesc);
     }
     return {
+      heightObserver: new ResizeObserver(() => this.calTableHeight()), // 表格高度重算监听器(dom级别)和窗口resize不冲突,互为弥补
       tableKey: 0, // 用于前端刷新表格
       loading: false, // 表格数据是否正加载中
       choseRow: null, // 当前选中的行记录
@@ -245,9 +246,9 @@ export default {
       this.pageLoad()
     }
     if (this.option.style.flexHeight) {
-      const observer = new ResizeObserver(() => this.calTableHeight())
       nextTick(() => {
-        observer.observe(this.$refs.quick) // FIX: 快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误, 通过这个解决此问题
+        this.heightObserver.observe(this.$refs.quick) // FIX: 快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误, 通过这个解决此问题
+        this.heightObserver.observe(this.$refs.dynamic)
         this.calTableHeight()
         window.addEventListener('resize', this.calTableHeight)
       })
@@ -808,6 +809,7 @@ export default {
   beforeUnmount() {
     // 清理事件监听
     window.removeEventListener('resize', this.calTableHeight);
+    this.heightObserver.disconnect() // 取消所有监听
   }
 }
 </script>
