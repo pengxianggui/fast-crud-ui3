@@ -6,7 +6,8 @@
                    :size="size"
                    :filterable="true"
                    @change="changeField"/>
-      <component class="fc-easy-filter-value" :is="activeFilter.component" v-model="activeFilter.val"
+      <component ref="easyFilterComp" class="fc-easy-filter-value" :is="activeFilter.component"
+                 v-model="activeFilter.val"
                  v-bind="activeFilter.props"
                  :size="size"
                  @clear="handleClear"
@@ -57,6 +58,15 @@ export default {
     return {
       activeFilterCol: null
     }
+  },
+  mounted() {
+    this.$nextTick(() => {
+      if (this.$refs.easyFilterComp) {
+        setTimeout(() => {
+          this.$refs.easyFilterComp.focus()
+        }, 50) // 如果当前FastTable在ElDialog中,会因为visible之后的动画二导致渲染会稍晚一点, 只nextTick不够，这里稍等会会
+      }
+    })
   },
   methods: {
     changeField() {
