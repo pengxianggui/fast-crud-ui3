@@ -1,7 +1,7 @@
 <template>
   <div class="fc-fast-table">
     <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
-    <div ref="quick" class="fc-quick-filter-wrapper">
+    <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle">
       <!-- 快筛 -->
       <quick-filter-form :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
@@ -179,6 +179,18 @@ export default {
         return 'insert';
       } else {
         return 'normal';
+      }
+    },
+    // 快筛区域样式: 控制当快筛区无内容时,css隐藏快筛区
+    quickFilterWrapperStyle() {
+      const filtersEmpty = !this.quickFilters || this.quickFilters.length === 0
+      let slotEmpty = true
+      if (this.$slots.quickFilter) {
+        const slotContent = this.$slots.quickFilter(this.scopeParam)
+        slotEmpty = !slotContent || slotContent.length === 0
+      }
+      return {
+        display: filtersEmpty && slotEmpty ? 'none' : 'block'
       }
     },
     // 行样式
@@ -826,7 +838,7 @@ export default {
   }
 
   .fc-quick-filter-wrapper {
-    padding: 10px 0;
+    padding-bottom: 10px;
     box-sizing: border-box;
     border-bottom: 1px solid #dfdfdf;
     margin-bottom: 10px;
