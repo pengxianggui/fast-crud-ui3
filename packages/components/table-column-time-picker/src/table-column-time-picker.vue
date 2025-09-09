@@ -3,7 +3,8 @@
                    :prop="prop"
                    :label="label"
                    :show-overflow-tooltip="showOverflowTooltip"
-                   v-bind="$attrs">
+                   v-bind="$attrs"
+                   v-if="!hidden">
     <template #header="{column, $index}">
       <fast-table-head-cell :column="columnProp" @click="headCellClick(column)">
         <slot name="header" v-bind:column="column" v-bind:$index="$index">

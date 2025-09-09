@@ -16,6 +16,7 @@
 | ~~firstFilter~~             | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除                       | `Boolean`                                                              | `false` |
 | quickFilterBlock            | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                                           | `Boolean`                                                              | `false` |
 | editable                    | 此列是否可编辑(针对`FastTableColumn`无效)                                                                   | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
+| hidden(`1.5.9+`)            | 此列是否可展示(若需要检索, 但无需展示时有用)                                                                         | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
 | required                    | 编辑状态时此列是否必填                                                                                      | `Boolean`                                                              | `false` |
 | showLength(`1.5.7+`)        | 设置一个长度值，当单元格显示字符长度超过此值且无法显示全时会省略并支持点击弹窗预览完整内容(支持json预览), 注意: `FastColumnImg`和`FastColumnFile`不支持 | `Number`                                                               | `-`     |
 | rules                       | 编辑状态时针对此项的表单验证(同Element ElFormItem)                                                              | `Array`                                                                | `[]`    |
