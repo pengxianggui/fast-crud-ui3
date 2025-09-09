@@ -44,7 +44,8 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
             const slotContent = isFunction(option.render) ? option.render.call(_this) : []
             return h(FastTable, {
                     ref: 'table',
-                    option: this.option
+                    option: this.option,
+                    height: '460px'
                 },
                 {
                     default: () => slotContent
