@@ -138,7 +138,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
         size: tableOption.style.size
     }
 
-    for (let i = tableColumnVNodes.length - 1; i >= 0; i--) { // 逆序遍历确保简筛顺序
+    for (let i = 0; i < tableColumnVNodes.length; i++) {
         const columnVNode = tableColumnVNodes[i]
         const {
             props: _props,

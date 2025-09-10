@@ -16,10 +16,13 @@
 | ~~firstFilter~~             | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除                       | `Boolean`                                                              | `false` |
 | quickFilterBlock            | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                                           | `Boolean`                                                              | `false` |
 | editable                    | 此列是否可编辑(针对`FastTableColumn`无效)                                                                   | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
-| hidden(`1.5.9+`)            | 此列是否可展示(若需要检索, 但无需展示时有用)                                                                         | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
+| hidden(`1.5.9+`)            | 此列是否可展示(若需要检索, 但无需展示时有用)                                                                         | `Boolean`                                                              | `true`  |
+| link(`1.5.9+`)              | 此列单元格是否显示为链接(若为Boolean类型且为true则默认将单元格内容作为链接地址, 若为字符串类型且非空则将link值作为链接地址,支持路由名、路由地址和http绝对地址)      | `Boolean`/`String`                                                     | `false` |
 | required                    | 编辑状态时此列是否必填                                                                                      | `Boolean`                                                              | `false` |
 | showLength(`1.5.7+`)        | 设置一个长度值，当单元格显示字符长度超过此值且无法显示全时会省略并支持点击弹窗预览完整内容(支持json预览), 注意: `FastColumnImg`和`FastColumnFile`不支持 | `Number`                                                               | `-`     |
 | rules                       | 编辑状态时针对此项的表单验证(同Element ElFormItem)                                                              | `Array`                                                                | `[]`    |
+
+> link还支持插值表达式，例如 link="/user/page?id={id}", 则插值站位{id}将会替换为此行记录中真实的id值
 
 ### quickFilterConfig
 

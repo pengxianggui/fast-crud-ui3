@@ -16,7 +16,7 @@
 
     <template #default="{row, column, $index}">
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-        <fast-content-dialog :value="showLabel(row)" :show-length="showLength"/>
+        <fast-cell-content :value="showLabel(row)" :fat-row="row" :show-length="showLength" :linkTo="link"/>
       </slot>
     </template>
   </el-table-column>
@@ -24,11 +24,11 @@
 
 <script>
 import tableColumn from "../../../mixins/table-column"
-import FastContentDialog from "../../content-dialog/src/fast-content-dialog.vue";
+import FastCellContent from "../../content-dialog/src/fast-cell-content.vue";
 
 export default {
   name: "FastTableColumn",
-  components: {FastContentDialog},
+  components: {FastCellContent},
   mixins: [tableColumn],
   props: {
     minWidth: {

@@ -1,5 +1,5 @@
 import FastCheckboxGroup from "./components/checkbox-group";
-import FastContentDialog from "./components/content-dialog/src/fast-content-dialog.vue";
+import FastCellContent from "./components/content-dialog/src/fast-cell-content.vue";
 import FastJsonViewer from "./components/json-viewer/src/fast-json-viewer.vue";
 import FastSelect from "./components/select";
 import FastUpload from "./components/upload";
@@ -71,6 +71,9 @@ const install = function (app, opts = {}) {
     if (opts.hasOwnProperty('$http')) {
         FastTableOption.$http = opts.$http
     }
+    if (opts.hasOwnProperty('$router')) {
+        FastTableOption.$router = opts.$router
+    }
     components.forEach(component => {
         app.component(component.name, component);
     });
@@ -104,7 +107,7 @@ const util = {
 
 export {
     FastCheckboxGroup,
-    FastContentDialog,
+    FastCellContent,
     FastJsonViewer,
     FastSelect,
     FastUpload,

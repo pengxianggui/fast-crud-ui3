@@ -21,7 +21,8 @@
                            :response-handler="handleGalleryResponseHandle"
                            :on-change="handleGalleryChange"/>
     <fast-table-column-input label="姓名" prop="name" :filter="0" required/>
-    <fast-table-column-number label="年龄" prop="age" required :quick-filter="3" :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
+    <fast-table-column-number label="年龄" prop="age" required :quick-filter="3"
+                              :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               :min="16" :max="60"
                               @change="handleAgeChange"/>
     <fast-table-column-select label="性别" prop="sex" :quick-filter="1" required
@@ -38,15 +39,17 @@
     <fast-table-column-select label="属国" prop="state" required :quick-filter="true" quick-filter-block
                               :options="stateOptions" quick-filter-checkbox val-key="code" label-key="name"
                               :default-val_q="['1', '2', '3']" :disable-val="['4']"/>
-    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter :hidden="true" :quick-filter-config="loveIdQuickFilterConfig"
+    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter :hidden="true"
+                              :quick-filter-config="loveIdQuickFilterConfig"
                               :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
                               :multiple_q="true"/>
     <fast-table-column label="仰慕者姓名" prop="loveName"/>
-    <fast-table-column-textarea label="简介" prop="info"
+    <fast-table-column-textarea label="简介" prop="info" link="withdrawSampleDetail?id={id}&pageType=detail"
                                 :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" required
                               active-text="Y" inactive-text="N" quick-filter/>
-    <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px" required :editable="({editRow}) => !(editRow.age > 35)"/>
+    <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px" required
+                                   :editable="({editRow}) => !(editRow.age > 35)"/>
     <fast-table-column-date-picker label="生日" prop="birthday" quick-filter required
                                    :disabled-date="(time) => time.getTime() > Date.now()"/>
     <fast-table-column-file label="简历" prop="resumeUrl" :multiple="true" :limit="3" :show-overflow-tooltip="false"/>
@@ -293,7 +296,13 @@ export default {
             h(FastTableColumn, {prop: 'id', label: 'id'}),
             h(FastTableColumnImg, {prop: 'avatarUrl', label: '头像'}),
             h(FastTableColumn, {prop: 'name', label: '姓名1', filter: 0}),
-            h(FastTableColumnSelect, {prop: 'state', label: '蜀国', options: this.stateOptions,  valKey:"code", labelKey:"name"})
+            h(FastTableColumnSelect, {
+              prop: 'state',
+              label: '蜀国',
+              options: this.stateOptions,
+              valKey: "code",
+              labelKey: "name"
+            })
           ]
         }
       }),

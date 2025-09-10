@@ -1,7 +1,7 @@
-import FastContentDialog from './src/fast-content-dialog.vue'
+import FastCellContent from './src/fast-cell-content.vue'
 
-FastContentDialog.install = (app) => {
-    app.component(FastContentDialog.name, FastContentDialog)
+FastCellContent.install = (app) => {
+    app.component(FastCellContent.name, FastCellContent)
 }
 
-export default FastContentDialog
+export default FastCellContent

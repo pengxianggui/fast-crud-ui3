@@ -141,6 +141,7 @@ import {
   isEmpty,
   isFunction,
   isNull,
+  isNumber,
   noRepeatAdd
 } from "../../../util/util"
 import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport} from "./util"
@@ -250,8 +251,6 @@ export default {
       context: this.option.context // 提供给fast-table-column* 获取上下文信息
     }
   },
-  beforeMount() {
-  },
   mounted() {
     this.buildComponentConfig()
     if (!this.option.lazyLoad) {
@@ -320,8 +319,14 @@ export default {
         };
       })
       // 排序
-      this.quickFilters.sort((f1, f2) => f1.index - f2.index)
-      this.easyFilters.sort((f1, f2) => f1.index - f2.index)
+      this.quickFilters.sort((f1, f2) => {
+        const d = f1.index - f2.index
+        return d === 0 ? -1 : d
+      })
+      this.easyFilters.sort((f1, f2) => {
+        const d = f1.index - f2.index
+        return d === 0 ? -1 : d
+      })
     },
     /**
      * 暂只支持单列排序, 原因: 1.通过option指定的默认排序不好回显在表头; 2.多字段排序会导致操作比较繁琐
@@ -348,8 +353,9 @@ export default {
     },
     /**
      * 分页加载请求
+     * @param page 第几页, 可不传(默认为当前页码)
      */
-    pageLoad() {
+    pageLoad(page) {
       const confirmPromise = (this.status !== 'normal')
           ? ElMessageBox.confirm('当前处于编辑状态, 点击【确定】将丢失已编辑内容?', '提示', {
             confirmButtonText: '确定',
@@ -376,6 +382,9 @@ export default {
         const context = this.option.context;
         const beforeLoad = this.option.beforeLoad;
         return new Promise((resolve, reject) => {
+          if (!isEmpty(page) && isNumber(page)) {
+            this.pageQuery.current = page
+          }
           beforeLoad.call(context, {query: this.pageQuery}).then(() => {
             this.loading = true;
             post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {

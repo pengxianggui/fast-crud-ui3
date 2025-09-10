@@ -1,11 +1,11 @@
 import {colEditable} from "../components/table/src/util"
 import FastTableHeadCell from "../components/table/src/table-head-cell.vue"
-import FastContentDialog from "../components/content-dialog/src/fast-content-dialog.vue";
+import FastCellContent from "../components/content-dialog/src/fast-cell-content.vue";
 
 export default {
     inject: ['openDynamicFilterForm', 'tableStyle', 'context'],
     emits: ['change', 'focus', 'blur', 'input', 'clear'],
-    components: {FastTableHeadCell, FastContentDialog},
+    components: {FastTableHeadCell, FastCellContent},
     props: {
         prop: {
             type: String,
@@ -15,15 +15,22 @@ export default {
             type: String,
             required: true
         },
-        // TODO 兑现hidden, 以实现某一列不显示, 仍然可以参与生成筛选项
+        // 值为Boolean且为true时, 则将单元格内容作为链接地址; 值为字符串其非空时，将值作为跳转地址,且以超链接的形式展示单元格内容, 并支持点击, 值支持路由地址、路由名、绝对地址
+        link: {
+            type: [Boolean, String],
+            default: () => false
+        },
+        // 以实现某一列不显示, 仍然可以参与生成筛选项
         hidden: {
             type: Boolean,
             default: () => false
         },
+        // 此列是否支持过滤
         filter: {
             type: [Boolean, Number],
             default: () => true
         },
+        // 此列是否支持快筛
         quickFilter: {
             type: [Boolean, Number],
             default: () => false

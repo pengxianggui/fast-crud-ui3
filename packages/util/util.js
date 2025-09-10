@@ -717,3 +717,81 @@ export function buildGridTemplateAreas(rowNum, totalItems) {
 
     return rows.join('\n');
 }
+
+/**
+ * 将str中的插值替换为obj中的真实值。例如"/user?id={id}" 则将取obj中的id属性值替换为 "/user?id=2"
+ * @param str
+ * @param obj
+ */
+export function strFormat(str, obj) {
+    if (!isString(str)) return str
+    return str.replace(/{(.*?)}/g, (_, key) => {
+        const val = obj[key.trim()]
+        // 如果没有找到值，就原样返回占位符
+        return !isUndefined(val) && !isNull(val) ? val : `{${key}}`
+    })
+}
+
+/**
+ * 提取 URL 字符串中的 query 参数为对象
+ * @param {string} url
+ * @returns {Object} path和query为key组成的对象, 注意: 入参url若不是/开头，则返回的path值也不是/开头
+ */
+export function extractUrlAndQueryParams(url) {
+    const defaultResult = {path: url, query: {}}
+    if (isEmpty(url)) {
+        return defaultResult
+    }
+    const beginSlash = url.startsWith('/')
+    try {
+        // 如果传的是相对路径（/user?...），拼一个基准域名
+        const fullUrl = isUrl(url) ? url : window.location.origin + (beginSlash ? url : '/' + url)
+        const u = new URL(fullUrl)
+        const query = {}
+        for (const [key, value] of u.searchParams.entries()) {
+            query[key] = value
+        }
+        return {
+            path: beginSlash ? u.pathname : cutPrefix(u.pathname, '/'),
+            query: query
+        }
+    } catch (e) {
+        console.error('extractQueryParams error:', e)
+        return defaultResult
+    }
+}
+
+
+/**
+ * 判断版本号是否大于等于目标版本, 若某个位不为数字，则视为0
+ * @param {string} current 当前版本号，如 "2.9.8"
+ * @param {string} target 目标版本号，如 "2.9.9"
+ * @returns {boolean} 当前版本 >= 目标版本 返回 true，否则 false
+ */
+export function versionGte(current, target) {
+    if (isEmpty(target)) {
+        return true
+    }
+    if (isEmpty(current)) {
+        return false
+    }
+    const parse = (v) => v.split('.').map((n) => {
+        try {
+            return parseInt(n, 10)
+        } catch (err) {
+            return 0
+        }
+    });
+    const cur = parse(current);
+    const tar = parse(target);
+    // 补齐三位
+    while (cur.length < 3) cur.push(0);
+    while (tar.length < 3) tar.push(0);
+
+    for (let i = 0; i < 3; i++) {
+        if (cur[i] > tar[i]) return true;
+        if (cur[i] < tar[i]) return false;
+        // 相等就继续下一位比较
+    }
+    return true; // 完全相等也算 >=
+}

@@ -17,7 +17,7 @@
       <slot v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
         <div v-if="!canEdit(row, column, $index)">
           <slot name="normal" v-bind:row="row" v-bind:column="column" v-bind:$index="$index">
-            <fast-content-dialog :value="showLabel(row)" :show-length="showLength"/>
+            <fast-cell-content :value="showLabel(row)" :fat-row="row" :show-length="showLength" :linkTo="link"/>
           </slot>
         </div>
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>

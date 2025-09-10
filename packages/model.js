@@ -354,7 +354,8 @@ class FastTableOption {
     exportSuccess; // 导出成功后
     exportFail; // 导出失败后
 
-    static $http;
+    static $http; // Axios实例
+    static $router; // VueRouter实例
 
     constructor({
                     context,
