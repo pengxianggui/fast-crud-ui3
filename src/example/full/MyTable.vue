@@ -113,6 +113,7 @@ export default {
         module: 'student', // 配置了这个, 默认分页接口就是: /student/page, 新增接口就是: /student/insert, 其它同理
         enableDblClickEdit: true,
         enableMulti: true,
+        enableIndex: true,
         enableColumnFilter: true,
         lazyLoad: false,
         editType: 'inline', // 默认inline

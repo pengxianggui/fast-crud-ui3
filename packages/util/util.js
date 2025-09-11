@@ -216,8 +216,16 @@ export function isUrl(val) {
  * @param font 字体设置。默认 "14px Arial", 不同字体大小会影响计算
  */
 export function isOverLength(val, width, font = '14px Arial') {
-    if (val == null) return false;
+    return calLength(val, font) > width
+}
 
+/**
+ * 给定一个值，计算其渲染长度(px)
+ * @param val
+ * @param font
+ */
+export function calLength(val, font = '14px Arial') {
+    if (val == null) return 0;
     // 转成字符串
     let str;
     if (typeof val === "object") {
@@ -234,10 +242,7 @@ export function isOverLength(val, width, font = '14px Arial') {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     context.font = font;
-
-    const textWidth = context.measureText(str).width;
-
-    return textWidth > width;
+    return context.measureText(str).width;
 }
 
 /**

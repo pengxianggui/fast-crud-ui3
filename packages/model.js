@@ -101,7 +101,15 @@ export class Query {
         return this;
     }
 
-    addCond(cond) {
+    /**
+     * @param cond
+     * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
+     * @return {Query}
+     */
+    addCond(cond, repeatable = true) {
+        if (repeatable === false) {
+            this.removeCond(c.col)
+        }
         this.conds.push(cond);
         return this;
     }
@@ -245,8 +253,14 @@ export class FilterComponentConfig {
         return this.val !== null && this.val !== undefined && this.val !== '' && this.val.length !== 0;
     }
 
+    /**
+     * 返回值是否变更
+     * @return {boolean}
+     */
     reset() {
+        const valChanged = (this.val !== this.defaultVal)
         this.val = this.defaultVal
+        return valChanged
     }
 
     getConds() {
@@ -303,6 +317,7 @@ class FastTableOption {
     exportUrl = ''; // 数据导出接口: 默认为${baseUrl}/export
     enableDblClickEdit = true;
     enableMulti = true; // 启用多选
+    enableIndex = false; // 是否启用序号列
     enableColumnFilter = true; // 启用列过滤：即动筛
     lazyLoad = false; // 不立即加载数据
     editType = 'inline'; // inline/form
@@ -376,6 +391,7 @@ class FastTableOption {
                     exportUrl = '',
                     enableDblClickEdit = true,
                     enableMulti = true,
+                    enableIndex = false,
                     enableColumnFilter = true,
                     lazyLoad = false,
                     editType = 'inline',
@@ -423,6 +439,7 @@ class FastTableOption {
         assert(isString(baseUrl), 'baseUrl必须是字符串')
         assert(isBoolean(enableDblClickEdit) || isFunction(enableDblClickEdit), 'enableDblClickEdit必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableMulti) || isFunction(enableMulti), 'enableMulti必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(enableIndex) || isFunction(enableIndex), 'enableIndex必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableColumnFilter) || isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
         assert(isBoolean(lazyLoad), 'lazyLoad必须为布尔值')
         assert(['inline', 'form'].includes(editType), 'editType必须为inline或form')
@@ -474,6 +491,7 @@ class FastTableOption {
         this.exportUrl = defaultIfBlank(exportUrl, this.baseUrl + '/export');
         this.enableDblClickEdit = enableDblClickEdit;
         this.enableMulti = enableMulti;
+        this.enableIndex = enableIndex;
         this.enableColumnFilter = enableColumnFilter;
         this.lazyLoad = lazyLoad;
         this.editType = editType;

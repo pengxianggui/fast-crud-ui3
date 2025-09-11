@@ -3,7 +3,7 @@
     <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
     <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle">
       <!-- 快筛 -->
-      <quick-filter-form :filters="quickFilters" :option="option">
+      <quick-filter-form ref="quickForm" :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
@@ -36,7 +36,8 @@
           </el-button>
         </template>
         <template v-if="status === 'update' || status === 'insert'">
-          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除</el-button>
+          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除
+          </el-button>
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
           <el-button :size="option.style.size" @click="toInsert"
                      v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
@@ -103,7 +104,12 @@
                 :height="heightTable"
                 :size="option.style.size"
                 border>
-        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"></el-table-column>
+        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"/>
+        <el-table-column label="序号" :min-width="indexWith" v-if="getBoolVal(option.enableIndex, false)">
+          <template #default="{ $index }">
+            {{ $index + 1 + pageQuery.size * (pageQuery.current - 1) }}
+          </template>
+        </el-table-column>
         <slot></slot>
       </el-table>
     </div>
@@ -134,6 +140,7 @@ import DynamicFilterList from "./dynamic-filter-list.vue"
 import {PageQuery} from '../../../model'
 import FastTableOption from "../../../model"
 import {
+  calLength,
   defaultIfEmpty,
   getFullHeight, getInnerHeight,
   ifBlank,
@@ -193,6 +200,11 @@ export default {
       return {
         display: filtersEmpty && slotEmpty ? 'none' : 'block'
       }
+    },
+    indexWith() {
+      const currentPageMaxIndex = this.pageQuery.current * this.pageQuery.size
+      const width = calLength(currentPageMaxIndex) + 40
+      return width <= 60 ? 60 : width
     },
     // 行样式
     rowStyle() {
@@ -421,7 +433,11 @@ export default {
       const context = this.option.context
       const beforeReset = this.option.beforeReset
       beforeReset.call(context, {query: this.pageQuery}).then(() => {
-        this.quickFilters.forEach((f) => f.reset())
+        this.quickFilters.forEach((f) => {
+          if (f.reset()) {
+            this.$refs.quickForm.handleChange(f) // 为了触发快筛值onChange
+          }
+        })
         this.easyFilters.forEach((f) => f.reset())
         this.dynamicFilters.length = 0
         this.storedFilters.length = 0
