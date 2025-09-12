@@ -37,7 +37,7 @@
 </template>
 <script setup>
   import {h} from 'vue'
-  import {pick, FastTableOption, FastTableColumn, FastTableColumnNumber, FastTableColumnDatePicker} from 'fast-crud-ui3'
+  import {util, FastTableOption, FastTableColumn, FastTableColumnNumber, FastTableColumnDatePicker} from 'fast-crud-ui3'
 
   const studentTableOption = new FastTableOption({
     module: 'student',
@@ -52,7 +52,7 @@
     }
   })
   const pickStudent = () => {
-    pick({
+    util.pick({
       option: studentTableOption,
       multiple: false,
       dialog: {

@@ -57,11 +57,11 @@ FastCrud提供的`openDialog`方法可以让你直接以js驱动一个弹窗, �
   </div>
 </template>
 <script setup>
-  import {openDialog} from 'fast-crud-ui3'
+  import {util} from 'fast-crud-ui3'
   import {CheckPannel} from '...'
 
   const check = () => {
-    openDialog({
+     util.openDialog({
       component: CheckPannel,
       props: {
         propA: 1,
