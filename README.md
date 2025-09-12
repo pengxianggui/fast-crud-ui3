@@ -55,6 +55,7 @@ import '@/assets/index.scss'
 import '@/../packages/assets/fonts/iconfont.css'
 import FastCrudUI from 'fast-crud-ui3'
 import http from "@/http";
+import router from '@/router'
 
 const app = createApp(App)
 app.use(ElementPlus, {
@@ -62,6 +63,7 @@ app.use(ElementPlus, {
 })
 app.use(FastCrudUI, {
     $http: http,
+    $router: router,
     // fast-crud-ui3配置项
 })
 // 注册element-plus图标

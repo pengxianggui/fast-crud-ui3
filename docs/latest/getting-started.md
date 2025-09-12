@@ -45,17 +45,19 @@ import {createApp} from 'vue'
 import FastCrudUI from 'fast-crud-ui3'
 import 'fast-crud-ui3/lib/style.css'
 import http from '../request.js'
+import router from '../router.js'
 
 const app = createApp(App)
 
 // FastCrudUI的注册放在ElementPlus之后
 app.use(FastCrudUI, {
-    $http: http // http是你的axios实例, FastCrud标准功能涉及Rest请求
+    $http: http, // http是你的axios实例, FastCrud标准功能涉及Rest请求
+    $router: router // router是你的路由实例，此项非必须
 })
 
 ```
 
-> 以上为vue3, vue2同理
+> $http是必须配置的。当某列启用配置link且值为路由名或的地址时,需要配置$router(详见[FastTableColumn*](/latest/comp/fast-table-column.html))
 
 至此前端部分已集成。
 
