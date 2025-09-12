@@ -39,7 +39,7 @@
     <fast-table-column-select label="属国" prop="state" required :quick-filter="true" quick-filter-block
                               :options="stateOptions" quick-filter-checkbox val-key="code" label-key="name"
                               :default-val_q="['1', '2', '3']" :disable-val="['4']"/>
-    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter :hidden="true"
+    <fast-table-column-object label="仰慕者" prop="loveId" quick-filter
                               :quick-filter-config="loveIdQuickFilterConfig"
                               :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
                               :multiple_q="true"/>
