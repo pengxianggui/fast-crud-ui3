@@ -247,10 +247,10 @@ export default {
       checkedRows: [], // 代表多选时勾选的行记录
       pageQuery: pageQuery, // 分页查询构造参数
       columnConfig: {}, // 列对应的配置。key: column prop属性名, value为通过fast-table-column*定义的属性(外加tableColumnComponentName属性)
-      quickFilters: [], // 快筛配置
-      easyFilters: [], // 简筛配置
-      dynamicFilters: [], // 动筛配置
-      storedFilters: [], // 存筛配置
+      quickFilters: [], // 快筛配置 TODO 支持缓存
+      easyFilters: [], // 简筛配置 TODO 支持缓存
+      dynamicFilters: [], // 动筛配置 TODO 支持缓存
+      storedFilters: [], // 存筛配置 TODO 支持缓存
       list: [], // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
       total: 0, // 表格总数
       tableFlexHeight: null, //表格的弹性高度(动态计算值), 初始值是null非常重要, 如果内部计算出现问题外部又没自定义高度,相当于没有设置height值, 默认展示效果
