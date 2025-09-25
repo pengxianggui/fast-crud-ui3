@@ -122,7 +122,7 @@
                      :page-sizes="option.pagination['page-sizes']"
                      :total="total"
                      @current-change="pageLoad"
-                     @size-change="() => pageLoad"
+                     @size-change="() => pageLoad()"
                      :layout="option.pagination.layout"></el-pagination>
     </div>
   </div>
