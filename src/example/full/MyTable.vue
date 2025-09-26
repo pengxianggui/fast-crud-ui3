@@ -11,7 +11,7 @@
         <el-input :size="size" v-model="customQueryParam.keyword" placeholder="同时筛选姓名和仰慕者姓名"/>
       </el-form-item>
     </template>
-    <fast-table-column label="ID" prop="id"/>
+    <fast-table-column label="ID" prop="id" :dynamic-filter="false" :quick-filter="true"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
     <fast-table-column-img prop="gallery" label="相册" filter width="300px"
                            :multiple="true" :limit="10"

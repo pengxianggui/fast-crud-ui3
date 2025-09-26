@@ -25,7 +25,7 @@ export default {
             type: Boolean,
             default: () => false
         },
-        // 此列是否支持过滤
+        // 此列是否支持过滤. 若为false, 则简筛、快筛、动筛都将不支持。此优先级高于quickFilter和dynamicFilter
         filter: {
             type: [Boolean, Number],
             default: () => true
@@ -35,11 +35,15 @@ export default {
             type: [Boolean, Number],
             default: () => false
         },
+        quickFilterBlock: {
+            type: Boolean,
+            default: () => false
+        },
         // 快筛更多配置: 解决筛选项级联问题
         quickFilterConfig: Object, // {onChange: Function, onClick: Function}
-        // TODO 1.5.10 兑现columnFilter: 目前filter作为某列筛选的总开关, 无法实现“保留quickFilter但禁用columnFilter”
-        columnFilter: {
-            type: [Boolean, Number],
+        // 此列是否支持动筛: 若为false, 则列头不可点击
+        dynamicFilter: {
+            type: Boolean,
             default: () => true
         },
         // deprecated: 1.6.0
@@ -48,10 +52,6 @@ export default {
             default: () => false
         },
         showOverflowTooltip: {
-            type: Boolean,
-            default: () => false
-        },
-        quickFilterBlock: {
             type: Boolean,
             default: () => false
         },
@@ -70,6 +70,7 @@ export default {
                 prop: this.prop,
                 label: this.label,
                 filter: this.filter,
+                dynamicFilter: this.dynamicFilter,
                 order: '' // '', 'asc', 'desc'
             }
         }
@@ -90,7 +91,7 @@ export default {
             return status === 'normal' ? row[this.prop] : editRow[this.prop];
         },
         headCellClick(column) {
-            if (this.filter !== false) {
+            if (this.filter !== false && this.dynamicFilter !== false) {
                 this.openDynamicFilterForm(this.columnProp)
             }
         },

@@ -163,15 +163,16 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
 
         const param = {}
         const {showOverflowTooltip, minWidth, ...leftProp} = props
-        const {label, prop: col, filter, quickFilter, firstFilter, hidden} = leftProp
+        const {label, prop: col, filter, quickFilter, dynamicFilter, firstFilter, hidden} = leftProp
         if (isEmpty(col)) { // 操作列
             continue
         }
         const customConfig = {
             label: label,
             col: col,
-            filter: filter,
-            quickFilter: quickFilter,
+            filter: filter, // 当前列是否支持过滤(快筛、简筛、动筛)
+            quickFilter: quickFilter, // 当前列是否支持快筛
+            dynamicFilter: dynamicFilter, // 当前列是否支持动筛
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
