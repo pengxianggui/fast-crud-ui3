@@ -61,7 +61,7 @@ FastCrud提供的`openDialog`方法可以让你直接以js驱动一个弹窗, �
   import {CheckPannel} from '...'
 
   const check = () => {
-     util.openDialog({
+    util.openDialog({
       component: CheckPannel,
       props: {
         propA: 1,
@@ -102,14 +102,19 @@ FastCrud提供的`openDialog`方法可以让你直接以js驱动一个弹窗, �
 
 ### dialogProps {#dialogProps}
 
-除了`el-dialog`自带的props外, 还额外支持两个配置项
+除了`el-dialog`自带的props外, 还额外支持四个配置项
 
-| 属性      | 说明                   | 类型              | 默认值    |
-|---------|----------------------|-----------------|--------|
-| buttons | 定义dialog的#footer里的按钮 | `Array<Object>` | `[]`   |
-| okClose | 触发ok事件后,弹窗是否要关闭      | `Boolean`       | `true` |
+| 属性                      | 说明                   | 类型                      | 默认值    |
+|-------------------------|----------------------|-------------------------|--------|
+| buttons                 | 定义dialog的#footer里的按钮 | `Array<Object>`         | `[]`   |
+| okClose                 | 触发ok事件后,弹窗是否要关闭      | `Boolean`               | `true` |
+| handleOk(`1.5.12+`)     | ok事件的回调函数            | `Function<any => void>` | `-`    |
+| handleCancel(`1.5.12+`) | cancel事件的回调函数        | `Function<any => void>` | `-`    |
 
-`okClose`很好理解, 有时ok事件触发后我们也不希望弹窗关闭, 而是希望用户主动去关弹窗, 就可以设置为false。
+> - `okClose` : 很好理解, 有时ok事件触发后我们也不希望弹窗关闭, 而是希望用户主动去关弹窗, 就可以设置为false。
+> - `handleOk`: ok事件的回调函数。这和返回的promise.then作用几乎一致, 那为什么还要支持这个回调配置呢? 因为promise.then只能执行一次, 当okClose=false时, 往往可能需要ok回调函数能执行多次,
+    而then由于Promise机制无法满足。
+> - `handleCancel`: cancel事件的回调函数。同理, 作用和返回的promise.catch一致。
 
 #### buttons
 
@@ -161,4 +166,5 @@ openDialog({
 
 :::tip
 但如此也有一个显而易见的弊端, 就是弹出的内容必须独立到一个组件里。但换个方式理解，这恰恰有助于组件的合理抽取。
+另外, openDialog是动态创建ElDialog节点, vue devtool可能无法识别解析弹窗组件(也许vue devtool后续版本会解决这个问题)
 :::

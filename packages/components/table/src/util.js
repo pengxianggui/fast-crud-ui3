@@ -55,7 +55,7 @@ export function rowValid(fatRows, context) {
             }
         });
     }
-    // TODO 支持unique校验: 校验fatRows中是否违反unique约束, 此外再借助后端接口/exist校验表中数据是否违反unique约束
+    // TODO 1.5.12 支持unique校验: 校验fatRows中是否违反unique约束, 此外再借助后端接口/exist校验表中数据是否违反unique约束
     return Promise.all(validPromises)
 }
 

@@ -319,7 +319,7 @@ class FastTableOption {
     enableMulti = true; // 启用多选
     enableIndex = false; // 是否启用序号列
     enableColumnFilter = true; // 启用列过滤：即动筛
-    enableFilterCache = false; // TODO 兑现 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
+    enableFilterCache = false; // TODO 1.5.12 兑现 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
     lazyLoad = false; // 不立即加载数据
     editType = 'inline'; // inline/form
     insertable = true; // 是否支持内置新建
@@ -726,40 +726,44 @@ class FastTableOption {
                 dialogProps: {
                     title: '导出设置',
                     width: '60%',
-                    // okClose: false
+                    okClose: false,
+                    handleOk: ({columns, all = false}) => {
+                        // 导出数据
+                        const {title, exportUrl, exportSuccess, exportFail} = this;
+                        post(exportUrl, {
+                            columns: columns,
+                            all: all, // false-当前页; true-全部
+                            pageQuery: pageQuery
+                        }, {
+                            responseType: 'blob'
+                        }).then((data) => {
+                            const url = window.URL.createObjectURL(data);
+                            const link = document.createElement('a')
+                            link.href = url;
+                            const dateStr = dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
+                            link.setAttribute('download', `${title ? title : 'download'}_${dateStr}.xlsx`)
+                            document.body.appendChild(link)
+                            link.click()
+                            link.remove()
+                            exportSuccess.call(context, {
+                                columns: columnConfigs,
+                                pageQuery: pageQuery,
+                                data: data
+                            })
+                        }).catch((err) => {
+                            exportFail.call(context, {
+                                columns: columnConfigs,
+                                pageQuery: pageQuery,
+                                error: err
+                            }).then(() => {
+                                ElMessage.error('导出失败:' + err.message)
+                            })
+                        })
+                    },
+                    // handleCancel: (who) => {
+                    // console.log(`你取消了下载..${who}触发cancel`)
+                    // }
                 }
-            }).then(({columns, all = false}) => {
-                // 导出数据
-                const {title, exportUrl, exportSuccess, exportFail} = this;
-                post(exportUrl, {
-                    columns: columns,
-                    all: all, // false-当前页; true-全部
-                    pageQuery: pageQuery
-                }, {
-                    responseType: 'blob'
-                }).then((data) => {
-                    const url = window.URL.createObjectURL(data);
-                    const link = document.createElement('a')
-                    link.href = url;
-                    const dateStr = dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
-                    link.setAttribute('download', `${title ? title : 'download'}_${dateStr}.xlsx`)
-                    document.body.appendChild(link)
-                    link.click()
-                    link.remove()
-                    exportSuccess.call(context, {
-                        columns: columnConfigs,
-                        pageQuery: pageQuery,
-                        data: data
-                    })
-                }).catch((err) => {
-                    exportFail.call(context, {
-                        columns: columnConfigs,
-                        pageQuery: pageQuery,
-                        error: err
-                    }).then(() => {
-                        ElMessage.error('导出失败:' + err.message)
-                    })
-                })
             })
         })
     }
