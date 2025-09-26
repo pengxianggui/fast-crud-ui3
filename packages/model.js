@@ -764,6 +764,10 @@ class FastTableOption {
                     // console.log(`你取消了下载..${who}触发cancel`)
                     // }
                 }
+            }).then(({columns, all = false}) => {
+                // do nothing, dialog props中配置了handleOk
+            }).catch(() => {
+                // do nothing
             })
         })
     }
