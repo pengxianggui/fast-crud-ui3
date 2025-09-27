@@ -29,7 +29,7 @@
 
 <script>
 import {ElMessage} from 'element-plus';
-import FastTableOption, {EditComponentConfig} from "../../../model";
+import FastTableOption from "../../../model";
 import {isEmpty} from "../../../util/util";
 import {colEditable} from "./util";
 
@@ -38,7 +38,7 @@ export default {
   emits: ['ok', 'cancel'],
   props: {
     option: FastTableOption,
-    config: EditComponentConfig,
+    config: Object,
     row: Object,
     type: String,
     layout: String
@@ -49,6 +49,7 @@ export default {
     for (const col in this.config) {
       const {component, props: {rules = []}} = this.config[col];
       if (!isEmpty(rules)) {
+        rules.forEach(rule => rule.getRow = (() => formData)) // 为了自定义验证器里能获取到当前行 煞费苦心
         ruleMap[col] = rules;
       }
       if (component === 'fast-object-picker') { // 对于FastObjectPicker需要特别把formData传进去
@@ -111,7 +112,8 @@ export default {
         fn.call(this.option, [this.row]).then(() => {
           this.$emit('ok')
         })
-      }).catch(() => {
+      }).catch((err) => {
+        console.error(err)
         ElMessage.warning('表单校验未通过! 请检查输入内容');
       })
     }

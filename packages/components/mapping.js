@@ -39,24 +39,50 @@ export const getConfigFn = function (tableColumnComponentName, type) {
  * 构建最终的过滤组件的配置
  * @param customConfig 用户自定义配置。方法内不会改变此值
  * @param tableColumnComponentName table-column组件名
- * @param action 行为: 可选: query, edit
- * @param type 类型, 当action为query时, 可选: quick, easy, dynamic; 当action为edit时, 可选: inline, form
+ * @param type 类型, 可选: quick, easy, dynamic
  * @param tableOption FastTable配置
  */
-export const buildFinalComponentConfig = function (customConfig, tableColumnComponentName, action, type, tableOption) {
+export const buildFinalQueryComponentConfig = function (customConfig, tableColumnComponentName, type, tableOption) {
     // 排除props中后缀为_e的属性, 因为这些配置项仅用于编辑控件, 并将_q后缀的属性名移除此后缀
-    const customProps = replaceKey(customConfig.props, action === 'query' ? '_q' : '_e');
+    const customProps = replaceKey(customConfig.props, '_q')
     const customFilterConfig = {
-        label: customConfig.label,
-        col: customConfig.col,
+        ...customConfig,
         props: {...customProps}
     }
 
-    const finalConfigFn = getConfigFn(tableColumnComponentName, action);
+    const finalConfigFn = getConfigFn(tableColumnComponentName, 'query');
     if (!isFunction(finalConfigFn)) {
-        throw new Error(`未定义针对${tableColumnComponentName}的${action}控件`)
+        throw new Error(`未定义针对${tableColumnComponentName}的查询控件配置`)
     }
     const finalConfig = finalConfigFn(customFilterConfig, type, tableOption);
-    finalConfig.type = type;
-    return action === 'query' ? new FilterComponentConfig(finalConfig) : new EditComponentConfig(finalConfig); // 创建Filter对象
+    return new FilterComponentConfig({
+        ...finalConfig,
+        type: type
+    })
+}
+
+/**
+ * 构建最终的过滤组件的配置
+ * @param customConfig 用户自定义配置。方法内不会改变此值
+ * @param tableColumnComponentName table-column组件名
+ * @param type 类型, 可选: inline, form
+ * @param tableOption FastTable配置
+ */
+export const buildFinalEditComponentConfig = function (customConfig, tableColumnComponentName, type, tableOption) {
+    const customProps = replaceKey(customConfig.props, '_e');
+    const customFilterConfig = {
+        ...customConfig,
+        props: {...customProps}
+    }
+
+    const finalConfigFn = getConfigFn(tableColumnComponentName, 'edit');
+    if (!isFunction(finalConfigFn)) {
+        throw new Error(`未定义针对${tableColumnComponentName}的编辑控件配置`)
+    }
+    const finalConfig = finalConfigFn(customFilterConfig, type, tableOption);
+    return new EditComponentConfig({
+        ...finalConfig,
+        type: type,
+        tableOption: tableOption
+    })
 }

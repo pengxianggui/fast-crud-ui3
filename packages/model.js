@@ -2,12 +2,17 @@ import {ElMessage, ElMessageBox} from 'element-plus';
 import {
     assert,
     caseToCamel,
-    mergeValue,
-    defaultIfBlank, isArray,
+    dateFormat,
+    defaultIfBlank,
+    isArray,
     isBoolean,
-    isEmpty, isFunction,
+    isEmpty,
+    isFunction,
+    isNull,
+    isObject,
     isString,
-    isUndefined, isObject, dateFormat
+    isUndefined,
+    mergeValue
 } from "./util/util.js";
 import {openDialog} from "./util/dialog";
 import ExportConfirm from "./components/table/src/export-confirm.vue";
@@ -225,7 +230,16 @@ export class FilterComponentConfig {
      * @param props 组件对应的props
      * @param condMapFn 条件获取过滤函数
      */
-    constructor({component, col, opt = Opt.LIKE, val, label, props, condMapFn = (cond) => [cond], type}) {
+    constructor({
+                    component,
+                    col,
+                    opt = Opt.LIKE,
+                    val,
+                    label,
+                    props,
+                    condMapFn = (cond) => [cond],
+                    type
+                }) {
         this.component = component;
         this.col = col;
         this.opt = opt;
@@ -284,7 +298,7 @@ export class EditComponentConfig {
     type; // inline, form
     eventMethods; // 组件事件触发时调用其中的方法，例如参数验证
 
-    constructor({component, col, label, props, val, eventMethods, type}) {
+    constructor({component, col, label, props, val, eventMethods, type, unique, tableOption}) {
         this.component = component;
         this.col = col;
         this.label = label;
@@ -294,13 +308,54 @@ export class EditComponentConfig {
         this.editable = editable;
         this.eventMethods = eventMethods;
         this.type = type;
+        // 将unique转换为 props.rules一部分
+        if (unique && (tableOption instanceof FastTableOption)) {
+            const pkField = tableOption.idField
+            const uniqueValidator = async (rule, value, callback, source, options) => {
+                if (isNull(value) || isUndefined(value)) {
+                    return Promise.resolve()
+                }
+
+                const {getRow} = rule
+                if (!isFunction(getRow)) {
+                    // 无法获取当前行
+                    console.error('无法进行唯一性校验:无法获取当前记录完整数据')
+                    return Promise.resolve()
+                }
+                const currentRow = getRow()
+                const pkVal = currentRow[pkField]
+                if (type === 'inline') {
+                    if (isEmpty(tableOption.ref?.editRows)) {
+                        return Promise.resolve()
+                    }
+                    const editRows = tableOption.ref.editRows.map(fatRow => fatRow.editRow)
+                    const duplicates = editRows.filter(row => row[rule.field] === value && row[pkField] !== pkVal)
+                    if (duplicates.length > 0) {
+                        return Promise.reject(`【${label}】${value}已存在于其它编辑行`)
+                    }
+                }
+
+                // 后端唯一性校验
+                const result = await tableOption._exist([
+                    {col: pkField, opt: Opt.NE, val: pkVal}, // 避免自身编辑时误报
+                    {col: col, opt: Opt.EQ, val: value}
+                ])
+                if (result) { // 表示存在
+                    return Promise.reject(`【${label}】${value}已存在`)
+                }
+                return Promise.resolve()
+            }
+            props?.rules.push({
+                validator: uniqueValidator, trigger: 'blur'
+            })
+        }
     }
 }
 
 // 定义 FastTableOption 类
 class FastTableOption {
     context;
-    ref; // TODO 待实现 FastTable组件的ref引用
+    ref; // FastTable组件的this引用
     id = ''; // 用于在全局标识唯一FastTable实例：涉及一些localStorage数据, 默认取值为${baseUrl}
     title = ''; // 标题: 显示在表头上方
     showTitle = true; // 是否显示标题
@@ -315,6 +370,7 @@ class FastTableOption {
     batchDeleteUrl = ''; // 批量删除url: 默认为${baseUrl}/delete/batch
     uploadUrl = ''; // 文件上传接口: 默认为${baseUrl}/upload
     exportUrl = ''; // 数据导出接口: 默认为${baseUrl}/export
+    existsUrl = ''; // 存在性判断接口: 默认为${baseUrl}/exists
     enableDblClickEdit = true;
     enableMulti = true; // 启用多选
     enableIndex = false; // 是否启用序号列
@@ -325,12 +381,13 @@ class FastTableOption {
     insertable = true; // 是否支持内置新建
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
+    idField = 'id'; // 主键字段名
     createTimeField = ''; // 创建时间字段名: 如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
     parent = { // TODO 待实现 父子表级联(父表取choseRow作为选中的行)
         option: FastTableOption, // 父表的option
         map: Object // 指定映射关系, 例如: {parentId: 'id'} —— 表示当前option中的parentId值关联 parent.option的id值, 以此作为构建当前表的预置筛选条件, 限定关联条件; 支持多个关联key映射
     };
-    sortField; // 排序字段: 默认取创建时间字段名
+    sortField; // 排序字段: 默认取createTimeField或idField
     sortDesc = true; // 默认降序
     moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
     pagination = {
@@ -390,6 +447,7 @@ class FastTableOption {
                     batchDeleteUrl = '',
                     uploadUrl = '',
                     exportUrl = '',
+                    existsUrl = '',
                     enableDblClickEdit = true,
                     enableMulti = true,
                     enableIndex = false,
@@ -399,6 +457,7 @@ class FastTableOption {
                     insertable = true,
                     updatable = true,
                     deletable = true,
+                    idField = 'id',
                     createTimeField = '',
                     sortField = '',
                     sortDesc = true,
@@ -447,6 +506,7 @@ class FastTableOption {
         assert(isBoolean(insertable) || isFunction(insertable), 'insertable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(updatable) || isFunction(updatable), 'updatable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(deletable) || isFunction(deletable), 'deletable必须为布尔值或返回布尔值的函数')
+        assert(isString(idField), 'idField必须为字符串')
         assert(isString(createTimeField), 'createTimeField必须为字符串')
         assert(isString(sortField), 'sortField必须为字符串')
         assert(isBoolean(sortDesc), 'sortDesc必须为布尔值')
@@ -490,6 +550,7 @@ class FastTableOption {
         this.batchDeleteUrl = defaultIfBlank(batchDeleteUrl, this.baseUrl + '/delete/batch');
         this.uploadUrl = defaultIfBlank(uploadUrl, this.baseUrl + '/upload');
         this.exportUrl = defaultIfBlank(exportUrl, this.baseUrl + '/export');
+        this.existsUrl = defaultIfBlank(existsUrl, this.baseUrl + '/exists');
         this.enableDblClickEdit = enableDblClickEdit;
         this.enableMulti = enableMulti;
         this.enableIndex = enableIndex;
@@ -499,8 +560,9 @@ class FastTableOption {
         this.insertable = insertable;
         this.updatable = updatable;
         this.deletable = deletable;
+        this.idField = idField;
         this.createTimeField = createTimeField;
-        this.sortField = defaultIfBlank(sortField, createTimeField);
+        this.sortField = defaultIfBlank(sortField, defaultIfBlank(createTimeField, idField));
         this.sortDesc = sortDesc;
         this.moreButtons = moreButtons;
         mergeValue(this.pagination, pagination, true, true)
@@ -707,6 +769,12 @@ class FastTableOption {
         });
     }
 
+    /**
+     * 导出
+     * @param columnConfigs
+     * @param pageQuery
+     * @private
+     */
     _exportData(columnConfigs, pageQuery) {
         const {context, beforeExport} = this
         beforeExport.call(context, {
@@ -768,6 +836,24 @@ class FastTableOption {
                 // do nothing, dialog props中配置了handleOk
             }).catch(() => {
                 // do nothing
+            })
+        })
+    }
+
+    /**
+     * 存在性判断
+     * @private
+     */
+    _exist(conds = []) {
+        if (isEmpty(conds)) {
+            return Promise.resolve()
+        }
+        const {existsUrl} = this
+        return new Promise((resolve, reject) => {
+            post(existsUrl, conds).then(result => {
+                resolve(result)
+            }).catch(err => {
+                reject(err)
             })
         })
     }

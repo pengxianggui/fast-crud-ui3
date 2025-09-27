@@ -1,37 +1,32 @@
-import {buildFinalComponentConfig} from "../../mapping";
-import {
-    convertKeyFromCaseToCamel,
-    deepClone,
-    defaultIfBlank,
-    defaultIfEmpty, extractEventName,
-    isArray,
-    isBoolean,
-    isEmpty, isFunction,
-    merge
-} from "../../../util/util";
-
+import {buildFinalQueryComponentConfig, buildFinalEditComponentConfig} from "../../mapping";
 import Schema from 'async-validator'
 import {Opt} from "../../../model.js";
 import * as util from "../../../util/util.js";
 
 /**
  * 单个col值校验, 校验失败会添加class: valid-error并reject(errors), 成功则会移除可能存在的valid-error，并resolve
- * @param val object数据
+ * @param editRow 当前单元格所在行数据
  * @param config col完整的config配置
  * @returns {Promise<unknown>} 若校验通过resolve, 否则reject(errors)
  */
-export function colValid(val, config) {
+export function colValid(editRow, config) {
     const {col, props} = config;
+    const val = editRow[col]
     return new Promise((resolve, reject) => {
+        if (util.isEmpty(props?.rules)) {
+            resolve()
+            return
+        }
+        props.rules.forEach(rule => rule.getRow = (() => editRow)) // 为了自定义验证器里能获取到当前行 煞费苦心
         const validator = new Schema({
-            [col]: defaultIfEmpty(props.rules, [])
+            [col]: util.defaultIfEmpty(props.rules, [])
         });
-        validator.validate({[col]: val}, (errors, fields) => {
-            if (isEmpty(errors)) {
-                props.class = defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
+        validator.validate({[col]: val}, async (errors, fields) => {
+            if (util.isEmpty(errors)) {
+                props.class = util.defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
                 resolve();
             } else {
-                props.class = defaultIfBlank(props.class, '') + ' fc-valid-error';
+                props.class = util.defaultIfBlank(props.class, '') + ' fc-valid-error';
                 reject(errors);
             }
         })
@@ -41,21 +36,22 @@ export function colValid(val, config) {
 /**
  * 多行(整行)校验, 校验失败会为每个col配置添加class: valid-error并reject(errors), 成功则会移除每个col可能存在的valid-error，并resolve。
  * @param fatRows 完整的行记录
- * @param context 上下文
+ * @param tableOption tableOption
+ * @return 返回Promise, 校验通过走then; 校验失败走catch(errors)
  */
-export function rowValid(fatRows, context) {
+export function rowValid(fatRows, tableOption) {
     const validPromises = []
+    const context = tableOption.context
     for (let i = 0; i < fatRows.length; i++) {
         const fatRow = fatRows[i]
         const {editRow, config} = fatRow
         Object.keys(config).map(col => {
             const canEdit = colEditable.call(context == null ? this : context, fatRow, col)
             if (canEdit) {
-                validPromises.push(colValid(editRow[col], config[col]))
+                validPromises.push(colValid(editRow, config[col]))
             }
         });
     }
-    // TODO 1.5.12 支持unique校验: 校验fatRows中是否违反unique约束, 此外再借助后端接口/exist校验表中数据是否违反unique约束
     return Promise.all(validPromises)
 }
 
@@ -74,7 +70,7 @@ export const getEditConfig = function (columnConfig, editType) {
             const {tableColumnComponentName, inlineItemConfig, formItemConfig} = columnConfig[col];
             // FIX: 此处深拷贝针对FastTableColumnObject可能存在问题(TypeError: Cannot convert a Symbol value to a string)
             // 权衡下，这里无需深拷贝, config内容其实不会更改
-            // config[col] = (editType === 'form' ? deepClone(formItemConfig) : deepClone(inlineItemConfig));
+            // config[col] = (editType === 'form' ? util.deepClone(formItemConfig) : util.deepClone(inlineItemConfig));
             config[col] = (editType === 'form' ? formItemConfig : inlineItemConfig);
             if (tableColumnComponentName === 'fast-table-column') {
                 config[col].props.disabled = true;
@@ -102,25 +98,25 @@ export function toTableRow(row, columnConfig, status = 'normal', editType) {
         const newRow = {};
         cols.forEach(col => {
             const {val} = config[col];
-            newRow[col] = deepClone(val);
+            newRow[col] = util.deepClone(val);
         })
-        merge(row, newRow, true, false)
+        util.merge(row, newRow, true, false)
     }
     return {
         row: row,
         editRow: {...row},
         status: status,
-        config: config
+        config: util.deepClone(config)
     }
 }
 
 function parseStaticProps(staticProps) {
     const props = {}
-    if (!isEmpty(staticProps)) {
+    if (!util.isEmpty(staticProps)) {
         for (const key in staticProps) {
             if (staticProps[key].hasOwnProperty('default')) {
                 const defaultV = staticProps[key]['default']
-                props[key] = isFunction(defaultV) ? defaultV() : defaultV
+                props[key] = util.isFunction(defaultV) ? defaultV() : defaultV
             }
         }
     }
@@ -153,7 +149,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             return {...acc, ...mixinProps}
         }, {})
 
-        const customProps = convertKeyFromCaseToCamel(_props, '-')
+        const customProps = util.convertKeyFromCaseToCamel(_props, '-')
         const defaultProps = {
             ...fromTableProps,
             ...parseStaticProps(_typeProps),
@@ -163,8 +159,8 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
 
         const param = {}
         const {showOverflowTooltip, minWidth, ...leftProp} = props
-        const {label, prop: col, filter, quickFilter, dynamicFilter, firstFilter, hidden} = leftProp
-        if (isEmpty(col)) { // 操作列
+        const {label, prop: col, filter, quickFilter, dynamicFilter, unique, firstFilter, hidden} = leftProp
+        if (util.isEmpty(col)) { // 操作列
             continue
         }
         const customConfig = {
@@ -173,6 +169,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             filter: filter, // 当前列是否支持过滤(快筛、简筛、动筛)
             quickFilter: quickFilter, // 当前列是否支持快筛
             dynamicFilter: dynamicFilter, // 当前列是否支持动筛
+            unique: unique,
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
@@ -241,7 +238,7 @@ function filterConflictKey(props, columnVNode, ignoreKeys) {
         if (allPropKeys.indexOf(key) > -1) {
             continue
         }
-        const evtName = extractEventName(key)
+        const evtName = util.extractEventName(key)
         if (evtName && allEmits.has(evtName)) {
             continue
         }
@@ -267,7 +264,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     // build quick filters
     if (quickFilter !== false) {
         try {
-            param.quickFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'quick', tableOption);
+            param.quickFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'quick', tableOption);
             if (firstFilter !== false) { // deprecated: 1.6.0
                 param.quickFilter.index = 99
             }
@@ -281,7 +278,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     // build easy filters
     if (!hidden) {
         try {
-            param.easyFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'easy', tableOption);
+            param.easyFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'easy', tableOption);
             if (firstFilter !== false) { // deprecated: 1.6.0
                 param.easyFilter.index = 99
             }
@@ -304,22 +301,22 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
 function buildEditComponentConfig(param, tableColumnComponentName, customConfig, tableOption) {
     // form表单组件配置
     try {
-        param.formItemConfig = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'edit', 'form', tableOption);
+        param.formItemConfig = buildFinalEditComponentConfig(customConfig, tableColumnComponentName, 'form', tableOption);
     } catch (e) {
         console.error(e)
     }
     // 行内表单组件配置
     try {
-        param.inlineItemConfig = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'edit', 'inline', tableOption);
+        param.inlineItemConfig = buildFinalEditComponentConfig(customConfig, tableColumnComponentName, 'inline', tableOption);
         param.inlineItemConfig.eventMethods = {
             //  绑定一个valid事件, 完成校验逻辑，如果校验不通过，则追加class: valid-error以便显示出来
-            valid: (val, ref, props) => {
-                colValid(val, param.inlineItemConfig).then(() => {
+            valid: (val, row, ref, props) => {
+                colValid(row, param.inlineItemConfig).then(() => {
                     // ref.$el.classList.remove('fc-valid-error') // !!! 这里不用ref是因为当el-table中存在fixed的列时,会渲染两个表格, 然后这个ref拿到的是另一个fixed的那个，导致无法正确显示/移除valid-error
-                    props.class = defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
+                    props.class = util.defaultIfBlank(props.class, '').replaceAll('fc-valid-error', '');
                 }).catch(errors => {
                     // ref.$el.classList.add('fc-valid-error');
-                    props.class = defaultIfBlank(props.class, '') + ' fc-valid-error';
+                    props.class = util.defaultIfBlank(props.class, '') + ' fc-valid-error';
                 });
                 return val
             }
@@ -355,7 +352,7 @@ export function escapeValToLabel(component, val, config) {
     }
 
     try {
-        if (isArray(val)) {
+        if (util.isArray(val)) {
             return escape(val)
         } else {
             const labels = escape([val])
@@ -381,9 +378,9 @@ export function colEditable(fatRow, col) {
     }
 
     const {editable} = config[col];
-    if (isBoolean(editable)) {
+    if (util.isBoolean(editable)) {
         return editable;
-    } else if (isFunction(editable)) {
+    } else if (util.isFunction(editable)) {
         return editable.call(this, {...fatRow, status, config, col})
     }
     if (status === 'insert') {
@@ -583,7 +580,7 @@ export function getFilterComponent(col, columnConfig, tableOption) {
     if (util.isObject(columnConfig) && util.isObject(columnConfig[col]) && util.isObject(columnConfig[col]['customConfig'])) {
         const {customConfig, tableColumnComponentName} = columnConfig[col]
         try {
-            return buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', tableOption)
+            return buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'dynamic', tableOption)
         } catch (err) {
             console.error(err)
             return null;

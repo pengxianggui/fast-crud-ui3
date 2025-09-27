@@ -21,6 +21,9 @@
       <el-checkbox v-model="params.enableCascading" @change="(val) => updateOption('enableCascading', val)">
         快筛项级联(属国/仰慕者)
       </el-checkbox>
+      <el-checkbox v-model="params.enableNameUnique" @change="(val) => updateOption('enableNameUnique', val, true)">
+        姓名唯一
+      </el-checkbox>
 
       <h5>外观配置</h5>
       <div class="line">
@@ -89,6 +92,8 @@ export default {
         enableDblClickEdit: true,
         // 启用快筛项级联(蜀国和仰慕者)
         enableCascading: true,
+        // 启用姓名唯一
+        enableNameUnique: true,
         // 默认尺寸
         size: 'default',
         bodyRowHeight: 45,
@@ -127,11 +132,11 @@ export default {
     }
   },
   methods: {
-    updateOption(key, val) {
-      this.$refs.myTable.updateOption(key, val)
+    updateOption(key, val, refresh = false) {
+      this.$refs.myTable.updateOption(key, val, refresh)
     },
-    updateOptionStyle(key, val) {
-      this.$refs.myTable.updateOptionStyle(key, val)
+    updateOptionStyle(key, val, refresh = true) {
+      this.$refs.myTable.updateOptionStyle(key, val, refresh)
     }
   }
 }

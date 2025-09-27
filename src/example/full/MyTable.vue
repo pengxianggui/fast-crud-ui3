@@ -20,7 +20,7 @@
                            :on-remove="handleGalleryRemove"
                            :response-handler="handleGalleryResponseHandle"
                            :on-change="handleGalleryChange"/>
-    <fast-table-column-input label="姓名" prop="name" :filter="0" required/>
+    <fast-table-column-input label="姓名" prop="name" :filter="0" required :unique="params.enableNameUnique"/>
     <fast-table-column-number label="年龄" prop="age" required :quick-filter="3"
                               :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               :min="16" :max="60"
@@ -325,12 +325,17 @@ export default {
     }
   },
   methods: {
-    updateOption(key, val) {
+    updateOption(key, val, refresh = false) {
       this.tableOption[key] = val;
+      if (refresh) {
+        this.tableKey++;
+      }
     },
-    updateOptionStyle(key, val) {
+    updateOptionStyle(key, val, refresh = true) {
       this.tableOption.style[key] = val;
-      this.tableKey++;
+      if (refresh) {
+        this.tableKey++;
+      }
     },
     edit({row: fatRow, column, $index}) {
       // const {row, editRow, config, status} = fatRow

@@ -15,6 +15,7 @@
 | quickFilterBlock            | 对应的快筛项是否作为块级元素独占一行(针对一些checkbox group很常见，实现类似tab的交互效果)                                           | `Boolean`                                                              | `false` |
 | quickFilterConfig(`1.5.9+`) | 配置快筛项的一些监听方法,可用于实现快筛项的级联。详见[quickFilterConfig](#quickfilterconfig)                               | `Object`                                                               | `-`     |
 | dynamicFilter(`1.5.12+`)    | 在filter非false的前提下, 列是否动筛。                                                                        | `Boolean`                                                              | `false` |
+| unique(`1.5.12+`)           | 行内编辑时校验此列值是否唯一(后端必须提供/exists标准接口)。                                                               | `Boolean`                                                              | `false` |
 | ~~firstFilter~~             | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除                       | `Boolean`                                                              | `false` |
 | editable                    | 此列是否可编辑(针对`FastTableColumn`无效)                                                                   | `Boolean`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
 | hidden(`1.5.9+`)            | 此列是否可展示(若需要检索, 但无需展示时有用)                                                                         | `Boolean`                                                              | `true`  |

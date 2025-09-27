@@ -46,6 +46,13 @@ export default {
             type: Boolean,
             default: () => true
         },
+        /**
+         * 1.5.12 是否唯一, 若为true, 新增或更新时, 会校验此值的唯一性(前后端均校验)
+         */
+        unique: {
+            type: Boolean,
+            default: () => false
+        },
         // deprecated: 1.6.0
         firstFilter: {
             type: Boolean,
@@ -98,12 +105,12 @@ export default {
         // change事件上抛并触发验证
         handleChange(val, scope) {
             this.$emit('change', val, scope);
-            const {column, $index, row: {config}} = scope;
+            const {column, $index, row: {editRow, config}} = scope;
             const {property} = column;
             const ref = this.$refs[property + $index];
             const {eventMethods: {valid} = {}, props} = config[property]
             if (valid) {
-                valid(val, ref, props);
+                valid(val, editRow, ref, props);
             }
         },
         handleFocus(event, scope) {

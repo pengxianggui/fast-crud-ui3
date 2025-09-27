@@ -153,7 +153,7 @@ import {
 } from "../../../util/util"
 import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport} from "./util"
 import {openDialog} from "../../../util/dialog"
-import {buildFinalComponentConfig} from "../../mapping"
+import {buildFinalQueryComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
 import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
@@ -263,6 +263,9 @@ export default {
       context: this.option.context // 提供给fast-table-column* 获取上下文信息
     }
   },
+  created() {
+    this.option.ref = this // important: 后续很多逻辑需要用到, 借助option即可获取组件中的一些数据
+  },
   mounted() {
     this.buildComponentConfig()
     if (!this.option.lazyLoad) {
@@ -288,8 +291,10 @@ export default {
      * @param fatRows
      */
     addToEditRows(fatRows) {
-      rowValid(fatRows, this.option.context).catch((errors) => {
-      }); // 立即校验一下以便标识出必填等字段
+      // 立即校验一下以便标识出必填等字段
+      rowValid(fatRows, this.option).catch((errors) => {
+        // do nothing: 不提示错误, 会显示红框
+      });
     },
     /**
      * 重新渲染table，提供给外部是用
@@ -303,14 +308,14 @@ export default {
     buildComponentConfig() {
       const tableColumnVNodes = this.$slots.default ? this.$slots.default() : [];
       iterBuildComponentConfig(tableColumnVNodes, this.option, ({
-                                                                  tableColumnComponentName,
-                                                                  col,
-                                                                  customConfig,
-                                                                  quickFilter,
-                                                                  easyFilter,
-                                                                  formItemConfig,
-                                                                  inlineItemConfig
-                                                                }) => {
+                                                                        tableColumnComponentName,
+                                                                        col,
+                                                                        customConfig,
+                                                                        quickFilter,
+                                                                        easyFilter,
+                                                                        formItemConfig,
+                                                                        inlineItemConfig
+                                                                      }) => {
         if (quickFilter) {
           const {props = {}} = quickFilter;
           noRepeatAdd(this.quickFilters, quickFilter,
@@ -551,7 +556,7 @@ export default {
       }
       const {prop, label, order} = column
       const {tableColumnComponentName, customConfig} = this.columnConfig[prop]
-      const dynamicFilter = buildFinalComponentConfig(customConfig, tableColumnComponentName, 'query', 'dynamic', this.option)
+      const dynamicFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'dynamic', this.option)
       openDialog({
         component: DynamicFilterForm,
         props: {
@@ -769,7 +774,7 @@ export default {
       if (this.status !== 'insert' && this.status !== 'update') {
         throw new Error(`当前FastTable状态异常:${this.status}, 无法保存编辑记录`);
       }
-      rowValid(this.editRows, this.option.context).then(() => {
+      rowValid(this.editRows, this.option).then(() => {
         // 保存编辑的行: 包括新增、更新状态的行
         let promise;
         if (this.status === 'insert') {
