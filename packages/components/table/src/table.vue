@@ -62,7 +62,7 @@
               </el-dropdown-item>
               <!-- TODO 1.6 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
-              <el-dropdown-item @click="exportData">
+              <el-dropdown-item @click="exportData" v-if="getBoolVal(option.exportable, true)">
                 <el-icon>
                   <Download/>
                 </el-icon>
@@ -809,6 +809,10 @@ export default {
      * 导出数据
      */
     exportData() {
+      if (!this.option.exportable) {
+        ElMessage.warning('当前表格不允许导出')
+        return
+      }
       this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);
     },
     /**

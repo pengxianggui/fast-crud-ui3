@@ -388,6 +388,7 @@ class FastTableOption {
     insertable = true; // 是否支持内置新建
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
+    exportable = true; // 是否支持导出
     idField = 'id'; // 主键字段名
     createTimeField = ''; // 创建时间字段名: 如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
     parent = { // TODO 待实现 父子表级联(父表取choseRow作为选中的行)
@@ -464,6 +465,7 @@ class FastTableOption {
                     insertable = true,
                     updatable = true,
                     deletable = true,
+                    exportable = true,
                     idField = 'id',
                     createTimeField = '',
                     sortField = '',
@@ -513,6 +515,7 @@ class FastTableOption {
         assert(isBoolean(insertable) || isFunction(insertable), 'insertable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(updatable) || isFunction(updatable), 'updatable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(deletable) || isFunction(deletable), 'deletable必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(exportable) || isFunction(exportable), 'exportable必须为布尔值或返回布尔值的函数')
         assert(isString(idField), 'idField必须为字符串')
         assert(isString(createTimeField), 'createTimeField必须为字符串')
         assert(isString(sortField), 'sortField必须为字符串')
@@ -567,6 +570,7 @@ class FastTableOption {
         this.insertable = insertable;
         this.updatable = updatable;
         this.deletable = deletable;
+        this.exportable = exportable;
         this.idField = idField;
         this.createTimeField = createTimeField;
         this.sortField = defaultIfBlank(sortField, defaultIfBlank(createTimeField, idField));
