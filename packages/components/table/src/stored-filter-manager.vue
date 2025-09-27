@@ -53,7 +53,7 @@
 <script>
 import {Close, Plus} from "@element-plus/icons-vue";
 import FastTableOption, {Opt} from '../../../model.js'
-import {label, getFilterComponent, setCustomFilterGroups} from "./util.js";
+import {label, buildStoredFilterComponent, setCustomFilterGroups} from "./util.js";
 import * as util from "../../../util/util.js";
 import {ElMessage} from "element-plus";
 
@@ -97,7 +97,7 @@ export default {
   methods: {
     label,
     handleAddCond(col, storeGroup) {
-      const filter = getFilterComponent(col, this.columnConfig, this.tableOption)
+      const filter = buildStoredFilterComponent(col, this.columnConfig, this.tableOption)
       if (!util.isEmpty(filter)) {
         storeGroup.filters.push(filter)
       }

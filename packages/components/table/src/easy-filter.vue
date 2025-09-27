@@ -1,6 +1,6 @@
 <template>
   <div class="fc-easy-filter">
-    <template v-if="filters.length > 0">
+    <template v-if="activeFilter">
       <fast-select class="fc-easy-filter-column" :options="filters" v-model="activeFilterCol" label-key="label"
                    val-key="col"
                    :size="size"
@@ -20,7 +20,7 @@
 import {nextTick} from "vue";
 import FastSelect from "../../select/src/fast-select.vue";
 import {RefreshLeft, Search} from "@element-plus/icons-vue";
-import {isEmpty} from "../../../util/util.js";
+import {isEmpty, isFunction, isUndefined} from "../../../util/util.js";
 
 export default {
   name: "easy-filter",
@@ -44,14 +44,12 @@ export default {
       return Search
     },
     activeFilter() {
-      if (this.filters.length === 0) {
+      if (this.filters.length === 0 || isEmpty(this.activeFilterCol)) {
         return null
       }
-      if (isEmpty(this.activeFilterCol)) {
-        this.activeFilterCol = this.filters[0].col // 取个巧
-        return this.filters[0]
-      }
-      return this.filters.find(filter => filter.col === this.activeFilterCol)
+      const activeFilter = this.filters.find(filter => filter.col === this.activeFilterCol)
+      activeFilter.disabled = false // 启用此列
+      return activeFilter
     }
   },
   data() {
@@ -59,16 +57,30 @@ export default {
       activeFilterCol: null
     }
   },
+  created() {
+    this.initActiveFilterCol()
+  },
   mounted() {
     this.$nextTick(() => {
-      if (this.$refs.easyFilterComp) {
+      if (this.$refs.easyFilterComp && isFunction(this.$refs.easyFilterComp.focus)) {
         setTimeout(() => {
           this.$refs.easyFilterComp.focus()
         }, 50) // 如果当前FastTable在ElDialog中,会因为visible之后的动画二导致渲染会稍晚一点, 只nextTick不够，这里稍等会会
       }
     })
   },
+  watch: {
+    'filters.length': function () {
+      this.initActiveFilterCol()
+    }
+  },
   methods: {
+    initActiveFilterCol() {
+      if (!isEmpty(this.filters)) {
+        const activeFilter = this.filters.find(f => f.disabled === false)
+        this.activeFilterCol = isUndefined(activeFilter) ? this.filters[0].col : activeFilter.col
+      }
+    },
     changeField() {
       this.filters.map(filter => {
         filter.disabled = (filter.col !== this.activeFilterCol) // 保证只有activeFilter生效， 这样就不用清理切换之前的控件值了，使用体验更好

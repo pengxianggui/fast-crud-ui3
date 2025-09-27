@@ -257,6 +257,13 @@ export class FilterComponentConfig {
     }
 
     /**
+     * 值为默认值
+     */
+    isDefaultVal() {
+        return this.val === this.defaultVal
+    }
+
+    /**
      * 此筛选项是否有效
      * @returns {boolean}
      */
@@ -375,7 +382,7 @@ class FastTableOption {
     enableMulti = true; // 启用多选
     enableIndex = false; // 是否启用序号列
     enableColumnFilter = true; // 启用列过滤：即动筛
-    enableFilterCache = false; // TODO 1.5.12 兑现 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
+    enableFilterCache = true; // 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
     lazyLoad = false; // 不立即加载数据
     editType = 'inline'; // inline/form
     insertable = true; // 是否支持内置新建

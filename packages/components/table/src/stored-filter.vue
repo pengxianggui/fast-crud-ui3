@@ -36,7 +36,7 @@ import * as util from "../../../util/util.js"
 import FastTableOption from "../../../model.js"
 import {openDialog} from "../../../util/dialog.js";
 import StoredFilterManager from "./stored-filter-manager.vue";
-import {buildFilterGroups, getFilterComponent, getCustomFilterGroups} from "./util.js"
+import {buildFilterGroups, buildStoredFilterComponent, getCustomFilterGroups} from "./util.js"
 
 export default {
   name: "stored-filter",
@@ -87,7 +87,7 @@ export default {
         return
       }
       const getFilters = (type) => {
-        const createTimeFilter = getFilterComponent(createTimeField, this.columnConfig, this.tableOption)
+        const createTimeFilter = buildStoredFilterComponent(createTimeField, this.columnConfig, this.tableOption)
         if (util.isNull(createTimeFilter)) {
           return []
         }

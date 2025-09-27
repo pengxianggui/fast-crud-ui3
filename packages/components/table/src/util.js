@@ -279,6 +279,7 @@ function buildFilterComponentConfig(param, tableColumnComponentName, customConfi
     if (!hidden) {
         try {
             param.easyFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'easy', tableOption);
+            param.easyFilter.disabled = true
             if (firstFilter !== false) { // deprecated: 1.6.0
                 param.easyFilter.index = 99
             }
@@ -549,7 +550,7 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
         try {
             for (let j = 0; j < conds.length; j++) {
                 const {col, opt = Opt.EQ, val} = conds[j]
-                const filter = getFilterComponent(col, columnConfig, tableOption)
+                const filter = buildStoredFilterComponent(col, columnConfig, tableOption)
                 if (!util.isNull(filter)) {
                     filter.opt = opt
                     filter.val = val
@@ -576,11 +577,11 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
  * @param tableOption
  * @return FilterComponentConfig
  */
-export function getFilterComponent(col, columnConfig, tableOption) {
+export function buildStoredFilterComponent(col, columnConfig, tableOption) {
     if (util.isObject(columnConfig) && util.isObject(columnConfig[col]) && util.isObject(columnConfig[col]['customConfig'])) {
         const {customConfig, tableColumnComponentName} = columnConfig[col]
         try {
-            return buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'dynamic', tableOption)
+            return buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'stored', tableOption)
         } catch (err) {
             console.error(err)
             return null;

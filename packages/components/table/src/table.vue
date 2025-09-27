@@ -157,6 +157,7 @@ import {buildFinalQueryComponentConfig} from "../../mapping"
 import RowForm from "./row-form.vue"
 import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
+import * as util from "../../../util/util.js";
 
 export default {
   name: "FastTable",
@@ -247,10 +248,10 @@ export default {
       checkedRows: [], // 代表多选时勾选的行记录
       pageQuery: pageQuery, // 分页查询构造参数
       columnConfig: {}, // 列对应的配置。key: column prop属性名, value为通过fast-table-column*定义的属性(外加tableColumnComponentName属性)
-      quickFilters: [], // 快筛配置 TODO 1.5.12 支持缓存
-      easyFilters: [], // 简筛配置 TODO 1.5.12 支持缓存
-      dynamicFilters: [], // 动筛配置 TODO 1.5.12 支持缓存
-      storedFilters: [], // 存筛配置 TODO 1.5.12 支持缓存
+      quickFilters: [], // 快筛配置
+      easyFilters: [], // 简筛配置
+      dynamicFilters: [], // 动筛配置
+      storedFilters: [], // 存筛配置
       list: [], // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
       total: 0, // 表格总数
       tableFlexHeight: null, //表格的弹性高度(动态计算值), 初始值是null非常重要, 如果内部计算出现问题外部又没自定义高度,相当于没有设置height值, 默认展示效果
@@ -267,7 +268,10 @@ export default {
     this.option.ref = this // important: 后续很多逻辑需要用到, 借助option即可获取组件中的一些数据
   },
   mounted() {
-    this.buildComponentConfig()
+    this.buildComponentConfig() // 构建组件数据(筛选组件元数据等) very important!
+    if (this.option.enableFilterCache) {
+      this.popStashFilter() // 加载分页筛选条件
+    }
     if (!this.option.lazyLoad) {
       this.pageLoad()
     }
@@ -308,14 +312,14 @@ export default {
     buildComponentConfig() {
       const tableColumnVNodes = this.$slots.default ? this.$slots.default() : [];
       iterBuildComponentConfig(tableColumnVNodes, this.option, ({
-                                                                        tableColumnComponentName,
-                                                                        col,
-                                                                        customConfig,
-                                                                        quickFilter,
-                                                                        easyFilter,
-                                                                        formItemConfig,
-                                                                        inlineItemConfig
-                                                                      }) => {
+                                                                  tableColumnComponentName,
+                                                                  col,
+                                                                  customConfig,
+                                                                  quickFilter,
+                                                                  easyFilter,
+                                                                  formItemConfig,
+                                                                  inlineItemConfig
+                                                                }) => {
         if (quickFilter) {
           const {props = {}} = quickFilter;
           noRepeatAdd(this.quickFilters, quickFilter,
@@ -404,6 +408,9 @@ export default {
           }
           beforeLoad.call(context, {query: this.pageQuery}).then(() => {
             this.loading = true;
+            if (this.option.enableFilterCache) {
+              this.stashFilter() // 缓存分页筛选条件
+            }
             post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
               this.exitEditStatus();
               const loadSuccess = this.option.loadSuccess;
@@ -846,6 +853,67 @@ export default {
         return
       }
       return fn.call(this.option.context, this.scopeParam)
+    },
+    /**
+     * 从缓存中加载搜索数据, 更新quickFilters、easyFilters、dynamicFilters、storedFilters里，以便实现缓存生效
+     */
+    popStashFilter() {
+      try {
+        const stashFiltersAsStr = util.getFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
+        if (util.isEmpty(stashFiltersAsStr)) {
+          return
+        }
+        const stashFilters = JSON.parse(stashFiltersAsStr)
+        stashFilters.forEach(({type, col, opt, val, disabled}) => {
+          if (type === 'quick') {
+            // TODO 修复object-picker回显问题
+            this.quickFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
+              f.val = val
+              f.disabled = disabled
+            })
+          } else if (type === 'easy') {
+            this.easyFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
+              f.val = val
+              f.disabled = disabled
+            })
+          } else if (type === 'dynamic') {
+            const {tableColumnComponentName, customConfig} = this.columnConfig[col]
+            const dynamicFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'dynamic', this.option)
+            dynamicFilter.val = val
+            dynamicFilter.disabled = disabled
+            this.dynamicFilters.push(dynamicFilter)
+          } else if (type === 'stored') {
+            // TODO 存筛难点在于如何回显勾选的存筛
+          } else {
+            console.log(`${col}type值不正确:${type}`)
+          }
+        })
+      } catch (err) {
+        console.error(`从缓存中还原筛选条件时出现错误: ${err}`)
+      }
+    },
+    /**
+     * 将筛选条件缓存起来
+     */
+    stashFilter() {
+      try {
+        // 将筛选条件缓存: 只存type、col、opt、val、disabled即可
+        const stashFilters = []
+        const callbackFn = (f) => {
+          stashFilters.push({type: f.type, col: f.col, opt: f.opt, val: f.val, disabled: f.disabled})
+        }
+        this.quickFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
+        this.easyFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
+        this.dynamicFilters.filter(f => f.isEffective()).forEach(callbackFn)
+        this.storedFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
+        if (stashFilters.length > 0) {
+          util.setToSessionStorage(`CACHE_FILTER:${this.option.id}`, JSON.stringify(stashFilters))
+        } else {
+          util.delFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
+        }
+      } catch (err) {
+        console.error(`缓存筛选条件时出现错误: ${err}`)
+      }
     }
   },
   beforeUnmount() {

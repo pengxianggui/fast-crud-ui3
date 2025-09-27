@@ -97,7 +97,7 @@ export default {
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
-        if (type === 'dynamic') {
+        if (type === 'dynamic' || type === 'stored') {
             validProps.teleported = false // 防止动筛二选时popover关闭
         }
         const {valueFormat} = validProps;

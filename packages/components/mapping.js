@@ -39,7 +39,7 @@ export const getConfigFn = function (tableColumnComponentName, type) {
  * 构建最终的过滤组件的配置
  * @param customConfig 用户自定义配置。方法内不会改变此值
  * @param tableColumnComponentName table-column组件名
- * @param type 类型, 可选: quick, easy, dynamic
+ * @param type 类型, 可选: quick, easy, dynamic, stored
  * @param tableOption FastTable配置
  */
 export const buildFinalQueryComponentConfig = function (customConfig, tableColumnComponentName, type, tableOption) {

@@ -687,6 +687,18 @@ export function getFromLocalStorage(key) {
     return localStorage.getItem(`FC:${key}`)
 }
 
+export function setToSessionStorage(key, value) {
+    sessionStorage.setItem(`FC:${key}`, value)
+}
+
+export function getFromSessionStorage(key) {
+    return sessionStorage.getItem(`FC:${key}`)
+}
+
+export function delFromSessionStorage(key) {
+    sessionStorage.removeItem(`FC:${key}`)
+}
+
 /**
  * 生成css grid布局中的gridTemplateAreas值
  * @param rowNum 每行的数量
