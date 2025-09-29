@@ -868,17 +868,18 @@ export default {
           return
         }
         const stashFilters = JSON.parse(stashFiltersAsStr)
-        stashFilters.forEach(({type, col, opt, val, disabled}) => {
+        stashFilters.forEach(({type, col, opt, val, disabled, options}) => {
           if (type === 'quick') {
-            // TODO 修复object-picker回显问题
             this.quickFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
               f.val = val
               f.disabled = disabled
+              f.props.options = options
             })
           } else if (type === 'easy') {
             this.easyFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
               f.val = val
               f.disabled = disabled
+              f.props.options = options
             })
           } else if (type === 'dynamic') {
             const {tableColumnComponentName, customConfig} = this.columnConfig[col]
@@ -894,6 +895,7 @@ export default {
         })
       } catch (err) {
         console.error(`从缓存中还原筛选条件时出现错误: ${err}`)
+        util.delFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
       }
     },
     /**
@@ -904,7 +906,7 @@ export default {
         // 将筛选条件缓存: 只存type、col、opt、val、disabled即可
         const stashFilters = []
         const callbackFn = (f) => {
-          stashFilters.push({type: f.type, col: f.col, opt: f.opt, val: f.val, disabled: f.disabled})
+          stashFilters.push({type: f.type, col: f.col, opt: f.opt, val: f.val, disabled: f.disabled, options: f.props.options})
         }
         this.quickFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
         this.easyFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)

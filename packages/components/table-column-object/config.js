@@ -7,7 +7,8 @@ const defaultQueryConfig = {
     val: null, // 默认值
     props: {
         clearable: true,
-        placeholder: '请点选..'
+        placeholder: '请点选..',
+        options: [] // 用以控件回显(val和label不一致时)
     },
     condMapFn: (cond) => {
         if (isArray(cond.val) && cond.val.length > 0) {
@@ -28,6 +29,7 @@ const defaultEditConfig = {
         multiple: false, // 默认单选
         title: '请点选...',
         editable: true,
+        options: [] // 用以控件回显(val和label不一致时)
     }
 }
 export default {

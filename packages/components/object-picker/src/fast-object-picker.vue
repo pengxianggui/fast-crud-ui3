@@ -77,16 +77,18 @@ export default {
     dialogWidth: {
       type: String,
       default: () => '70%'
-    }
-  },
-  data() {
-    return {
-      options: [] // pick勾选的选项
+    },
+    // 用以内置el-select回显
+    options: {
+      type: Array,
+      default: () => []
     }
   },
   mounted() {
-    if (!isEmpty(this.modelValue)) { // 有初始值, 先构造一个选项以便正常显示
-      this.options = [{label: this.modelValue, value: this.modelValue}]
+    if (isEmpty(this.options) && !isEmpty(this.modelValue)) { // 有初始值, 先构造一个选项以便正常显示
+      // this.options = [{label: this.modelValue, value: this.modelValue}]
+      this.options.length = 0
+      this.options.push([{label: this.modelValue, value: this.modelValue}])
     }
   },
   computed: {
@@ -137,9 +139,11 @@ export default {
           const valKey = defaultIfEmpty(this.valKey, this.showField)
           const labelKey = defaultIfEmpty(this.labelKey, valKey)
           // 赋值options
-          this.options = (isArray(data) ? data : [data]).map(item => {
+          const options = (isArray(data) ? data : [data]).map(item => {
             return {value: item[valKey], label: item[labelKey]}
           })
+          this.options.length = 0
+          this.options.push(...options)
           // 赋值value
           const newVal = this.valueCovert(data, valKey)
           this.value = newVal
