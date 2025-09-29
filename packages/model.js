@@ -320,7 +320,7 @@ export class EditComponentConfig {
         this.eventMethods = eventMethods;
         this.type = type;
         // 将unique转换为 props.rules一部分
-        if (unique && (tableOption instanceof FastTableOption)) {
+        if (unique !== false && (tableOption instanceof FastTableOption)) {
             const pkField = tableOption.idField
             const uniqueValidator = async (rule, value, callback, source, options) => {
                 if (isNull(value) || isUndefined(value)) {
