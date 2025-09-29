@@ -27,6 +27,8 @@
                 </el-button>
                 <el-button link class="fc-dynamic-filter-del-btn" :icon="Close" v-if="!g.buildIn"
                            @click.stop="delConfig(index, g.filters)"></el-button>
+
+                <span style="margin-right: 10px; color: #909090;">且</span>
               </div>
             </template>
             <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false"
@@ -169,6 +171,9 @@ export default {
       align-items: center;
 
       .fc-dynamic-filter-btns {
+        display: flex;
+        align-items: center;
+
         &:hover {
           .fc-dynamic-filter-open-btn {
             text-decoration: underline;

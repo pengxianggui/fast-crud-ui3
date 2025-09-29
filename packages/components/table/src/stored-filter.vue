@@ -1,6 +1,6 @@
 <template>
   <div class="fc-stored-btn">
-    <el-dropdown @click="$emit('search')" :size="size">
+    <el-dropdown :size="size">
       <el-button type="primary" :size="size">
         <span v-if="showLabel">{{ showLabel }}</span>
         <el-icon v-else>
@@ -12,12 +12,12 @@
       </el-button>
       <template #dropdown>
         <el-dropdown-menu>
-<!--          <el-dropdown-item @click="clear">清空</el-dropdown-item>-->
+          <!--          <el-dropdown-item @click="clear">清空</el-dropdown-item>-->
           <el-dropdown-item v-for="item in storeGroups" :key="item.label"
-                            :style="{color: (indexOfCurrentGroups(item) > -1) ? '#3f99f5 !important' : ''}"
+                            :style="{color: (groupLabels.indexOf(item.label) > -1) ? '#3f99f5 !important' : ''}"
                             :disabled="!item.compatible"
                             @click="handleClick(item, $event)">
-            <el-icon v-show="(indexOfCurrentGroups(item) > -1)">
+            <el-icon v-show="groupLabels.indexOf(item.label) > -1">
               <Select/>
             </el-icon>
             <span>{{ item.label }}</span>
@@ -41,9 +41,10 @@ import {buildFilterGroups, buildStoredFilterComponent, getCustomFilterGroups} fr
 export default {
   name: "stored-filter",
   components: {ArrowDown, Star, Select},
-  emits: ['search'],
+  emits: ['change', 'update:modelValue'],
   props: {
-    filters: Array,
+    // 存筛label名组成的数组, 表示勾选项
+    groupLabels: Array,
     size: String,
     tableOption: FastTableOption,
     columnConfig: Object
@@ -51,27 +52,19 @@ export default {
   data() {
     return {
       storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true}
-      currentGroups: []
     }
   },
   computed: {
     showLabel() {
-      if (util.isEmpty(this.currentGroups)) {
+      if (util.isEmpty(this.groupLabels)) {
         return ''
       }
-      const showGroup = this.currentGroups[this.currentGroups.length - 1]
-      return showGroup.label + (this.currentGroups.length > 1 ? `+${this.currentGroups.length}` : '')
+      const firstLabel = this.groupLabels[0]
+      return firstLabel + (this.groupLabels.length > 1 ? `+${this.groupLabels.length - 1}` : '')
     }
   },
   mounted() {
     nextTick(() => this.init())
-  },
-  watch: {
-    'filters.length'(newLength) {
-      if (newLength === 0) {
-        this.currentGroups.length = 0
-      }
-    }
   },
   methods: {
     init() {
@@ -131,22 +124,16 @@ export default {
       this.storeGroups.push(...filterGroups)
     },
     handleClick(group, e) {
-      const idx = this.indexOfCurrentGroups(group)
+      const idx = this.groupLabels.indexOf(group.label)
       if (idx > -1) { // 取消
-        this.currentGroups.splice(idx, 1)
+        this.groupLabels.splice(idx, 1)
       } else {
         if (!(e.ctrlKey || e.metaKey)) { // 支持按住ctrl/command点击可以选多个
-          this.currentGroups.length = 0
+          this.groupLabels.length = 0
         }
-        this.currentGroups.push(group)
+        this.groupLabels.push(group.label)
       }
-      this.filters.length = 0 // important
-      for (const g of this.currentGroups) {
-        const filters = util.isFunction(g.filters) ? g.filters.call(this.tableOption.context) : g.filters
-        util.assert(util.isArray(filters), `the filters prop of group(${group.label}) is wrong type, it should be a array, or a function that return a array`)
-        this.filters.push(...filters)
-      }
-      this.$emit('search')
+      this.$emit('change')
     },
     toCustom() {
       openDialog({
@@ -165,16 +152,28 @@ export default {
       })
 
     },
-    indexOfCurrentGroups(storeGroup) {
-      if (util.isEmpty(this.currentGroups)) {
-        return -1
-      }
-      return this.currentGroups.findIndex(c => c.label === storeGroup.label)
-    },
     clear() {
-      this.currentGroups.length = 0
-      this.filters.length = 0
-      this.$emit('search')
+      this.groupLabels.length = 0
+      this.$emit('change')
+    },
+    /**
+     * 获取生效的筛选项, 通过勾选的存筛组(groupLabels)，从storeGroups中解析出生效的filters并返回
+     * @return {*[]}
+     */
+    getStoreFilters() {
+      const effectFilters = []
+      if (util.isEmpty(this.storeGroups)) {
+        this.init()
+      }
+      for (const g of this.storeGroups) {
+        if (this.groupLabels.indexOf(g.label) === -1) {
+          continue
+        }
+        const filters = util.isFunction(g.filters) ? g.filters.call(this.tableOption.context) : g.filters
+        util.assert(util.isArray(filters), `the filters prop of group(${g.label}) is wrong type, it should be a array, or a function that return a array`)
+        effectFilters.push(...filters)
+      }
+      return effectFilters
     }
   }
 }

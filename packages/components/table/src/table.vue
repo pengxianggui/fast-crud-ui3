@@ -15,9 +15,13 @@
                    @click="pageLoad"/>
         <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
         <!-- 存筛区 -->
-        <stored-filter class="fc-stored-btn-wrapper" :filters="storedFilters" :table-option="option"
+        <stored-filter class="fc-stored-btn-wrapper"
+                       ref="storedFilter"
+                       :group-labels="storedLabels"
+                       :table-option="option"
                        :column-config="columnConfig"
-                       :size="option.style.size" @search="pageLoad"/>
+                       :size="option.style.size"
+                       @change="pageLoad"/>
       </div>
       <div class="fc-fast-table-expand-button">
         <slot name="button" v-bind="scopeParam"></slot>
@@ -251,7 +255,7 @@ export default {
       quickFilters: [], // 快筛配置
       easyFilters: [], // 简筛配置
       dynamicFilters: [], // 动筛配置
-      storedFilters: [], // 存筛配置
+      storedLabels: [], // 勾选的存筛组标签名
       list: [], // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
       total: 0, // 表格总数
       tableFlexHeight: null, //表格的弹性高度(动态计算值), 初始值是null非常重要, 如果内部计算出现问题外部又没自定义高度,相当于没有设置height值, 默认展示效果
@@ -395,8 +399,11 @@ export default {
         const dynamicConds = this.dynamicFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
         conds.push(...dynamicConds)
         // 添加存筛条件
-        const storedConds = this.storedFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
-        conds.push(...storedConds)
+        if (this.storedLabels.length > 0) {
+          const storeFilters = this.$refs['storedFilter'].getStoreFilters();
+          const storedConds = storeFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
+          conds.push(...storedConds)
+        }
         // 添加固定的预置条件
         conds.push(...this.option.conds);
         this.pageQuery.setConds(conds);
@@ -452,7 +459,7 @@ export default {
         })
         this.easyFilters.forEach((f) => f.reset())
         this.dynamicFilters.length = 0
-        this.storedFilters.length = 0
+        this.storedLabels.length = 0
         this.pageLoad()
       }).catch(() => {
         console.debug('你取消了重置操.')
@@ -868,7 +875,13 @@ export default {
           return
         }
         const stashFilters = JSON.parse(stashFiltersAsStr)
-        stashFilters.forEach(({type, col, opt, val, disabled, options}) => {
+        stashFilters.forEach(({type, ...config}) => {
+          if (type === 'stored') {
+            const {labels} = config
+            this.storedLabels = labels
+            return
+          }
+          const {col, opt, val, disabled, options} = config
           if (type === 'quick') {
             this.quickFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
               f.val = val
@@ -887,8 +900,6 @@ export default {
             dynamicFilter.val = val
             dynamicFilter.disabled = disabled
             this.dynamicFilters.push(dynamicFilter)
-          } else if (type === 'stored') {
-            // TODO 存筛难点在于如何回显勾选的存筛
           } else {
             console.log(`${col}type值不正确:${type}`)
           }
@@ -906,12 +917,23 @@ export default {
         // 将筛选条件缓存: 只存type、col、opt、val、disabled即可
         const stashFilters = []
         const callbackFn = (f) => {
-          stashFilters.push({type: f.type, col: f.col, opt: f.opt, val: f.val, disabled: f.disabled, options: f.props.options})
+          stashFilters.push({
+            type: f.type,
+            col: f.col,
+            opt: f.opt,
+            val: f.val,
+            disabled: f.disabled,
+            options: f.props.options
+          })
         }
         this.quickFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
         this.easyFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
         this.dynamicFilters.filter(f => f.isEffective()).forEach(callbackFn)
-        this.storedFilters.filter(f => f.isEffective() && !f.isDefaultVal()).forEach(callbackFn)
+        // 存筛比较特殊, 数据结构不同
+        if (this.storedLabels.length > 0) {
+          stashFilters.push({type: 'stored', labels: this.storedLabels})
+        }
+
         if (stashFilters.length > 0) {
           util.setToSessionStorage(`CACHE_FILTER:${this.option.id}`, JSON.stringify(stashFilters))
         } else {
