@@ -958,7 +958,11 @@ export default {
         // 扩展参数也比较特殊,单独处理
         const extra = this.pageQuery.extra;
         if (!util.isEmpty(extra) && Object.keys(extra).some(key => !util.isEmpty(extra[key]))) {
-          stashFilters.push({type: 'extra', value: extra})
+          // 只缓存有效的自定义参数
+          const effectExtra = Object.fromEntries(
+              Object.entries(extra).filter(([_, value]) => !util.isEmpty(value))
+          );
+          stashFilters.push({type: 'extra', value: effectExtra})
         }
 
         if (stashFilters.length > 0) {

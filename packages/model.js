@@ -165,12 +165,16 @@ export class Query {
         const cols = this.cols.map(col => caseToCamel(col, '_'));
         const conds = this.conds.map(cond => new Cond(caseToCamel(cond.col, '_'), cond.opt, cond.val));
         const orders = this.orders.map(order => new Order(caseToCamel(order.col, '_'), order.asc));
+        // 将扩展参数中的"空值"都转换为null, 避免后端获取时参数类型不符引起问题
+        const extra = Object.fromEntries(
+            Object.entries(this.extra).map(([key, value]) => [key, isEmpty(value) ? null : value])
+        );
         return {
             cols: cols,
             conds: conds,
             orders: orders,
             distinct: this.distinct,
-            extra: this.extra
+            extra: extra
         };
     }
 }
