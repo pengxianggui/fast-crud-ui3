@@ -413,6 +413,7 @@ class FastTableOption {
     render; // 渲染函数, 当前table需要被pick时有用
     conds = []; // 固定的筛选条件，内部无法取消
     condGroups = []; // 开发层面预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}], important: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效
+    condExtra = {}; // 扩展的查询条件, 可在#quickFilter插槽中使用。例如配置了keyword, 则可将query.extra.keyword绑定到自定义输入控件上
 
     beforeReset;
     beforeLoad;
@@ -480,6 +481,7 @@ class FastTableOption {
                     render = () => [],
                     conds = [],
                     condGroups = [],
+                    condExtra = {},
                     beforeReset = ({query}) => Promise.resolve(),
                     beforeLoad = ({query}) => Promise.resolve(),
                     loadSuccess = ({query, res}) => Promise.resolve(res), // res为数据而非response
@@ -545,6 +547,7 @@ class FastTableOption {
         assert(isFunction(exportFail), "exportFail必须是一个函数")
         assert(isArray(conds), "conds必须是Cond对象(或可转换为Cond对象的json)组成的数组")
         assert(isArray(condGroups), 'condGroups必须是数组')
+        assert(isObject(condExtra), 'condExtra必须是对象')
 
         this.context = context;
         this.title = title;
@@ -580,6 +583,7 @@ class FastTableOption {
         mergeValue(this.style, style, true, true)
         this.conds = conds.map(c => Cond.build(c));
         this.condGroups = condGroups;
+        this.condExtra = condExtra;
 
         this.beforeReset = beforeReset;
         this.beforeLoad = beforeLoad;

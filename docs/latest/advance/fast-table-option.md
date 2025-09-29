@@ -54,6 +54,7 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 | style                        | 表格样式。详见[style](#style)                                     | `Object`                                                  | -                                                                                                   |
 | conds                        | 分页内置条件, 用户无法取消。详见[conds](#conds)                           | `Array`                                                   | `[]`                                                                                                |
 | condGroups(`1.5.2+`)         | 开发预置的存筛筛选组。详见[condGroups](#condgroups)                     | `Array`                                                   | `[]`                                                                                                |
+| condExtra(`1.5.12+`)         | 扩展筛选字段。详见[condExtra](#condextra)                           | `Object`                                                  | `{}`                                                                                                |
 | moreButtons                  | "更多"下拉按钮的扩展配置。详见[moreButtons](#morebuttons)                | `Array`                                                   | -                                                                                                   |
 | pagination                   | 分页配置。参考Element即可                                           | `Object`                                                  | `{layout: 'total, sizes, prev, pager, next, jumper','page-sizes': [10, 20, 50, 100, 200],size: 10}` |
 | beforeReset                  | 【钩子】搜索重置前执行。返回reject则阻断重置                                  | `Function<({query}) => Promise>`                          | `({query}) => Promise.resolve()`                                                                    |
@@ -116,6 +117,22 @@ conds: new Cond('name', '=', '曹操') // 此时第二个参数opt不能省略
 :::warning
 在迭代过程中, `FastTable`可能会不断变化, 某个筛选属性可能以前有，现在没了，也记得调整此condGroups值，否则这个存筛项会被标记为不兼容，呈现禁用状态。
 :::
+
+### condExtra
+
+这个配置项是用来给开发者预留的扩展搜索条件。不难发现，当前简筛、快筛、存筛、动筛，都有一个局限性：底层的基本逻辑都是基于表格列字段进行过滤的。试想，很可能你会需要一个搜索入参——它
+可能不是基于当前表格某个列搜索的，甚至可能和当前表格一点关系没有。这时可以在此配置项中定义一个字段，例如:
+
+```js
+new FastTableOption({
+    ...,
+    condExtra: {
+        keyword: null
+    }
+})
+```
+
+然后，在`#quickFilter`插槽(详见: [FastTable插槽](/latest/comp/fast-table#插槽))中自定义一个筛选控件, 绑定此值。而后端可以轻易地在分页接口的入参中获取此keyword值，实现其特有的逻辑。
 
 ### moreButtons
 

@@ -226,8 +226,14 @@ export default {
     },
     // 表格级别的slot向上透传的统一参数
     scopeParam() {
-      const {choseRow, checkedRows, editRows} = this
-      return {size: this.option.style.size, choseRow: choseRow, checkedRows: checkedRows, editRows: editRows}
+      const {choseRow, checkedRows, editRows, pageQuery} = this
+      return {
+        query: pageQuery,
+        size: this.option.style.size,
+        choseRow: choseRow,
+        checkedRows: checkedRows,
+        editRows: editRows
+      }
     },
     // “更多”按钮扩展
     moreButtons() {
@@ -241,6 +247,7 @@ export default {
   data() {
     const size = this.option.pagination.size;
     const pageQuery = new PageQuery(1, size);
+    pageQuery.extra = this.option.condExtra
     if (!ifBlank(this.option.sortField)) {
       pageQuery.addOrder(this.option.sortField, !this.option.sortDesc);
     }
@@ -460,6 +467,10 @@ export default {
         this.easyFilters.forEach((f) => f.reset())
         this.dynamicFilters.length = 0
         this.storedLabels.length = 0
+        // 清空自定义扩展筛选参数
+        Object.keys(this.pageQuery.extra).forEach(key => {
+          this.pageQuery.extra[key] = null
+        })
         this.pageLoad()
       }).catch(() => {
         console.debug('你取消了重置操.')
@@ -875,10 +886,21 @@ export default {
           return
         }
         const stashFilters = JSON.parse(stashFiltersAsStr)
+        const extra = this.pageQuery.extra
         stashFilters.forEach(({type, ...config}) => {
           if (type === 'stored') {
-            const {labels} = config
-            this.storedLabels = labels
+            const {value} = config
+            this.storedLabels = value
+            return
+          }
+          if (type === 'extra') {
+            const {value: cachedExtra} = config
+            Object.entries(extra).forEach(([key, value]) => {
+              const cacheValue = cachedExtra[key]
+              if (!util.isEmpty(cacheValue)) {
+                extra[key] = cacheValue
+              }
+            })
             return
           }
           const {col, opt, val, disabled, options} = config
@@ -931,7 +953,12 @@ export default {
         this.dynamicFilters.filter(f => f.isEffective()).forEach(callbackFn)
         // 存筛比较特殊, 数据结构不同
         if (this.storedLabels.length > 0) {
-          stashFilters.push({type: 'stored', labels: this.storedLabels})
+          stashFilters.push({type: 'stored', value: this.storedLabels})
+        }
+        // 扩展参数也比较特殊,单独处理
+        const extra = this.pageQuery.extra;
+        if (!util.isEmpty(extra) && Object.keys(extra).some(key => !util.isEmpty(extra[key]))) {
+          stashFilters.push({type: 'extra', value: extra})
         }
 
         if (stashFilters.length > 0) {
