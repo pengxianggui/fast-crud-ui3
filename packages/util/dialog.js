@@ -102,12 +102,14 @@ export function openDialog({component, props = {}, dialogProps = {}}) {
                     onClose: () => handleCancel('dialog'),
                     ...validDialogProps
                 }, {
-                    default: () => h(component, {
-                        ref: (el) => (componentRef = el),
-                        ...props,
-                        onOk: (data) => handleOk(data),
-                        onCancel: () => handleCancel('component')
-                    }),
+                    default: () => {
+                        return h(component, {
+                            ref: (el) => (componentRef = el),
+                            ...props,
+                            onOk: (data) => handleOk(data),
+                            onCancel: () => handleCancel('component')
+                        })
+                    },
                     footer: () => buttons.map(btn =>
                         h(ElButton, {
                             type: btn.type,

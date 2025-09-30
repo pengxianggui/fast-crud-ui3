@@ -10,9 +10,6 @@
       <el-form-item label="自定义筛选项" style="grid-area: c1;/*grid-column: c2/c3*/">
         <el-input :size="size" v-model="query.extra.keyword" placeholder="同时筛选姓名和仰慕者姓名"/>
       </el-form-item>
-      <el-form-item label="自定义筛选项2">
-        <fast-select :size="size" v-model="query.extra.field1" :options="[{label:'是', value: true}, {label: '否', value: false}]" clearable/>
-      </el-form-item>
     </template>
     <fast-table-column label="ID" prop="id" :dynamic-filter="false" :quick-filter="true"/>
     <fast-table-column-img label="头像" prop="avatarUrl" :fixed="params.fixedAvatar" :filter="false" required/>
@@ -76,10 +73,8 @@
       <!--      <div class="sick-msg">这是一段提示</div>-->
     </template>
     <template #foot="scope">
-      <div>
-        <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'code')">查看源码</el-button>
-        <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'doc')">查看文档</el-button>
-      </div>
+      <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'code')">查看源码</el-button>
+      <el-button :size="scope.size" :icon="Link" @click="expandButton(scope, 'doc')">查看文档</el-button>
     </template>
   </fast-table>
 </template>
@@ -129,8 +124,7 @@ export default {
           {label: '吴国女性', conds: [{col: 'state', opt: 'in', val: ['3']}, {col: 'sex', opt: 'in', val: ['0']}]}
         ],
         condExtra: {
-          keyword: null,
-          field1: null
+          keyword: null
         },
         moreButtons: [
           {

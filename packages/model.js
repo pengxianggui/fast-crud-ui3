@@ -389,6 +389,7 @@ class FastTableOption {
     enableFilterCache = true; // 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
     lazyLoad = false; // 不立即加载数据
     editType = 'inline'; // inline/form
+    queryable = true; //是否允许查询, 这个在静态表格等场景是有用的, 用于隐藏查询等按钮
     insertable = true; // 是否支持内置新建
     updatable = true; // 是否支持内置编辑
     deletable = true; // 是否支持内置删除
@@ -467,6 +468,7 @@ class FastTableOption {
                     enableColumnFilter = true,
                     lazyLoad = false,
                     editType = 'inline',
+                    queryable = true,
                     insertable = true,
                     updatable = true,
                     deletable = true,
@@ -518,6 +520,7 @@ class FastTableOption {
         assert(isBoolean(enableColumnFilter) || isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
         assert(isBoolean(lazyLoad), 'lazyLoad必须为布尔值')
         assert(['inline', 'form'].includes(editType), 'editType必须为inline或form')
+        assert(isBoolean(queryable) || isFunction(queryable), 'queryable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(insertable) || isFunction(insertable), 'insertable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(updatable) || isFunction(updatable), 'updatable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(deletable) || isFunction(deletable), 'deletable必须为布尔值或返回布尔值的函数')
@@ -574,6 +577,7 @@ class FastTableOption {
         this.enableColumnFilter = enableColumnFilter;
         this.lazyLoad = lazyLoad;
         this.editType = editType;
+        this.queryable = queryable;
         this.insertable = insertable;
         this.updatable = updatable;
         this.deletable = deletable;
@@ -709,6 +713,7 @@ class FastTableOption {
                 fatRows: fatRows,
                 rows: rows
             }).then(() => {
+                // TODO 使用RowConfirm进行删除确认
                 ElMessageBox.confirm(`确定删除这${rows.length}条记录吗？`, '删除确认', {}).then(() => {
                     const {beforeDelete} = this;
                     beforeDelete.call(context, {fatRows: fatRows, rows: rows}).then((postData) => {

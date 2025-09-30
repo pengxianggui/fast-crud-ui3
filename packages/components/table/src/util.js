@@ -110,6 +110,13 @@ export function toTableRow(row, columnConfig, status = 'normal', editType) {
     }
 }
 
+export function isFatRow(row) {
+    return row.hasOwnProperty('row')
+        && row.hasOwnProperty('editRow')
+        && row.hasOwnProperty('status')
+        && row.hasOwnProperty('config')
+}
+
 function parseStaticProps(staticProps) {
     const props = {}
     if (!util.isEmpty(staticProps)) {
@@ -159,7 +166,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
 
         const param = {}
         const {showOverflowTooltip, minWidth, ...leftProp} = props
-        const {label, prop: col, filter, quickFilter, dynamicFilter, unique, firstFilter, hidden} = leftProp
+        const {label, prop: col, filter, quickFilter, dynamicFilter, unique, firstFilter, hidden, showLength} = leftProp
         if (util.isEmpty(col)) { // 操作列
             continue
         }
@@ -172,6 +179,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             unique: unique,
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
+            showLength: showLength,
             // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
             props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption', 'quickFilterConfig'])
             // props: leftProp

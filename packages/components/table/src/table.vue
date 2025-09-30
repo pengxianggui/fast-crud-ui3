@@ -1,14 +1,15 @@
 <template>
   <div class="fc-fast-table">
     <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
-    <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle">
+    <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle"
+         v-if="getBoolVal(option.queryable, true)">
       <!-- 快筛 -->
       <quick-filter-form ref="quickForm" :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
     <div ref="operation" class="fc-fast-table-operation-bar">
-      <div class="fc-operation-filter">
+      <div class="fc-operation-filter" v-if="getBoolVal(option.queryable, true)">
         <!-- 简筛区 -->
         <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad"/>
         <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
@@ -33,10 +34,7 @@
                      v-if="getBoolVal(option.insertable, true)">新建
           </el-button>
           <el-button type="danger" plain :size="option.style.size" @click="deleteRow"
-                     v-if="checkedRows.length === 0 && option.deletable">删除
-          </el-button>
-          <el-button type="danger" :size="option.style.size" @click="deleteRows"
-                     v-if="checkedRows.length > 0 && option.deletable">删除
+                     v-if="option.deletable">删除
           </el-button>
         </template>
         <template v-if="status === 'update' || status === 'insert'">
@@ -118,16 +116,23 @@
       </el-table>
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
-      <slot name="foot" v-bind="scopeParam">
-        <span></span>
-      </slot>
+      <div>
+        <span v-if="checkedRows.length > 0 && getBoolVal(option.queryable, true)">
+          <el-button type="primary" link @click="viewCheckedRows">查看</el-button>
+          <el-text>/</el-text>
+          <el-button type="danger" link @click="clearCheckedRows">清除</el-button>
+          <el-text>已勾选的数据({{ checkedRows.length }})</el-text>
+        </span>
+        <slot name="foot" v-bind="scopeParam"></slot>
+      </div>
       <el-pagination v-model:page-size="pageQuery.size"
                      v-model:current-page="pageQuery.current"
                      :page-sizes="option.pagination['page-sizes']"
                      :total="total"
                      @current-change="pageLoad"
                      @size-change="() => pageLoad()"
-                     :layout="option.pagination.layout"></el-pagination>
+                     :layout="option.pagination.layout"
+                     v-if="getBoolVal(option.queryable, true)"></el-pagination>
     </div>
   </div>
 </template>
@@ -141,11 +146,12 @@ import EasyFilter from "./easy-filter.vue"
 import StoredFilter from "./stored-filter.vue"
 import DynamicFilterForm from "./dynamic-filter-form.vue"
 import DynamicFilterList from "./dynamic-filter-list.vue"
+import RowForm from "./row-form.vue"
+import RowConfirm from "./RowConfirm.vue"
 import {PageQuery} from '../../../model'
 import FastTableOption from "../../../model"
 import {
   calLength,
-  defaultIfEmpty,
   getFullHeight, getInnerHeight,
   ifBlank,
   isBoolean,
@@ -155,10 +161,9 @@ import {
   isNumber,
   noRepeatAdd
 } from "../../../util/util"
-import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport} from "./util"
+import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport, isFatRow} from "./util"
 import {openDialog} from "../../../util/dialog"
 import {buildFinalQueryComponentConfig} from "../../mapping"
-import RowForm from "./row-form.vue"
 import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
 import * as util from "../../../util/util.js";
@@ -171,6 +176,11 @@ export default {
     option: {
       type: FastTableOption,
       required: true
+    },
+    data: { // 初始化数据(必须是fatRow)
+      type: Array,
+      default: () => [],
+      validator: (value) => util.isArray(value) && value.every(row => isFatRow(row))
     }
   },
   computed: {
@@ -263,7 +273,7 @@ export default {
       easyFilters: [], // 简筛配置
       dynamicFilters: [], // 动筛配置
       storedLabels: [], // 勾选的存筛组标签名
-      list: [], // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
+      list: this.data, // 表格当前页的数据, 不单纯有业务数据, 还有配置数据(用于实现行内、弹窗表单)
       total: 0, // 表格总数
       tableFlexHeight: null, //表格的弹性高度(动态计算值), 初始值是null非常重要, 如果内部计算出现问题外部又没自定义高度,相当于没有设置height值, 默认展示效果
     }
@@ -388,6 +398,9 @@ export default {
      * @param page 第几页, 可不传(默认为当前页码)
      */
     pageLoad(page) {
+      if (!this.getBoolVal(this.option.queryable)) {
+        return
+      }
       const confirmPromise = (this.status !== 'normal')
           ? ElMessageBox.confirm('当前处于编辑状态, 点击【确定】将丢失已编辑内容?', '提示', {
             confirmButtonText: '确定',
@@ -407,7 +420,7 @@ export default {
         conds.push(...dynamicConds)
         // 添加存筛条件
         if (this.storedLabels.length > 0) {
-          const storeFilters = this.$refs['storedFilter'].getStoreFilters();
+          const storeFilters = this.$refs.storedFilter.getStoreFilters();
           const storedConds = storeFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
           conds.push(...storedConds)
         }
@@ -433,6 +446,7 @@ export default {
                 this.total = total;
                 nextTick(() => {
                   this.setChoseRow(0); // 默认选中第一行
+                  this.syncRowSelection(); // 同步可能得选中状态
                 })
               }).finally(() => {
                 resolve()
@@ -538,7 +552,7 @@ export default {
         return;
       }
       if (this.status !== 'normal' && this.status !== 'insert') {
-        ElMessage.warning(`当前FastTable处于${this.status}状态, 不允许新增`);
+        ElMessage.warning(`当前表格处于${this.status}状态, 不允许新增`);
         return;
       }
       const {context, beforeToInsert} = this.option;
@@ -552,31 +566,31 @@ export default {
       })
     },
     /**
-     * 删除: 删除当前选中行记录
+     * 删除行(多选模式下，删除checkedRows; 非多选模式下, 删除choseRow)
      */
     deleteRow() {
       if (this.option.deletable === false) {
-        return;
+        return
       }
-      const {choseRow} = this;
-      const rows = [];
-      if (!isEmpty(choseRow)) {
-        rows.push(choseRow);
+      let beDeleteRows
+      const enableMulti = this.getBoolVal(this.option.enableMulti);
+      if (enableMulti) {
+        beDeleteRows = this.checkedRows
+      } else {
+        beDeleteRows = util.isEmpty(this.choseRow) ? [] : [this.choseRow]
       }
-      this.option._deleteRows(rows).then(() => this.pageLoad());
-    },
-    deleteRows() {
-      if (this.option.deletable === false) {
-        return;
+      if (util.isEmpty(beDeleteRows)) {
+        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要删除的行`)
+        return
       }
-      this.option._deleteRows(this.checkedRows).then(() => this.pageLoad());
+      this.option._deleteRows(beDeleteRows).then(() => this.pageLoad());
     },
     /**
      * 打开动筛面板: 构造动筛组件配置, 动态创建面板并弹出。由于动筛是动态的，不能在mounted阶段构造好。
      * @param column
      */
     openDynamicFilterForm(column) {
-      if (!this.getBoolVal(this.option.enableColumnFilter, true)) {
+      if (!this.getBoolVal(this.option.enableColumnFilter, true) || !this.getBoolVal(this.option.queryable, true)) {
         return;
       }
       const {prop, label, order} = column
@@ -624,11 +638,11 @@ export default {
     setChoseRow(index = 0) {
       if (this.list.length === 0) {
         this.choseRow = null;
-        this.$refs['table'].setCurrentRow(); // 清除选中高亮
+        this.$refs.table.setCurrentRow(); // 清除选中高亮
         return;
       }
       this.choseRow = this.list[index];
-      this.$refs['table'].setCurrentRow(this.choseRow);
+      this.$refs.table.setCurrentRow(this.choseRow);
     },
     getChoseRow() {
       return this.choseRow;
@@ -639,9 +653,32 @@ export default {
     handleSelect(rows, row) {
       this.$emit('select', {fatRows: rows, rows: rows.map(r => r.row), fatRow: row, row: row.row});
     },
-    handleSelectionChange(rows) {
-      this.checkedRows = rows;
-      this.$emit('selectionChange', {fatRows: rows, rows: rows.map(r => r.row)})
+    handleSelectionChange(newRows) {
+      if (this.loading) { // 分页查询时也会触发此事件, 并且newRows为空数组, 这里为了区分用户取消勾选和分页查询两种场景
+        return
+      }
+      if (this.status === 'insert') { // 新增模式下, 直接塞, 以便正确支持"移除"
+        this.checkedRows = newRows
+        return
+      }
+      //  针对newRows, 若checkedRows里无则追加
+      const idField = this.option.idField
+      const eqCallback = ((r1, r2) => r1.row[idField] === r2.row[idField])
+      newRows.forEach(r1 => {
+        if (this.checkedRows.findIndex(r2 => eqCallback(r1, r2)) === -1) {
+          this.checkedRows.push(r1)
+        }
+      })
+      // if (!util.isEmpty(newRows)) {
+      for (let i = this.checkedRows.length - 1; i >= 0; i--) { // 倒序, important
+        const r1 = this.checkedRows[i]
+        // 若newRows中无,且list有, 则表示是要取消的
+        if (newRows.findIndex(r2 => eqCallback(r1, r2)) === -1 && this.list.findIndex(r2 => eqCallback(r1, r2)) > -1) {
+          this.checkedRows.splice(i, 1)
+        }
+      }
+      // }
+      this.$emit('selectionChange', {fatRows: this.checkedRows, rows: this.checkedRows.map(r => r.row)})
     },
     handleSelectAll(rows) {
       this.$emit('selectAll', {fatRows: rows, rows: rows.map(r => r.row)});
@@ -704,7 +741,7 @@ export default {
         return;
       }
       if (this.status !== 'normal' && this.status !== 'update') {
-        ElMessage.warning(`当前FastTable处于${this.status}状态, 不允许更新`);
+        ElMessage.warning(`当前表格处于${this.status}状态, 不允许更新`);
         return;
       }
       const {context, beforeToUpdate} = this.option;
@@ -765,15 +802,67 @@ export default {
       // }
     },
     /**
+     * 同步行的选中状态
+     */
+    syncRowSelection() {
+      const enableMulti = this.getBoolVal(this.option.enableMulti);
+      if (enableMulti === false) {
+        this.checkedRows.length = 0
+        return
+      }
+      const idField = this.option.idField
+      this.list.forEach(r1 => {
+        this.checkedRows.forEach(r2 => {
+          const selected = (r1.row[idField] === r2.row[idField])
+          this.$refs.table.toggleRowSelection(r1, selected)
+        })
+      })
+    },
+    /**
+     * 查看勾选的数据
+     */
+    viewCheckedRows() {
+      const columnConfigs = Object.entries(this.columnConfig).map(([col, config]) => config)
+      openDialog({
+        component: RowConfirm,
+        props: {
+          rows: this.checkedRows,
+          columnConfigs: columnConfigs
+        },
+        dialogProps: {
+          title: '所有勾选的行',
+          width: '90%',
+          handleCancel: () => {
+            this.$nextTick(() => {
+              this.syncRowSelection()
+            })
+          }
+        }
+      })
+    },
+    /**
+     * 清空勾选
+     */
+    clearCheckedRows() {
+      this.checkedRows.length = 0
+      this.$refs.table.clearSelection()
+    },
+    /**
      * 移除新建的行
      */
     removeNewRows() {
       if (this.status !== 'insert' || this.editRows.length === 0) {
         return
       }
-      const beRemoveRows = defaultIfEmpty(this.checkedRows, this.choseRow === null ? [] : [this.choseRow])
+      let beRemoveRows
+      const enableMulti = this.getBoolVal(this.option.enableMulti)
+      if (enableMulti) {
+        beRemoveRows = this.checkedRows
+      } else {
+        beRemoveRows = this.choseRow === null ? [] : [this.choseRow]
+      }
       if (isEmpty(beRemoveRows)) {
-        ElMessage.warning('请选择要移除的新建行')
+        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要移除的新建行`)
         return
       }
       if (beRemoveRows.some(r => r.status !== 'insert')) {
@@ -858,7 +947,7 @@ export default {
       // console.log(`paginationHeight: ${paginationHeight}`)
       // console.log(`tableFlexHeight: ${this.tableFlexHeight}`)
     },
-    getBoolVal(boolValOrFun, defaultVal) {
+    getBoolVal(boolValOrFun, defaultVal = false) {
       if (isFunction(boolValOrFun)) {
         const result = this.executeInContext(boolValOrFun)
         return isBoolean(result) ? result : defaultVal
@@ -1037,69 +1126,67 @@ export default {
     }
   }
 
-  .fc-fast-table-wrapper {
-    :deep(.el-table__cell) {
-      padding: 0;
+  :deep(.el-table__cell) {
+    padding: 0;
+  }
+
+  :deep(td.fc-table-column > .cell) {
+    padding: 0 10px;
+
+    .fc-table-inline-edit-component {
+      width: 100%;
+
+      .el-input__inner {
+        padding: 0 4px;
+      }
+
+      .el-input-number__decrease, .el-input-number__increase {
+        width: 15px;
+      }
+
+      .el-input__prefix {
+        display: none;
+      }
+
+      input {
+        text-align: left;
+      }
+
+      .el-upload-list--picture-card .el-upload-list__item, .el-upload--picture-card {
+        width: auto;
+        height: 100%;
+        aspect-ratio: 1 / 1;
+        line-height: 100%;
+        margin: 0;
+
+        & .el-icon-plus {
+          $uploadIconSize: 18px;
+          font-size: $uploadIconSize;
+          width: $uploadIconSize;
+          height: $uploadIconSize;
+          margin-top: calc(50% - $uploadIconSize / 2);
+        }
+      }
+
+      .el-upload-list--text {
+        .el-upload-list__item {
+          margin: 0;
+          line-height: 1;
+
+          & > * {
+            display: inline;
+          }
+        }
+      }
     }
 
-    :deep(td.fc-table-column > .cell) {
-      padding: 0 10px;
+    .fc-table-inline-edit-component.fc-valid-error {
+      border: 1px solid #F56C6C;
+      //border-radius: 3px;
+    }
 
-      .fc-table-inline-edit-component {
-        width: 100%;
-
-        .el-input__inner {
-          padding: 0 4px;
-        }
-
-        .el-input-number__decrease, .el-input-number__increase {
-          width: 15px;
-        }
-
-        .el-input__prefix {
-          display: none;
-        }
-
-        input {
-          text-align: left;
-        }
-
-        .el-upload-list--picture-card .el-upload-list__item, .el-upload--picture-card {
-          width: auto;
-          height: 100%;
-          aspect-ratio: 1 / 1;
-          line-height: 100%;
-          margin: 0;
-
-          & .el-icon-plus {
-            $uploadIconSize: 18px;
-            font-size: $uploadIconSize;
-            width: $uploadIconSize;
-            height: $uploadIconSize;
-            margin-top: calc(50% - $uploadIconSize / 2);
-          }
-        }
-
-        .el-upload-list--text {
-          .el-upload-list__item {
-            margin: 0;
-            line-height: 1;
-
-            & > * {
-              display: inline;
-            }
-          }
-        }
-      }
-
-      .fc-table-inline-edit-component.fc-valid-error {
-        border: 1px solid #F56C6C;
-        //border-radius: 3px;
-      }
-
-      .el-upload-list__item {
-        transition: none !important; // 防止内部FastUpload因数据刷新而跳动
-      }
+    .el-upload-list__item {
+      transition: none !important; // 防止内部FastUpload因数据刷新而跳动
     }
   }
 
