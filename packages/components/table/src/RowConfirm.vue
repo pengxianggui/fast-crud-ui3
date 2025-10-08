@@ -11,7 +11,7 @@
     </template>
     <!-- TODO 支持移除 -->
     <template #button>
-      <el-button type="danger" plain :disabled="checkedRows.length === 0" @click="handleRemove">移除</el-button>
+      <el-button type="danger" plain :disabled="checkedRows.length === 0" @click="handleRemove" v-if="rows.length > 1">移除</el-button>
     </template>
   </fast-table>
 </template>
@@ -36,7 +36,7 @@ export default {
         updatable: false,
         deletable: false,
         exportable: false,
-        enableMulti: true
+        enableMulti: this.rows.length > 1
       }),
       checkedRows: []
     }
@@ -70,6 +70,9 @@ export default {
           this.rows.splice(i, 1)
         }
       }
+    },
+    getRows() {
+      return this.rows
     }
   }
 }

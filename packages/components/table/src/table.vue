@@ -116,13 +116,14 @@
       </el-table>
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
-      <div>
-        <span v-if="checkedRows.length > 0 && getBoolVal(option.queryable, true)">
-          <el-button type="primary" link @click="viewCheckedRows">查看</el-button>
-          <el-text>/</el-text>
-          <el-button type="danger" link @click="clearCheckedRows">清除</el-button>
-          <el-text>已勾选的数据({{ checkedRows.length }})</el-text>
-        </span>
+      <div class="fc-footer-wrapper">
+        <div class="fc-check-tip"
+             v-if="checkedRows.length > 0 && getBoolVal(option.queryable, true)">
+          <el-link underline="always" @click="clearCheckedRows">清除</el-link>
+          <el-text>已勾选的</el-text>
+          <el-link underline="always" @click="viewCheckedRows">{{ checkedRows.length }}</el-link>
+          <el-text>条记录</el-text>
+        </div>
         <slot name="foot" v-bind="scopeParam"></slot>
       </div>
       <el-pagination v-model:page-size="pageQuery.size"
@@ -434,7 +435,7 @@ export default {
             this.pageQuery.current = page
           }
           beforeLoad.call(context, {query: this.pageQuery}).then(() => {
-            this.loading = true;
+            this.loading = true
             if (this.option.enableFilterCache) {
               this.stashFilter() // 缓存分页筛选条件
             }
@@ -583,7 +584,75 @@ export default {
         ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要删除的行`)
         return
       }
-      this.option._deleteRows(beDeleteRows).then(() => this.pageLoad());
+
+      const rows = beDeleteRows.map(r => r.row);
+      const {context, beforeDeleteTip, beforeDelete} = this.option;
+      let param = {
+        fatRows: beDeleteRows,
+        rows: rows
+      }
+      beforeDeleteTip.call(context, param).then(() => {
+        const columnConfigs = Object.entries(this.columnConfig).map(([col, config]) => config)
+        openDialog({
+          component: RowConfirm,
+          props: {
+            rows: beDeleteRows,
+            columnConfigs: columnConfigs
+          },
+          dialogProps: {
+            title: `确认删除以下记录?`,
+            width: '90%',
+            buttons: [
+              {
+                text: '删除',
+                type: 'danger',
+                onClick: (component) => {
+                  return Promise.resolve(component.getRows())
+                }
+              },
+              {
+                text: '取消',
+                onClick: () => {
+                  return Promise.reject() // 走catch逻辑
+                }
+              }
+            ]
+          }
+        }).then((confirmedRows) => {
+          this.syncRowSelection()
+          param = {fatRows: confirmedRows, rows: confirmedRows.map(r => r.row)}
+          beforeDelete.call(context, param).then((postData) => {
+            if (postData.length === 0) {
+              ElMessage.warning('无可删除数据')
+              return
+            }
+            const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this.option;
+            const postPromise = (postData.length === 1 ? post(deleteUrl, postData[0]) : post(batchDeleteUrl, postData))
+            postPromise.then(res => {
+              this.checkedRows.length = 0 // 删除成功则清除已勾选数据
+              this.pageLoad() // 刷新分页数据
+              deleteSuccess.call(context, {
+                ...param,
+                res: res
+              }).then(() => {
+                ElMessage.success('删除成功')
+              })
+            }).catch(err => {
+              deleteFail.call(context, {...param, error: err}).then(() => {
+                ElMessage.error('删除失败:' + JSON.stringify(err));
+              })
+            })
+          }).catch(() => {
+            console.log('[beforeDelete]取消删除..')
+          })
+        }).catch(() => {
+          // 已取消
+          this.syncRowSelection()
+        })
+      }).catch(() => {
+        console.log('[beforeDeleteTip]取消删除..')
+      })
+      // this.option._deleteRows(beDeleteRows).then(() => this.pageLoad());
     },
     /**
      * 打开动筛面板: 构造动筛组件配置, 动态创建面板并弹出。由于动筛是动态的，不能在mounted阶段构造好。
@@ -629,7 +698,7 @@ export default {
     // 选中行发生变更
     handleCurrentChange(row) {
       this.choseRow = row;
-      this.$emit('currentChange', {fatRow: row, row: isNull(row) ? null : row.row});
+      this.$emit('currentChange', {fatRow: row, row: isNull(row) ? null : row.row, scope: this.scopeParam});
     },
     /**
      * 选中指定行
@@ -651,43 +720,53 @@ export default {
       return this.checkedRows;
     },
     handleSelect(rows, row) {
-      this.$emit('select', {fatRows: rows, rows: rows.map(r => r.row), fatRow: row, row: row.row});
+      this.$emit('select', {
+        fatRows: rows,
+        rows: rows.map(r => r.row),
+        fatRow: row,
+        row: row.row,
+        scope: this.scopeParam
+      });
+      // debugger
+      const idField = this.option.idField
+      const isChecked = (rows.indexOf(row) > -1)
+      if (isChecked) { // 勾选
+        this.checkedRows.push(row)
+      } else { // 取消勾选
+        const eqCallback = ((r1, r2) => r1.row[idField] === r2.row[idField])
+        const idx = this.checkedRows.findIndex(r1 => eqCallback(r1, row))
+        if (idx > -1) {
+          this.checkedRows.splice(idx, 1)
+        }
+      }
     },
     handleSelectionChange(newRows) {
-      if (this.loading) { // 分页查询时也会触发此事件, 并且newRows为空数组, 这里为了区分用户取消勾选和分页查询两种场景
-        return
-      }
-      if (this.status === 'insert') { // 新增模式下, 直接塞, 以便正确支持"移除"
-        this.checkedRows = newRows
-        return
-      }
-      //  针对newRows, 若checkedRows里无则追加
+      this.$emit('selectionChange', {fatRows: newRows, rows: newRows.map(r => r.row), scope: this.scopeParam})
+    },
+    handleSelectAll(rows) {
+      this.$emit('selectAll', {fatRows: rows, rows: rows.map(r => r.row), scope: this.scopeParam});
+      // rows中的全部塞进checkedRows
       const idField = this.option.idField
       const eqCallback = ((r1, r2) => r1.row[idField] === r2.row[idField])
-      newRows.forEach(r1 => {
+      rows.forEach(r1 => {
         if (this.checkedRows.findIndex(r2 => eqCallback(r1, r2)) === -1) {
           this.checkedRows.push(r1)
         }
       })
-      // if (!util.isEmpty(newRows)) {
+      // 对于checkedRows中存在于list但不存在于rows的, 要从checkedRows里移除
       for (let i = this.checkedRows.length - 1; i >= 0; i--) { // 倒序, important
         const r1 = this.checkedRows[i]
-        // 若newRows中无,且list有, 则表示是要取消的
-        if (newRows.findIndex(r2 => eqCallback(r1, r2)) === -1 && this.list.findIndex(r2 => eqCallback(r1, r2)) > -1) {
+        // 若rows中无,且list有, 则表示是要取消的
+        if (rows.findIndex(r2 => eqCallback(r1, r2)) === -1 && this.list.findIndex(r2 => eqCallback(r1, r2)) > -1) {
           this.checkedRows.splice(i, 1)
         }
       }
-      // }
-      this.$emit('selectionChange', {fatRows: this.checkedRows, rows: this.checkedRows.map(r => r.row)})
-    },
-    handleSelectAll(rows) {
-      this.$emit('selectAll', {fatRows: rows, rows: rows.map(r => r.row)});
     },
     handleRowClick(row, column, event) {
-      this.$emit('rowClick', {fatRow: row, column, event, row: row.row});
+      this.$emit('rowClick', {fatRow: row, column, event, row: row.row, scope: this.scopeParam});
     },
     handleRowDblclick(row, column, event) {
-      this.$emit('rowDblclick', {fatRow: row, column, event, row: row.row});
+      this.$emit('rowDblclick', {fatRow: row, column, event, row: row.row, scope: this.scopeParam});
       if (!this.getBoolVal(this.option.enableDblClickEdit, true)) {
         return;
       }
@@ -811,12 +890,10 @@ export default {
         return
       }
       const idField = this.option.idField
-      this.list.forEach(r1 => {
-        this.checkedRows.forEach(r2 => {
-          const selected = (r1.row[idField] === r2.row[idField])
-          this.$refs.table.toggleRowSelection(r1, selected)
-        })
-      })
+      for (const r1 of this.list) {
+        const selected = this.checkedRows.some(r2 => r1.row[idField] === r2.row[idField])
+        this.$refs.table.toggleRowSelection(r1, selected)
+      }
     },
     /**
      * 查看勾选的数据
@@ -1181,8 +1258,7 @@ export default {
     }
 
     .fc-table-inline-edit-component.fc-valid-error {
-      border: 1px solid #F56C6C;
-      //border-radius: 3px;
+      border: 1px dashed #F56C6C;
     }
 
     .el-upload-list__item {
@@ -1194,6 +1270,14 @@ export default {
     display: flex;
     margin-top: 3px;
     justify-content: space-between;
+
+    .fc-footer-wrapper {
+      display: flex;
+      align-items: center;
+      .fc-check-tip {
+        display: flex;
+      }
+    }
   }
 }
 </style>
