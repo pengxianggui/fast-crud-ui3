@@ -1,4 +1,4 @@
-import {ElMessage, ElMessageBox} from 'element-plus';
+import {ElMessage} from 'element-plus';
 import {
     assert,
     caseToCamel,
@@ -695,58 +695,6 @@ class FastTableOption {
                 reject(err);
             })
         });
-    }
-
-    /**
-     * 批量删除: 删除当前勾选的行记录
-     */
-    _deleteRows(fatRows) {
-        if (this.deletable === false) {
-            return Promise.reject('当前表格不允许删除');
-        }
-        if (isEmpty(fatRows)) {
-            ElMessage.warning('请先选中一条记录');
-            return Promise.reject('请先选中一条记录');
-        }
-
-        return new Promise((resolve, reject) => {
-            const rows = fatRows.map(r => r.row);
-            const {context, beforeDeleteTip} = this;
-            beforeDeleteTip.call(context, {
-                fatRows: fatRows,
-                rows: rows
-            }).then(() => {
-                // TODO 使用RowConfirm进行删除确认
-                ElMessageBox.confirm(`确定删除这${rows.length}条记录吗？`, '删除确认', {}).then(() => {
-                    const {beforeDelete} = this;
-                    beforeDelete.call(context, {fatRows: fatRows, rows: rows}).then((postData) => {
-                        const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this;
-                        const postPromise = (postData.length === 1 ? post(deleteUrl, postData[0]) : post(batchDeleteUrl, postData))
-                        postPromise.then(res => {
-                            resolve(); // 始终刷新
-                            deleteSuccess.call(context, {
-                                fatRows: fatRows,
-                                rows: rows,
-                                res: res
-                            }).then(() => {
-                                ElMessage.success('删除成功');
-                            })
-                        }).catch(err => {
-                            reject(err);
-                            deleteFail.call(context, {fatRows, rows: rows, error: err}).then(() => {
-                                ElMessage.error('删除失败:' + JSON.stringify(err));
-                            })
-                        })
-                    }).catch((err) => {
-                        // 取消删除
-                        reject(err);
-                    })
-                });
-            }).catch((err) => {
-                // 取消删除提示和删除
-                reject(err);
-            })
-        })
     }
 
     /**
