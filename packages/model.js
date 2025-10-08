@@ -466,6 +466,7 @@ class FastTableOption {
                     enableMulti = true,
                     enableIndex = false,
                     enableColumnFilter = true,
+                    enableFilterCache = true,
                     lazyLoad = false,
                     editType = 'inline',
                     queryable = true,
@@ -510,7 +511,7 @@ class FastTableOption {
                     exportFail = ({columns, pageQuery, error}) => Promise.resolve()
                 }) {
         assert(isString(title), 'title必须为字符串')
-        assert(isBoolean(showTitle), 'showTitle必须为布尔值')
+        assert(isBoolean(showTitle) || isFunction(showTitle), 'showTitle必须为布尔值或返回布尔值的函数')
         assert(isString(id), 'id必须为字符串')
         assert(isString(module), 'module必须为字符串')
         assert(isString(baseUrl), 'baseUrl必须是字符串')
@@ -518,7 +519,8 @@ class FastTableOption {
         assert(isBoolean(enableMulti) || isFunction(enableMulti), 'enableMulti必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableIndex) || isFunction(enableIndex), 'enableIndex必须为布尔值或返回布尔值的函数')
         assert(isBoolean(enableColumnFilter) || isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
-        assert(isBoolean(lazyLoad), 'lazyLoad必须为布尔值')
+        assert(isBoolean(enableFilterCache) || isFunction(enableFilterCache), 'enableFilterCache必须为布尔值或返回布尔值的函数')
+        assert(isBoolean(lazyLoad) || isFunction(lazyLoad), 'lazyLoad必须为布尔值或返回布尔值的函数')
         assert(['inline', 'form'].includes(editType), 'editType必须为inline或form')
         assert(isBoolean(queryable) || isFunction(queryable), 'queryable必须为布尔值或返回布尔值的函数')
         assert(isBoolean(insertable) || isFunction(insertable), 'insertable必须为布尔值或返回布尔值的函数')
@@ -575,6 +577,7 @@ class FastTableOption {
         this.enableMulti = enableMulti;
         this.enableIndex = enableIndex;
         this.enableColumnFilter = enableColumnFilter;
+        this.enableFilterCache = enableFilterCache;
         this.lazyLoad = lazyLoad;
         this.editType = editType;
         this.queryable = queryable;

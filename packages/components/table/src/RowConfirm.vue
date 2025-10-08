@@ -9,9 +9,9 @@
                  v-bind="column.props"
                  v-if="column.hidden === false"/>
     </template>
-    <!-- TODO 支持移除 -->
     <template #button>
-      <el-button type="danger" plain :disabled="checkedRows.length === 0" @click="handleRemove" v-if="rows.length > 1">移除</el-button>
+      <el-button type="danger" plain :disabled="checkedRows.length === 0" @click="handleRemove"
+                 v-if="action === 'delete' && rows.length > 1">从删除清单里移出</el-button>
     </template>
   </fast-table>
 </template>
@@ -26,7 +26,12 @@ export default {
       type: Array,
       default: () => []
     },
-    columnConfigs: Object
+    columnConfigs: Object,
+    action: {
+      type: String,
+      default: () => 'view',
+      validator: (value) => ['view', 'delete'].indexOf(value) > -1
+    }
   },
   data() {
     return {

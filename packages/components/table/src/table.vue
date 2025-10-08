@@ -1,15 +1,14 @@
 <template>
   <div class="fc-fast-table">
-    <div ref="title" class="fc-fast-table-title" v-if="option.showTitle && option.title">{{ option.title }}</div>
-    <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle"
-         v-if="getBoolVal(option.queryable, true)">
+    <div ref="title" class="fc-fast-table-title" v-if="showTitle && option.title">{{ option.title }}</div>
+    <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle" v-if="queryable">
       <!-- 快筛 -->
       <quick-filter-form ref="quickForm" :filters="quickFilters" :option="option">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
     <div ref="operation" class="fc-fast-table-operation-bar">
-      <div class="fc-operation-filter" v-if="getBoolVal(option.queryable, true)">
+      <div class="fc-operation-filter" v-if="queryable">
         <!-- 简筛区 -->
         <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad"/>
         <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
@@ -31,23 +30,22 @@
       <div class="fc-fast-table-operation-btn">
         <template v-if="status === 'normal'">
           <el-button :size="option.style.size" @click="toInsert"
-                     v-if="getBoolVal(option.insertable, true)">新建
+                     v-if="insertable">新建
           </el-button>
           <el-button type="danger" plain :size="option.style.size" @click="deleteRow"
-                     v-if="option.deletable">删除
+                     v-if="deletable">删除
           </el-button>
         </template>
-        <template v-if="status === 'update' || status === 'insert'">
+        <template v-if="(updatable && status === 'update') || (insertable && status === 'insert')">
           <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除
           </el-button>
           <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
-          <el-button :size="option.style.size" @click="toInsert"
-                     v-if="status === 'insert' && getBoolVal(option.insertable, true)">继续新建
+          <el-button :size="option.style.size" @click="toInsert" v-if="status === 'insert' && insertable">继续新建
           </el-button>
           <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
-        <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size">
+        <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size" v-if="showMoreBtn">
           <el-button type="primary" plain :size="option.style.size">
             <span>更多</span>
             <el-icon class="el-icon--right">
@@ -56,7 +54,7 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="activeBatchEdit" v-if="option.updatable">
+              <el-dropdown-item @click="activeBatchEdit" v-if="updatable">
                 <el-icon>
                   <Edit/>
                 </el-icon>
@@ -64,7 +62,7 @@
               </el-dropdown-item>
               <!-- TODO 1.6 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
-              <el-dropdown-item @click="exportData" v-if="getBoolVal(option.exportable, true)">
+              <el-dropdown-item @click="exportData" v-if="exportable">
                 <el-icon>
                   <Download/>
                 </el-icon>
@@ -106,8 +104,8 @@
                 :height="heightTable"
                 :size="option.style.size"
                 border>
-        <el-table-column type="selection" width="55" v-if="getBoolVal(option.enableMulti, true)"/>
-        <el-table-column label="序号" :min-width="indexWith" v-if="getBoolVal(option.enableIndex, false)">
+        <el-table-column type="selection" width="55" v-if="enableMulti"/>
+        <el-table-column label="序号" :min-width="indexWith" v-if="enableIndex">
           <template #default="{ $index }">
             {{ $index + 1 + pageQuery.size * (pageQuery.current - 1) }}
           </template>
@@ -117,8 +115,7 @@
     </div>
     <div ref="pagination" class="fc-pagination-wrapper">
       <div class="fc-footer-wrapper">
-        <div class="fc-check-tip"
-             v-if="checkedRows.length > 0 && getBoolVal(option.queryable, true)">
+        <div class="fc-check-tip" v-if="queryable && checkedRows.length > 0">
           <el-link underline="always" @click="clearCheckedRows">清除</el-link>
           <el-text>已勾选的</el-text>
           <el-link underline="always" @click="viewCheckedRows">{{ checkedRows.length }}</el-link>
@@ -133,7 +130,7 @@
                      @current-change="pageLoad"
                      @size-change="() => pageLoad()"
                      :layout="option.pagination.layout"
-                     v-if="getBoolVal(option.queryable, true)"></el-pagination>
+                     v-if="queryable"></el-pagination>
     </div>
   </div>
 </template>
@@ -191,6 +188,42 @@ export default {
     Search() {
       return Search
     },
+    showTitle() {
+      return this.getBoolVal(this.option.showTitle, true)
+    },
+    queryable() {
+      return this.getBoolVal(this.option.queryable, true)
+    },
+    insertable() {
+      return this.getBoolVal(this.option.insertable, true)
+    },
+    updatable() {
+      return this.getBoolVal(this.option.updatable, true)
+    },
+    deletable() {
+      return this.getBoolVal(this.option.deletable, true)
+    },
+    exportable() {
+      return this.getBoolVal(this.option.exportable, true)
+    },
+    enableDblClickEdit() {
+      return this.getBoolVal(this.option.enableDblClickEdit, true)
+    },
+    enableMulti() {
+      return this.getBoolVal(this.option.enableMulti, true)
+    },
+    enableIndex() {
+      return this.getBoolVal(this.option.enableIndex, false)
+    },
+    enableColumnFilter() {
+      return this.getBoolVal(this.option.enableColumnFilter, true)
+    },
+    enableFilterCache() {
+      return this.getBoolVal(this.option.enableFilterCache, true)
+    },
+    lazyLoad() {
+      return this.getBoolVal(this.option.lazyLoad, false)
+    },
     // 状态: normal-常规状态; insert-新增状态; update-编辑状态
     status() {
       const {editRows} = this;
@@ -246,6 +279,10 @@ export default {
         editRows: editRows
       }
     },
+    // 是否展示“更多”下拉菜单按钮
+    showMoreBtn() {
+      return this.updatable || this.exportable || !util.isEmpty(this.moreButtons)
+    },
     // “更多”按钮扩展
     moreButtons() {
       return this.option.moreButtons
@@ -291,10 +328,10 @@ export default {
   },
   mounted() {
     this.buildComponentConfig() // 构建组件数据(筛选组件元数据等) very important!
-    if (this.option.enableFilterCache) {
+    if (this.enableFilterCache) {
       this.popStashFilter() // 加载分页筛选条件
     }
-    if (!this.option.lazyLoad) {
+    if (!this.lazyLoad) {
       this.pageLoad()
     }
     if (this.option.style.flexHeight) {
@@ -399,7 +436,7 @@ export default {
      * @param page 第几页, 可不传(默认为当前页码)
      */
     pageLoad(page) {
-      if (!this.getBoolVal(this.option.queryable)) {
+      if (!this.queryable) {
         return
       }
       const confirmPromise = (this.status !== 'normal')
@@ -436,7 +473,7 @@ export default {
           }
           beforeLoad.call(context, {query: this.pageQuery}).then(() => {
             this.loading = true
-            if (this.option.enableFilterCache) {
+            if (this.enableFilterCache) {
               this.stashFilter() // 缓存分页筛选条件
             }
             post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
@@ -510,7 +547,7 @@ export default {
      * 弹窗表单新增
      */
     addForm(row = {}) {
-      if (!this.getBoolVal(this.option.insertable, true)) {
+      if (!this.insertable) {
         return;
       }
       const {context, beforeToInsert} = this.option;
@@ -549,12 +586,12 @@ export default {
      * @param rows
      */
     addRows(rows = []) {
-      if (!this.getBoolVal(this.option.insertable, true)) {
-        return;
+      if (!this.insertable) {
+        return
       }
       if (this.status !== 'normal' && this.status !== 'insert') {
         ElMessage.warning(`当前表格处于${this.status}状态, 不允许新增`);
-        return;
+        return
       }
       const {context, beforeToInsert} = this.option;
       beforeToInsert.call(context, rows).then(() => {
@@ -570,16 +607,11 @@ export default {
      * 删除行(多选模式下，删除checkedRows; 非多选模式下, 删除choseRow)
      */
     deleteRow() {
-      if (this.option.deletable === false) {
+      if (!this.deletable) {
         return
       }
-      let beDeleteRows
-      const enableMulti = this.getBoolVal(this.option.enableMulti);
-      if (enableMulti) {
-        beDeleteRows = this.checkedRows
-      } else {
-        beDeleteRows = util.isEmpty(this.choseRow) ? [] : [this.choseRow]
-      }
+      const enableMulti = this.enableMulti
+      let beDeleteRows = (enableMulti ? this.checkedRows : (util.isEmpty(this.choseRow) ? [] : [this.choseRow]))
       if (util.isEmpty(beDeleteRows)) {
         ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要删除的行`)
         return
@@ -597,14 +629,15 @@ export default {
           component: RowConfirm,
           props: {
             rows: beDeleteRows,
-            columnConfigs: columnConfigs
+            columnConfigs: columnConfigs,
+            action: 'delete'
           },
           dialogProps: {
             title: `确认删除以下记录?`,
             width: '90%',
             buttons: [
               {
-                text: '删除',
+                text: '确定删除',
                 type: 'danger',
                 onClick: (component) => {
                   return Promise.resolve(component.getRows())
@@ -659,7 +692,7 @@ export default {
      * @param column
      */
     openDynamicFilterForm(column) {
-      if (!this.getBoolVal(this.option.enableColumnFilter, true) || !this.getBoolVal(this.option.queryable, true)) {
+      if (!this.enableColumnFilter || !this.queryable) {
         return;
       }
       const {prop, label, order} = column
@@ -767,7 +800,7 @@ export default {
     },
     handleRowDblclick(row, column, event) {
       this.$emit('rowDblclick', {fatRow: row, column, event, row: row.row, scope: this.scopeParam});
-      if (!this.getBoolVal(this.option.enableDblClickEdit, true)) {
+      if (!this.enableDblClickEdit) {
         return;
       }
       // 若当前编辑行已经处于编辑状态, 则直接emit并返回;
@@ -789,7 +822,7 @@ export default {
      * @param fatRow
      */
     updateForm(fatRow) {
-      if (this.option.updatable === false) {
+      if (!this.updatable) {
         return;
       }
       const {context, beforeToUpdate} = this.option;
@@ -816,12 +849,12 @@ export default {
       })
     },
     updateRow(fatRow) {
-      if (this.option.updatable === false) {
-        return;
+      if (!this.updatable) {
+        return
       }
       if (this.status !== 'normal' && this.status !== 'update') {
         ElMessage.warning(`当前表格处于${this.status}状态, 不允许更新`);
-        return;
+        return
       }
       const {context, beforeToUpdate} = this.option;
       beforeToUpdate.call(context, {fatRows: [fatRow], rows: [fatRow.row]}).then(() => {
@@ -884,7 +917,7 @@ export default {
      * 同步行的选中状态
      */
     syncRowSelection() {
-      const enableMulti = this.getBoolVal(this.option.enableMulti);
+      const enableMulti = this.enableMulti
       if (enableMulti === false) {
         this.checkedRows.length = 0
         return
@@ -931,13 +964,8 @@ export default {
       if (this.status !== 'insert' || this.editRows.length === 0) {
         return
       }
-      let beRemoveRows
-      const enableMulti = this.getBoolVal(this.option.enableMulti)
-      if (enableMulti) {
-        beRemoveRows = this.checkedRows
-      } else {
-        beRemoveRows = this.choseRow === null ? [] : [this.choseRow]
-      }
+      const enableMulti = this.enableMulti
+      let beRemoveRows = (enableMulti ? this.checkedRows : (util.isEmpty(this.choseRow) ? [] : [this.choseRow]))
       if (isEmpty(beRemoveRows)) {
         ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要移除的新建行`)
         return
@@ -951,6 +979,7 @@ export default {
         if (this.editRows.length === 0) {
           this.exitEditStatus()
         }
+        this.checkedRows.length = 0 // 清除勾选数据
         this.setChoseRow(0)
       })
     },
@@ -993,7 +1022,7 @@ export default {
      * 导出数据
      */
     exportData() {
-      if (!this.option.exportable) {
+      if (!this.exportable) {
         ElMessage.warning('当前表格不允许导出')
         return
       }
@@ -1274,8 +1303,10 @@ export default {
     .fc-footer-wrapper {
       display: flex;
       align-items: center;
+
       .fc-check-tip {
         display: flex;
+        margin-right: 10px;
       }
     }
   }
