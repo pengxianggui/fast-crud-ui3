@@ -434,6 +434,7 @@ export function label(filter) {
         val = escapeValToLabel(component, val, props);
         switch (opt) {
             case Opt.EQ:
+            case Opt.NE:
             case Opt.GT:
             case Opt.GE:
             case Opt.LT:
