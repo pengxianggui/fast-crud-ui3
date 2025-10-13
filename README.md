@@ -1,39 +1,29 @@
 # fast-crud-ui3
 
-> [fast-crud-ui](https://github.com/pengxianggui/fast-crud-ui)的vue3升级支持版本
->
-> 后端: [传送门](https://github.com/pengxianggui/fast-crud)
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">FastCrudUi3</h1>
+<h4 align="center">基于Vue/ElementPlus开发的表格快速开发工具, 快速实现功能强大的表格维护页面</h4>
+<p align="center">
+	<a href="http://fastcrud-doc.pengxg.cc/">文档</a> |
+	<a href="http://fastcrud.pengxg.cc/">演示环境</a> |
+	<a href="https://github.com/pengxianggui/fast-crud">配套后端</a> |
+	<a href="https://github.com/pengxianggui/fast-crud-ui3/releases">ChangeLog</a> |
+	<a href="https://github.com/pengxianggui/fast-crud-ui3/blob/main/LICENSE">LICENSE</a>
+</p>
+
+> 1. 此项目为[fast-crud-ui](https://github.com/pengxianggui/fast-crud-ui)的vue3升级支持版本。
+> 2. 此项目必须配合[后端](https://github.com/pengxianggui/fast-crud)使用。
 
 ## 说明:
 
-**fast-crud-ui3基于vue@^3.4.0 + element-plus@^2.3.12， fast-crud-ui3打包不会包含这两个组件，你必须在项目里单独安装并正确注册。
-**
+**fast-crud-ui3基于vue@^3.4.0 + element-plus@^2.3.12， fast-crud-ui3打包不会包含这两个组件，你必须在项目里单独安装并正确注册。**
 
-如果针对element-ui你采用的是按需部分引入，请确保以下element-ui组件正确注册, 否则fast-crud-ui中部分内容将无法正常展示：
+如果针对element-plus你采用的是按需部分引入，请确保以下element-plus组件正确注册, 否则fast-crud-ui3中部分内容将无法正常展示：
 
 Table, TableColumn, Input, InputNumber, Checkbox, CheckboxGroup, Select, Option, DatePicker, Switch, TimePicker, Radio,
 Upload, Row, Col, Button, Empty, Popover, Form, FormItem, Dropdown, DropdownMenu, DropdownItem, Pagination, Link
 
 > node=18.16.0
 > npm=9.5.1
-
-## 组件列表
-
-- FastTable: 核心组件
-- FastTableColumn: 只读列组件
-- FastTableColumnInput: 文本输入框列组件
-- FastTableColumnNumber: 数字输入框列组件
-- FastTableColumnTextarea: 文本域输入框列组件
-- FastTableColumnSelect: 下拉框列组件
-- FastTableColumnSwitch: switch列组件
-- FastTableColumnDatePicker: 日期选择列组件
-- FastTableColumnTimePicker: 时间选择列组件
-- FastTableColumnImg: 图片列组件
-- FastTableColumnFile: 文件列组件
-- FastTableColumnObject: 对象选择组件
-
-> 你也可以直接使用原生的el-table-column，但是需要注意的是由于行数据被封装, 所以需要解构一下: {row, editRow},使用row来做单元格数据展示,
-> 详见[文档](http://fastcrud-doc.pengxg.cc/latest/comp/fast-table-column.html#%E5%85%AC%E5%85%B1%E6%8F%92%E6%A7%BD)
 
 ## 快速开始
 
@@ -71,8 +61,6 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
 app.mount('#app')
-
-
 ```
 
 使用
@@ -106,5 +94,3 @@ app.mount('#app')
   }
 </script>
 ```
-
-更多使用文档参见: [这里](http://fastcrud-doc.pengxg.cc)。
