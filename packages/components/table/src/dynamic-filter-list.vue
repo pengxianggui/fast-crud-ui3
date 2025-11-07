@@ -113,6 +113,7 @@ export default {
 
   .strikethrough {
     text-decoration: line-through !important;
+    color: #acacac !important;
   }
 
   .fc-dynamic-filter-open-btn {
