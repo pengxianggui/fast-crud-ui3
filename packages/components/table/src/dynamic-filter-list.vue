@@ -10,7 +10,7 @@
                      @click.stop="delConfig(index)"></el-button>
         </div>
       </template>
-      <component class="component" :is="f.component" v-model="f.val" v-bind="f.props"
+      <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false"
                  v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
       <div class="fc-dynamic-filter-footer">
         <el-button type="primary" size="small" :icon="Search" @click="confirm">查询</el-button>
@@ -137,7 +137,8 @@ export default {
   }
 }
 
-.component {
+// 针对distinct后的checkbox调整样式
+.component.fc-fast-checkbox-group {
   margin: 10px 0;
   max-width: 420px;
   max-height: 300px;

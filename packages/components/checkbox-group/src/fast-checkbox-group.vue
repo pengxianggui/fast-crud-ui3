@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="fc-fast-checkbox-group">
     <el-checkbox :size="size" :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange" v-if="showChoseAll">
       全选
     </el-checkbox>
