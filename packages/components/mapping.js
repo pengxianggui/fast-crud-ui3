@@ -26,6 +26,12 @@ const MAPPING = {
     'FastTableColumnTimePicker': FastTableColumnTimePickerConfig
 }
 
+/**
+ * 获取配置的装配函数
+ * @param tableColumnComponentName 列组件
+ * @param type 类型(query/edit)
+ * @return {*|null}
+ */
 export const getConfigFn = function (tableColumnComponentName, type) {
     if (!MAPPING.hasOwnProperty(tableColumnComponentName) || !MAPPING[tableColumnComponentName].hasOwnProperty(type)) {
         // console.error(`未定义针对${tableColumnComponentName}的快速搜索控件`)

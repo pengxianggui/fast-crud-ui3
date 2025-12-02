@@ -38,6 +38,8 @@ export default {
         const {defaultVal, ...validProps} = config.props;
         if (type === 'quick') {
             val = (isUndefined(defaultVal), val, defaultVal);
+        } else {
+            config.component = 'el-input' // 除了快筛，其它(简筛、动筛、存筛)里输入控件都采用输入框，提升体验
         }
         config.val = val;
         config.props = validProps;
