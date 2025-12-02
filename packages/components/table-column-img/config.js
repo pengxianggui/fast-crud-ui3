@@ -56,7 +56,7 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
@@ -65,7 +65,7 @@ export default {
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type, tableOption) => {
-        const {label, props} = config;
+        const {label, props = {}} = config;
         const {defaultVal, rules = [], ...validProps} = props;
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
             rules.push({required: true, message: `${label}不能为空`})

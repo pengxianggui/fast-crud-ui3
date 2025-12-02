@@ -32,7 +32,7 @@ const defaultEditConfig = {
 }
 export default {
     query: (config, type) => {
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         let val = []
         let component = 'fast-select';
 
@@ -48,7 +48,7 @@ export default {
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {label, props} = config;
+        const {label, props = {}} = config;
         const {defaultVal, rules = [], ...validProps} = props
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {

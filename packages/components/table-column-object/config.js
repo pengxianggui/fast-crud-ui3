@@ -1,5 +1,6 @@
 import {easyOptParse, isArray, isSampleType, isUndefined, merge, ternary} from "../../util/util";
 import {Cond, Opt} from "../../model";
+import tableColumnInputConfig from '../table-column-input/config.js'
 
 const defaultQueryConfig = {
     component: 'fast-object-picker',
@@ -35,18 +36,20 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         if (type === 'quick') {
-            val = (isUndefined(defaultVal), val, defaultVal);
+            val = ternary(isUndefined(defaultVal), val, defaultVal);
         } else {
-            config.component = 'el-input' // 除了快筛，其它(简筛、动筛、存筛)里输入控件都采用输入框，提升体验
+            // 除了快筛，其它(简筛、动筛、存筛)里输入控件都采用输入框, 否则过犹不及
+            config.component = 'el-input'
+            return tableColumnInputConfig.query(config, type)
         }
         config.val = val;
         config.props = validProps;
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {label, props} = config;
+        const {label, props = {}} = config;
         const {defaultVal, rules = [], ...validProps} = props;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {

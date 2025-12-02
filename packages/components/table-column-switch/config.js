@@ -27,7 +27,7 @@ const defaultEditConfig = {
 }
 export default {
     query: (config, type) => {
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         const {activeValue = true, inactiveValue = false, activeText = '是', inactiveText = '否'} = validProps
         let val = defaultQueryConfig.val;
         if (type === 'quick') {
@@ -45,7 +45,7 @@ export default {
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {defaultVal, ...validProps} = config.props
+        const {props: {defaultVal, ...validProps} = {}} = config
         const {activeValue = true, inactiveValue = false} = validProps
         config.val = ternary(defaultVal === inactiveValue || defaultVal === activeValue, defaultVal, inactiveValue); // 默认值合法校验
         config.props = validProps;

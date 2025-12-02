@@ -47,16 +47,16 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         if (type === 'quick') {
-            val = (isUndefined(defaultVal), val, defaultVal);
+            val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
         config.val = val;
         config.props = validProps;
         return merge(config, defaultQueryConfig, true, false)
     },
     edit: (config, type) => {
-        const {defaultVal, ...validProps} = config.props;
+        const {props: {defaultVal, ...validProps} = {}} = config
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal);
         config.props = validProps;
         return merge(config, defaultEditConfig, true, false)

@@ -36,7 +36,7 @@ const defaultEditConfig = {
 export default {
     query: (config, type) => {
         let val = defaultQueryConfig.val;
-        const {defaultVal, isRange, ...validProps} = config.props;
+        const {props: {defaultVal, isRange, ...validProps} = {}} = config
         if (type === 'quick') {
             val = ternary(isUndefined(defaultVal), val, defaultVal);
         }
@@ -45,7 +45,7 @@ export default {
         return merge(config, defaultQueryConfig, true, false);
     },
     edit: (config, type) => {
-        const {label, props: {defaultVal, ...validProps}} = config;
+        const {label, props: {defaultVal, ...validProps} = {}} = config;
         const {rules = []} = validProps;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
