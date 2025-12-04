@@ -15,7 +15,8 @@
       <div class="title">
         <div>
           <span>去重筛选：</span>
-          <el-checkbox size="small" type="info" v-model="reuseCond" @change="distinctLoad">复用已生效的条件</el-checkbox>
+          <el-checkbox size="small" type="info" v-model="reuseCond" @change="distinctLoad">复用已生效的条件
+          </el-checkbox>
         </div>
         <el-button link
                    :style="{'color': distinctOptionAsc === '' ? 'gray': '#409EFF', 'padding': 0}"
@@ -52,30 +53,31 @@
 
 <script>
 import FastTableOption, {FilterComponentConfig, Query, Opt} from "../../../model"
-import {escapeValToLabel} from "./util"
+import {escapeValToLabel} from "../../../util/escape.js"
 import {isEmpty, isObject, toStr} from "../../../util/util"
 import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"
 import {Sort, SortUp, SortDown} from "@element-plus/icons-vue"
-import {post} from "../../../util/http.js";
 
 export default {
   name: "dynamic-filter-form",
   components: {FastCheckboxGroup},
   emits: ['ok', 'cancel'],
   props: {
+    option: FastTableOption,
     filter: FilterComponentConfig,
     order: [String],
-    listUrl: String,
     conds: {
       type: Array,
       default: () => []
-    },
-    size: String
+    }
   },
   mounted() {
     console.log(this.localFilter)
   },
   computed: {
+    size() {
+      return this.option.style.size
+    },
     distinctOptionsAscIcon() {
       return this.distinctOptionAsc === '' ? Sort : (this.distinctOptionAsc === true ? SortUp : SortDown)
     },
@@ -113,16 +115,25 @@ export default {
       if (this.reuseCond) {
         distinctQuery.setConds(this.conds);
       }
-      post(this.listUrl, distinctQuery.toJson(), {signal: this.distinctAbortCtrl.signal}).then((res) => {
+      this.option._list(distinctQuery, {signal: this.distinctAbortCtrl.signal}).then((res) => {
         if (res.length > 1000) { // 为防止页面卡死, 最多显示1000个
           res.splice(1001);
         }
-        const distinctValues = res.filter(item => isObject(item) && item.hasOwnProperty(col)).map(item => item[col]);
-        this.distinctOptions = distinctValues.map(v => {
-          return {
-            value: v,
-            label: escapeValToLabel(component, v, props)
-          };
+        const distinctValues = res.filter(item => isObject(item) && item.hasOwnProperty(col)).map(item => item[col])
+        this.distinctOptions.length = 0 // 清空
+        distinctValues.map((v) => {
+          escapeValToLabel(component, v, props).then(label => {
+            this.distinctOptions.push({
+              value: v,
+              label: label
+            })
+          }).catch(err => {
+            console.error(err)
+            this.distinctOptions.push({
+              value: v,
+              label: v
+            })
+          })
         })
         this.distinctLoaded = true;
       }).catch(err => {

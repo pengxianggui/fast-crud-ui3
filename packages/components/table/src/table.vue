@@ -159,6 +159,7 @@ import {
   isNumber,
   noRepeatAdd
 } from "../../../util/util"
+import * as cache from '../../../util/cache.js'
 import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport, isFatRow} from "./util"
 import {openDialog} from "../../../util/dialog"
 import {buildFinalQueryComponentConfig} from "../../mapping"
@@ -326,16 +327,16 @@ export default {
   created() {
     this.option.ref = this // important: 后续很多逻辑需要用到, 借助option即可获取组件中的一些数据
   },
-  mounted() {
+  async mounted() {
     this.buildComponentConfig() // 构建组件数据(筛选组件元数据等) very important!
     if (this.enableFilterCache) {
-      this.popStashFilter() // 加载分页筛选条件
+      await this.popStashFilter() // 加载分页筛选条件
     }
     if (!this.lazyLoad) {
       this.pageLoad()
     }
     if (this.option.style.flexHeight) {
-      nextTick(() => {
+      await nextTick(() => {
         this.heightObserver.observe(this.$refs.quick) // FIX: 快筛项如果利用grid-area调整位置会导致第一次表格高度计算有误, 通过这个解决此问题
         this.heightObserver.observe(this.$refs.dynamic)
         this.calTableHeight()
@@ -701,21 +702,20 @@ export default {
       openDialog({
         component: DynamicFilterForm,
         props: {
+          option: this.option,
           filter: dynamicFilter,
           order: order,
-          listUrl: this.option.listUrl,
           conds: this.pageQuery.conds,
-          size: this.option.style.size
         },
         dialogProps: {
           width: '480px',
           title: `数据筛选及排序: ${label}`,
         }
-      }).then(({filter: dynamicFilter, order}) => {
+      }).then(async ({filter: dynamicFilter, order}) => {
         if (dynamicFilter.isEffective()) {
+          await dynamicFilter.updateCondMsg()
           this.dynamicFilters.push(dynamicFilter);
         }
-
         if (isBoolean(order.asc)) {
           this.buildOrder(prop, order.asc)
           column.order = order.asc ? 'asc' : 'desc'
@@ -760,7 +760,6 @@ export default {
         row: row.row,
         scope: this.scopeParam
       });
-      // debugger
       const idField = this.option.idField
       const isChecked = (rows.indexOf(row) > -1)
       if (isChecked) { // 勾选
@@ -1074,19 +1073,18 @@ export default {
     /**
      * 从缓存中加载搜索数据, 更新quickFilters、easyFilters、dynamicFilters、storedFilters里，以便实现缓存生效
      */
-    popStashFilter() {
+    async popStashFilter() {
       try {
-        const stashFiltersAsStr = util.getFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
-        if (util.isEmpty(stashFiltersAsStr)) {
+        const stashFilters = cache.getFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
+        if (util.isEmpty(stashFilters) || !util.isArray(stashFilters)) {
           return
         }
-        const stashFilters = JSON.parse(stashFiltersAsStr)
         const extra = this.pageQuery.extra
-        stashFilters.forEach(({type, ...config}) => {
+        for (const {type, ...config} of stashFilters) {
           if (type === 'stored') {
             const {value} = config
             this.storedLabels = value
-            return
+            continue;
           }
           if (type === 'extra') {
             const {value: cachedExtra} = config
@@ -1096,34 +1094,33 @@ export default {
                 extra[key] = cacheValue
               }
             })
-            return
+            continue;
           }
-          const {col, opt, val, disabled, options} = config
+          const {col, opt, val, disabled} = config
           if (type === 'quick') {
             this.quickFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
               f.val = val
               f.disabled = disabled
-              f.props.options = options
             })
           } else if (type === 'easy') {
             this.easyFilters.filter(f => f.col === col && f.opt === opt).forEach(f => {
               f.val = val
               f.disabled = disabled
-              f.props.options = options
             })
           } else if (type === 'dynamic') {
             const {tableColumnComponentName, customConfig} = this.columnConfig[col]
             const dynamicFilter = buildFinalQueryComponentConfig(customConfig, tableColumnComponentName, 'dynamic', this.option)
             dynamicFilter.val = val
             dynamicFilter.disabled = disabled
+            await dynamicFilter.updateCondMsg()
             this.dynamicFilters.push(dynamicFilter)
           } else {
             console.log(`${col}type值不正确:${type}`)
           }
-        })
+        }
       } catch (err) {
         console.error(`从缓存中还原筛选条件时出现错误: ${err}`)
-        util.delFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
+        cache.deleteFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
       }
     },
     /**
@@ -1161,9 +1158,9 @@ export default {
         }
 
         if (stashFilters.length > 0) {
-          util.setToSessionStorage(`CACHE_FILTER:${this.option.id}`, JSON.stringify(stashFilters))
+          cache.setToSessionStorage(`CACHE_FILTER:${this.option.id}`, stashFilters)
         } else {
-          util.delFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
+          cache.deleteFromSessionStorage(`CACHE_FILTER:${this.option.id}`)
         }
       } catch (err) {
         console.error(`缓存筛选条件时出现错误: ${err}`)

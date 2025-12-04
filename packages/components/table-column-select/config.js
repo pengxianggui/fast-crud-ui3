@@ -7,6 +7,7 @@ const defaultQueryConfig = {
     val: [], // 默认值
     props: {
         clearable: true,
+        filterable: true,
         multiple: true,
         placeholder: '请选择..'
     },

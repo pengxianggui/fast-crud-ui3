@@ -40,6 +40,9 @@
 <script>
 import tableColumn from "../../../mixins/table-column"
 import FastSelect from "../../select/src/fast-select.vue"
+import * as util from "../../../util/util.js"
+import FastTableOption from "../../../model.js";
+import {escapeValToLabel} from "../../../util/escape.js";
 
 export default {
   name: "FastTableColumnSelect",
@@ -59,18 +62,24 @@ export default {
   methods: {
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow
-      const {props: {options = [], labelKey = 'label', valKey = 'value'} = {}} = config[this.prop]
+      const {component, props = {}} = config[this.prop]
+      const {options, labelKey = 'label', valKey = 'value'} = props
       let val;
       if (status === 'normal') {
         val = row[this.prop];
       } else {
         val = editRow[this.prop];
       }
-      if (options) { // 转义
+      // TODO 1.5.17 利用 escapeValToLabel 转义。 问题是这里是个异步, 没办法直接返回结果即使await可能渲染出来依然是Promise.toString
+      //  escapeValToLabel(component, val, props)
+
+      if (util.isArray(options)) { // 转义
         const option = options.find(item => item[valKey] === val);
         if (option) {
           return option[labelKey]
         }
+      } else if (options instanceof FastTableOption) {
+
       }
       return val;
     }

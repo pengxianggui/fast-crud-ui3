@@ -23,7 +23,7 @@
             <template v-slot:reference>
               <div class="fc-dynamic-filter-btns">
                 <el-button link class="fc-dynamic-filter-open-btn">
-                  {{ label(f) }}
+                  {{ f.condMsg }}
                 </el-button>
                 <el-button link class="fc-dynamic-filter-del-btn" :icon="Close" v-if="!g.buildIn"
                            @click.stop="delConfig(index, g.filters)"></el-button>
@@ -31,7 +31,7 @@
                 <span style="margin-right: 10px; color: #909090;">且</span>
               </div>
             </template>
-            <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false"
+            <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false" @change="onChange(f)"
                        v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
           </el-popover>
 
@@ -55,7 +55,7 @@
 <script>
 import {Close, Plus} from "@element-plus/icons-vue";
 import FastTableOption, {Opt} from '../../../model.js'
-import {label, buildStoredFilterComponent, setCustomFilterGroups} from "./util.js";
+import {buildStoredFilterComponent, setCustomFilterGroups} from "./util.js";
 import * as util from "../../../util/util.js";
 import {ElMessage} from "element-plus";
 
@@ -96,11 +96,22 @@ export default {
       })
     },
   },
+  async created() {
+    // 刷新条件显示
+    for (let i = 0; i < this.groups.length; i++) {
+      for (let j = 0; j < this.groups[i].filters.length; j++) {
+        await this.groups[i].filters[j].updateCondMsg()
+      }
+    }
+  },
   methods: {
-    label,
-    handleAddCond(col, storeGroup) {
+    onChange(filter) {
+      filter.updateCondMsg()
+    },
+    async handleAddCond(col, storeGroup) {
       const filter = buildStoredFilterComponent(col, this.columnConfig, this.tableOption)
       if (!util.isEmpty(filter)) {
+        await filter.updateCondMsg()
         storeGroup.filters.push(filter)
       }
     },
