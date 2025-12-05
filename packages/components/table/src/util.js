@@ -2,6 +2,7 @@ import {buildFinalQueryComponentConfig, buildFinalEditComponentConfig} from "../
 import Schema from 'async-validator'
 import {Opt} from "../../../model.js";
 import * as util from "../../../util/util.js";
+import * as cache from '../../../util/cache.js'
 
 /**
  * 单个col值校验, 校验失败会添加class: valid-error并reject(errors), 成功则会移除可能存在的valid-error，并resolve
@@ -180,7 +181,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             showLength: showLength,
-            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
+            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除 TODO 1.5.16 针对FastTableColumn* props中定义的属性，而又不希望透传给内置控件的, 应当在FastTableColumn*中声明, 而不是在这里设置"黑名单"
             props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption', 'quickFilterConfig'])
             // props: leftProp
         }
@@ -336,43 +337,6 @@ function buildEditComponentConfig(param, tableColumnComponentName, customConfig,
 }
 
 // 需要转义值的组件
-const components = ['fast-checkbox-group', 'fast-select']
-
-/**
- * 根据组件判断将值转义为显示值
- * @param component 组件名
- * @param val 待转义的原始值, 如果是数组，返回的label也是对应的数组
- * @param config 转义依据的配置
- */
-export function escapeValToLabel(component, val, config) {
-    if (components.indexOf(component) === -1) {
-        return val;
-    }
-
-    const {options = [], valKey = 'value', labelKey = 'label'} = config
-    const escape = function (val) {
-        return val.map(v => {
-            const option = options.find(o => o[valKey] === v)
-            if (option) {
-                return option[labelKey] || v
-            }
-            return v
-        })
-    }
-
-    try {
-        if (util.isArray(val)) {
-            return escape(val)
-        } else {
-            const labels = escape([val])
-            return labels[0]
-        }
-    } catch (err) {
-        console.log(err)
-    }
-
-}
-
 /**
  * 判断单元格是否可编辑
  * @param editRow 当前编辑行
@@ -411,78 +375,10 @@ export function buildParamForExport(columnConfigs) {
         return {
             ...config.customConfig,
             tableColumnComponentName: config.tableColumnComponentName,
+            // 图片和文件默认不导出,不然往往文件太大
+            exportable: config.tableColumnComponentName !== 'FastTableColumnImg' && config.tableColumnComponentName !== 'FastTableColumnFile'
         }
     })
-}
-
-/**
- * 获取filter的条件显示
- * @param filter
- * @return {string}
- */
-export function label(filter) {
-    const {label, component} = filter
-    if (!filter.isEffective()) {
-        filter.disabled = true
-        return `[${label}]无有效值`
-    }
-    const conds = filter.getConds();
-    let tip = '';
-    const {props} = filter
-    for (let i = 0; i < conds.length; i++) {
-        let {opt, val} = conds[i];
-        val = escapeValToLabel(component, val, props);
-        switch (opt) {
-            case Opt.EQ:
-            case Opt.NE:
-            case Opt.GT:
-            case Opt.GE:
-            case Opt.LT:
-            case Opt.LE:
-                tip += `${label} ${opt} ${val}`;
-                break;
-            case Opt.LIKE:
-                tip += `${label} 包含'${val}'`;
-                break;
-            case Opt.LLIKE:
-                tip += `${label}以'${val}'结尾`
-                break;
-            case Opt.RLIKE:
-                tip += `${label}以'${val}'打头`
-                break;
-            case Opt.NLIKE:
-                tip += `${label} 不包含'${val}'`;
-                break;
-            case Opt.IN:
-                tip += `${label} 包含 ${val}`;
-                break;
-            case Opt.NIN:
-                tip += `${label} 不包含 ${val}`;
-                break;
-            case Opt.NULL:
-                tip += `${label} 为null`;
-                break;
-            case Opt.NNULL:
-                tip += `${label} 不为null`;
-                break;
-            case Opt.EMPTY:
-                tip += `${label} 为空`;
-                break;
-            case Opt.NEMPTY:
-                tip += `${label} 不为空`;
-                break;
-            case Opt.BTW:
-                tip += `${label} 在${val}之间`;
-                break;
-            default:
-                tip += `${label}未知的比较符`
-                break
-        }
-        if (i !== conds.length - 1) {
-            tip += " 且 "
-        }
-    }
-    return tip;
 }
 
 /**
@@ -501,7 +397,7 @@ export function setCustomFilterGroups(tableOption, filterGroups) {
             })
         }
     })
-    util.setToLocalStorage(`STORED_CONDS:${tableOption.id}`, JSON.stringify(storedConds))
+    cache.setToLocalStorage(`STORED_CONDS:${tableOption.id}`, storedConds)
 }
 
 /**
@@ -511,11 +407,10 @@ export function setCustomFilterGroups(tableOption, filterGroups) {
  */
 export function getCustomFilterGroups(tableOption, columnConfig) {
     try {
-        const condGroupsStr = util.getFromLocalStorage(`STORED_CONDS:${tableOption.id}`)
-        if (util.isEmpty(condGroupsStr)) {
+        const condGroups = cache.getFromLocalStorage(`STORED_CONDS:${tableOption.id}`)
+        if (util.isEmpty(condGroups) || !util.isArray(condGroups)) {
             return []
         }
-        const condGroups = JSON.parse(condGroupsStr)
         return buildFilterGroups(tableOption, columnConfig, condGroups, false)
     } catch (err) {
         console.error(err)

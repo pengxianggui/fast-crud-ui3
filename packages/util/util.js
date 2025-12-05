@@ -549,7 +549,7 @@ export function getInnerHeight(ele) {
 }
 
 /**
- * 按前匹配或后匹配替换对象键
+ * 按前匹配或后匹配替换对象的键名。例如obj中有name_q, str为_q, 则替换后返回的对象里name_q变成name
  * @param obj 对象
  * @param str 前缀或后缀
  * @param position 匹配位置. start: 前缀, end: 后缀。不传默认是end
@@ -670,36 +670,6 @@ export function extractEventName(key) {
 }
 
 /**
- * 保存到localStorage中
- * @param key 会拼接"FC:"前缀
- * @param value
- */
-export function setToLocalStorage(key, value) {
-    localStorage.setItem(`FC:${key}`, value)
-}
-
-/**
- * 从localStorage中获取
- * @param key 会拼接"FC:"前缀
- * @return {string}
- */
-export function getFromLocalStorage(key) {
-    return localStorage.getItem(`FC:${key}`)
-}
-
-export function setToSessionStorage(key, value) {
-    sessionStorage.setItem(`FC:${key}`, value)
-}
-
-export function getFromSessionStorage(key) {
-    return sessionStorage.getItem(`FC:${key}`)
-}
-
-export function delFromSessionStorage(key) {
-    sessionStorage.removeItem(`FC:${key}`)
-}
-
-/**
  * 生成css grid布局中的gridTemplateAreas值
  * @param rowNum 每行的数量
  * @param totalItems 对象数组或者普通数组, 如果是对象数组, 则判断每个元素是否含有block, 若含有则将当前行全部命名为相同的区域名；若非对象数组或者不含有block则维持原逻辑
@@ -811,4 +781,53 @@ export function versionGte(current, target) {
         // 相等就继续下一位比较
     }
     return true; // 完全相等也算 >=
+}
+
+/**
+ * 转义值为label
+ * @param val 单个值或数组
+ * @param options
+ * @param valKey
+ * @param labelKey
+ * @return {*} 如果是数组返回的label值也是数据
+ */
+export function escapeLabel(val, options, valKey, labelKey) {
+    if (isArray(val)) {
+        return val.map(v => escapeLabel(v, options, valKey, labelKey))
+    } else {
+        try {
+            const option = options.find(o => o[valKey] === val)
+            if (option) {
+                return option[labelKey] || val
+            }
+            return val
+        } catch (err) {
+            console.error(err)
+            return val // 降级显示原本的值
+        }
+    }
+}
+
+
+/**
+ * 递归地对对象的键进行排序
+ * * @param {*} obj
+ * @returns {*}
+ */
+export function sortKey(obj) {
+    if (typeof obj !== 'object' || obj === null) {
+        return obj;
+    }
+    if (Array.isArray(obj)) {
+        // 递归处理数组中的对象
+        return obj.map(sortKey);
+    }
+
+    // 对对象属性名进行排序
+    const sortedKeys = Object.keys(obj).sort();
+    const sortedObject = {};
+    for (const key of sortedKeys) {
+        sortedObject[key] = sortKey(obj[key]);
+    }
+    return sortedObject;
 }

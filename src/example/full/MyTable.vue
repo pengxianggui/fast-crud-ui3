@@ -41,9 +41,11 @@
                               :default-val_q="['1', '2', '3']" :disable-val="['4']"/>
     <fast-table-column-object label="仰慕者" prop="loveId" quick-filter
                               :quick-filter-config="loveIdQuickFilterConfig"
-                              :table-option="loveOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
+                              :table-option="personOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
                               :multiple_q="true"/>
     <fast-table-column label="仰慕者姓名" prop="loveName"/>
+        <fast-table-column-select label="仇人" prop="foeId" quick-filter :options="personOption" width="100"
+                                  val-key="id" label-key="name" />
     <fast-table-column-textarea label="简介" prop="info" link="withdrawSampleDetail?id={id}&pageType=detail"
                                 :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" required
@@ -116,6 +118,7 @@ export default {
         insertable: (scope) => true, // 支持一个返回布尔的函数
         updatable: true,
         deletable: true,
+        exportable: true,
         createTimeField: 'createTime', // 审计字段——创建时间
         // sortField: 'createTime', // 默认为createTimeField值
         // sortDesc: true, // 默认为true
@@ -280,7 +283,7 @@ export default {
           return Promise.resolve();
         }
       }),
-      loveOption: new FastTableOption({
+      personOption: new FastTableOption({
         module: 'student',
         title: '人员列表',
         conds: [
@@ -431,7 +434,7 @@ export default {
     },
     tryPick(multiple) {
       pick({
-        option: this.loveOption,
+        option: this.personOption,
         multiple: multiple,
         dialog: {
           width: '80%'

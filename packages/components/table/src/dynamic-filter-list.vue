@@ -4,13 +4,13 @@
       <template v-slot:reference>
         <div class="fc-dynamic-filter-btns">
           <el-button link class="fc-dynamic-filter-open-btn" :class="{'strikethrough': f.disabled}">
-            {{ ellipsis(label(f), 30) }}
+            {{ ellipsis(f.condMsg, 30) }}
           </el-button>
           <el-button link class="fc-dynamic-filter-del-btn" :icon="Close"
                      @click.stop="delConfig(index)"></el-button>
         </div>
       </template>
-      <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false"
+      <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false" @change="onChange(f)"
                  v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
       <div class="fc-dynamic-filter-footer">
         <el-button type="primary" size="small" :icon="Search" @click="confirm">查询</el-button>
@@ -32,7 +32,6 @@
 
 <script>
 import {Opt} from "../../../model";
-import {label} from "./util";
 import {ellipsis} from '../../../util/util'
 import {Close, Search} from "@element-plus/icons-vue"
 
@@ -65,6 +64,13 @@ export default {
       Opt: Opt
     }
   },
+  watch: {
+    'filters' : function (filters) {
+      this.$nextTick(() => {
+        filters.forEach(f => f.updateCondMsg())
+      })
+    }
+  },
   methods: {
     ellipsis,
     delConfig(index) {
@@ -87,7 +93,9 @@ export default {
       this.filters.forEach(f => f.disabled = !allDisabled)
       this.confirm()
     },
-    label
+    onChange(filter) {
+      filter.updateCondMsg()
+    }
   }
 }
 </script>

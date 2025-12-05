@@ -1,11 +1,12 @@
 {
   "name": "fast-crud-ui3",
-  "version": "1.5.14",
+  "version": "1.5.16",
   "type": "module",
   "main": "lib/fast-crud-ui3.cjs.js",
   "module": "lib/fast-crud-ui3.es.js",
   "scripts": {
-    "dev": "vite",
+    "dev:local": "vite --mode local",
+    "dev:dev": "vite --mode dev",
     "build": "npm run build:lib && npm run build:demo",
     "build:lib": "vite build --mode library",
     "build:demo": "vite build",
@@ -28,6 +29,7 @@
     "async-validator": "^4.2.5",
     "clipboard": "^2.0.11",
     "lodash-es": "^4.17.21",
+    "md5": "^2.3.0",
     "moment": "^2.30.1",
     "uuid": "^11.1.0",
     "vue3-json-viewer": "^2.4.1"

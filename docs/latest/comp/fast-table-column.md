@@ -101,9 +101,15 @@
 
 ### 属性
 
-| 属性                  | 说明                       | 类型        | 默认值   |
-|---------------------|--------------------------|-----------|-------|
-| quickFilterCheckbox | 快筛时是否转换为checkbox group呈现 | `Boolean` | false |
+| 属性                  | 说明                                                | 类型                               | 默认值     |
+|---------------------|---------------------------------------------------|----------------------------------|---------|
+| quickFilterCheckbox | 快筛时是否转换为checkbox group呈现                          | `Boolean`                        | false   |
+| options             | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`) | `Array<Object>\|FastTableOption` | `[]`    |
+| labelKey            | options中作为label的属性名                               | `String`                         | `label` |
+| labelKey            | options中作为value的属性名                               | `String`                         | `value` |
+
+> 对于options而言。在`1.5.16+`开始支持一个`FastTableOption`对象，内部将基于`FastTableOption`的标准接口————`/list`、结合`labelKey`和`valKey`构造选项数组。
+> 你还能利用`FastTableOption`的`conds`属性配置过滤条件。
 
 ### 事件
 

@@ -6,12 +6,15 @@
              @blur="(event) => $emit('blur', event)"
              @visible-change="(visible) => $emit('visibleChange', visible)"
              @remove-tag="(tagVal) => $emit('removeTag', tagVal)">
-    <el-option v-for="item in options" :key="item.value" :label="item[labelKey]" :value="item[valKey]"
+    <el-option v-for="item in nativeOptions" :key="item.value" :label="item[labelKey]" :value="item[valKey]"
                :disabled="disableVal.indexOf(item[valKey]) > -1"></el-option>
   </el-select>
 </template>
 
 <script>
+import FastTableOption, {Query} from "../../../model.js";
+import * as util from '../../../util/util.js'
+
 export default {
   name: "fast-select",
   emits: ['update:modelValue', 'change', 'clear', 'focus', 'blur', 'visibleChange', 'removeTag'],
@@ -20,7 +23,7 @@ export default {
       required: true
     },
     options: {
-      type: Array,
+      type: [Array, FastTableOption],
       default: () => []
     },
     labelKey: {
@@ -44,6 +47,16 @@ export default {
       default: 'default'
     }
   },
+  data() {
+    return {
+      nativeOptions: util.isArray(this.options) ? this.options : []
+    }
+  },
+  async mounted() {
+    if (this.options instanceof FastTableOption) {
+      await this.buildSelectOptions()
+    }
+  },
   computed: {
     value: {
       get() {
@@ -52,6 +65,19 @@ export default {
       set(val) {
         this.$emit('update:modelValue', val)
       }
+    }
+  },
+  methods: {
+    buildSelectOptions() {
+      if (!(this.options instanceof FastTableOption)) {
+        return
+      }
+      const query = new Query().setDistinct().setCols([this.valKey, this.labelKey]);
+      this.options._buildSelectOptions(query, this.valKey, this.labelKey).then(options => {
+        this.nativeOptions = options
+      }).catch(err => {
+        console.error(err)
+      })
     }
   }
 }

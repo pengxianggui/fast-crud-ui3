@@ -40,6 +40,8 @@
 <script>
 import tableColumn from "../../../mixins/table-column"
 import FastSelect from "../../select/src/fast-select.vue"
+import * as util from "../../../util/util.js"
+import FastTableOption, {Query} from "../../../model.js";
 
 export default {
   name: "FastTableColumnSelect",
@@ -56,23 +58,38 @@ export default {
       default: () => false
     }
   },
+  data() {
+    return {
+      options: []
+    }
+  },
+  async created() {
+    await this.loadOptions()
+  },
   methods: {
+    /**
+     * 从属性中加载options(如果传入的options是FastTableOption类型, 则可能涉及异步加载)
+     */
+    async loadOptions() {
+      const {options, valKey = 'value', labelKey = 'label'} = this.columnProp
+      if (util.isArray(options)) {
+        this.options = options
+      } else if (options instanceof FastTableOption) {
+        const query = new Query().setDistinct().setCols([valKey, labelKey])
+        this.options = await options._buildSelectOptions(query, valKey, labelKey)
+      }
+    },
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow
-      const {props: {options = [], labelKey = 'label', valKey = 'value'} = {}} = config[this.prop]
+      const {props = {}} = config[this.prop]
+      const {labelKey = 'label', valKey = 'value'} = props
       let val;
       if (status === 'normal') {
         val = row[this.prop];
       } else {
         val = editRow[this.prop];
       }
-      if (options) { // 转义
-        const option = options.find(item => item[valKey] === val);
-        if (option) {
-          return option[labelKey]
-        }
-      }
-      return val;
+      return util.escapeLabel(val, this.options, valKey, labelKey)
     }
   }
 }

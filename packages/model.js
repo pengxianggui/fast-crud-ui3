@@ -12,11 +12,19 @@ import {
     isObject,
     isString,
     isUndefined,
-    mergeValue
+    mergeValue,
+    sortKey
 } from "./util/util.js";
 import {openDialog} from "./util/dialog";
 import ExportConfirm from "./components/table/src/export-confirm.vue";
 import {post} from "./util/http.js";
+import {escapeValToLabel} from "./util/escape.js";
+import {
+    deleteFromSessionStorage,
+    getFromSessionStorage,
+    setToSessionStorage
+} from "./util/cache.js";
+import md5 from 'md5'
 
 export const Opt = Object.freeze({
     EQ: "=",
@@ -108,7 +116,7 @@ export class Query {
 
     /**
      * @param cond
-     * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
+     * @param repeatable 是否允许重复的col, 默认true, 即若多次添加相同col的条件, 只会保留最新的
      * @return {Query}
      */
     addCond(cond, repeatable = true) {
@@ -223,6 +231,7 @@ export class FilterComponentConfig {
     type; // quick, easy, dynamic
     condMapFn = (cond) => [cond];
     index = 99; // 排序
+    condMsg = ''; // 条件文本描述
 
     /**
      * 构造函数
@@ -247,8 +256,8 @@ export class FilterComponentConfig {
         this.component = component;
         this.col = col;
         this.opt = opt;
-        this.val = val;
         this.label = label;
+        this.condMsg = `${label} ${opt}`
         const {disabled, ...validProps} = props; // 移除props中的disabled属性,disabled属性对查询时无效
         this.props = validProps;
         if (!isUndefined(condMapFn)) {
@@ -258,6 +267,7 @@ export class FilterComponentConfig {
         this.defaultVal = val;
         this.disabled = false;
         this.type = type;
+        this.val = val;
     }
 
     /**
@@ -293,6 +303,95 @@ export class FilterComponentConfig {
             return [new Cond(this.col, this.opt, null)]
         }
         return this.condMapFn(new Cond(this.col, this.opt, this.val));
+    }
+
+    /**
+     * 更新条件的文本描述, 例如用于回显在dynamic-filter-list上
+     */
+    updateCondMsg() {
+        return new Promise((resolve, reject) => {
+            const component = this.component
+            const label = this.label
+            const props = this.props
+            if (!this.isEffective()) {
+                this.disabled = true
+                this.condMsg = `[${label}]无有效值`
+                resolve()
+                return
+            }
+            const conds = this.getConds();
+            const allPromises = []
+            for (let i = 0; i < conds.length; i++) {
+                let {opt, val} = conds[i];
+                const promise = new Promise((resolve, reject) => {
+                    let text
+                    escapeValToLabel(component, val, props).then(showVal => {
+                        switch (opt) {
+                            case Opt.EQ:
+                            case Opt.NE:
+                            case Opt.GT:
+                            case Opt.GE:
+                            case Opt.LT:
+                            case Opt.LE:
+                                text = `${label} ${opt} ${showVal}`;
+                                break;
+                            case Opt.LIKE:
+                                text = `${label} 包含'${showVal}'`;
+                                break;
+                            case Opt.LLIKE:
+                                text = `${label}以'${showVal}'结尾`
+                                break;
+                            case Opt.RLIKE:
+                                text = `${label}以'${showVal}'打头`
+                                break;
+                            case Opt.NLIKE:
+                                text = `${label} 不包含'${showVal}'`;
+                                break;
+                            case Opt.IN:
+                                text = `${label} 包含 ${showVal}`;
+                                break;
+                            case Opt.NIN:
+                                text = `${label} 不包含 ${showVal}`;
+                                break;
+                            case Opt.NULL:
+                                text = `${label} 为null`;
+                                break;
+                            case Opt.NNULL:
+                                text = `${label} 不为null`;
+                                break;
+                            case Opt.EMPTY:
+                                text = `${label} 为空`;
+                                break;
+                            case Opt.NEMPTY:
+                                text = `${label} 不为空`;
+                                break;
+                            case Opt.BTW:
+                                text = `${label} 在${showVal}之间`;
+                                break;
+                            default:
+                                text = `${label}未知的比较符`
+                                break
+                        }
+                        resolve(text)
+                    }).catch(err => {
+                        console.error(err)
+                        resolve(`${label} ${opt} ${val}`)
+                    })
+                })
+                allPromises.push(promise)
+            }
+            Promise.all(allPromises).then(texts => {
+                let condMsg = '';
+                for (let i = 0; i < texts.length; i++) {
+                    condMsg += texts[i]
+                    if (i !== texts.length - 1) {
+                        condMsg += " 且 "
+                    }
+                }
+                this.condMsg = condMsg
+                resolve()
+            })
+        })
     }
 }
 
@@ -653,7 +752,6 @@ class FastTableOption {
      * 新增行, 返回promise
      * @param fatRows
      * @returns {Promise<void>|Promise<unknown>}
-     * @private
      */
     _insertRows(fatRows) {
         if (fatRows.length === 0) {
@@ -745,10 +843,19 @@ class FastTableOption {
     }
 
     /**
+     * 列表查询
+     * @param query 查询条件 Query类型
+     * @param config
+     */
+    _list(query, config) {
+        this.conds.forEach(c => query.addCond(c)) // 内置conds添加
+        return post(this.listUrl, query.toJson(), config)
+    }
+
+    /**
      * 导出
      * @param columnConfigs
      * @param pageQuery
-     * @private
      */
     _exportData(columnConfigs, pageQuery) {
         const {context, beforeExport} = this
@@ -756,11 +863,6 @@ class FastTableOption {
             columns: columnConfigs,
             pageQuery: pageQuery
         }).then(() => {
-            columnConfigs.forEach(colConf => {
-                if (!colConf.hasOwnProperty('exportable')) {
-                    colConf.exportable = true
-                }
-            })
             openDialog({
                 component: ExportConfirm,
                 props: {
@@ -817,7 +919,6 @@ class FastTableOption {
 
     /**
      * 存在性判断
-     * @private
      */
     _exist(conds = []) {
         if (isEmpty(conds)) {
@@ -827,6 +928,41 @@ class FastTableOption {
         return new Promise((resolve, reject) => {
             post(existsUrl, conds).then(result => {
                 resolve(result)
+            }).catch(err => {
+                reject(err)
+            })
+        })
+    }
+
+    /**
+     * 利用/list接口构造选项列表数据
+     * @param query
+     * @param valKey
+     * @param labelKey
+     * @return {Promise<*>}
+     */
+    _buildSelectOptions(query, valKey, labelKey) {
+        return new Promise((resolve, reject) => {
+            const key = `OPTIONS:${this.id}_${valKey}_${labelKey}_` + md5(JSON.stringify(sortKey(query)))
+            let options = getFromSessionStorage(key)
+            if (isArray(options)) {
+                try {
+                    resolve(options)
+                    return
+                } catch (err) {
+                    console.log(err)
+                    deleteFromSessionStorage(key)
+                }
+            }
+            this._list(query).then(res => {
+                options = res.filter(item => isObject(item)).map(item => {
+                    const obj = {}
+                    obj[valKey] = item[valKey]
+                    obj[labelKey] = item[labelKey]
+                    return obj
+                })
+                setToSessionStorage(key, options, 1)
+                resolve(options)
             }).catch(err => {
                 reject(err)
             })
