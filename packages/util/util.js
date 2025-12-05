@@ -549,7 +549,7 @@ export function getInnerHeight(ele) {
 }
 
 /**
- * 按前匹配或后匹配替换对象键
+ * 按前匹配或后匹配替换对象的键名。例如obj中有name_q, str为_q, 则替换后返回的对象里name_q变成name
  * @param obj 对象
  * @param str 前缀或后缀
  * @param position 匹配位置. start: 前缀, end: 后缀。不传默认是end
@@ -803,7 +803,7 @@ export function escapeLabel(val, options, valKey, labelKey) {
             return val
         } catch (err) {
             console.error(err)
-            return 'Err'
+            return val // 降级显示原本的值
         }
     }
 }

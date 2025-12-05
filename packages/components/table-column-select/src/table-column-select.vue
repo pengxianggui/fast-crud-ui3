@@ -41,8 +41,7 @@
 import tableColumn from "../../../mixins/table-column"
 import FastSelect from "../../select/src/fast-select.vue"
 import * as util from "../../../util/util.js"
-import FastTableOption from "../../../model.js";
-import {escapeValToLabel} from "../../../util/escape.js";
+import FastTableOption, {Query} from "../../../model.js";
 
 export default {
   name: "FastTableColumnSelect",
@@ -59,29 +58,38 @@ export default {
       default: () => false
     }
   },
+  data() {
+    return {
+      options: []
+    }
+  },
+  async created() {
+    await this.loadOptions()
+  },
   methods: {
+    /**
+     * 从属性中加载options(如果传入的options是FastTableOption类型, 则可能涉及异步加载)
+     */
+    async loadOptions() {
+      const {options, valKey = 'value', labelKey = 'label'} = this.columnProp
+      if (util.isArray(options)) {
+        this.options = options
+      } else if (options instanceof FastTableOption) {
+        const query = new Query().setDistinct().setCols([valKey, labelKey])
+        this.options = await options._buildSelectOptions(query, valKey, labelKey)
+      }
+    },
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow
-      const {component, props = {}} = config[this.prop]
-      const {options, labelKey = 'label', valKey = 'value'} = props
+      const {props = {}} = config[this.prop]
+      const {labelKey = 'label', valKey = 'value'} = props
       let val;
       if (status === 'normal') {
         val = row[this.prop];
       } else {
         val = editRow[this.prop];
       }
-      // TODO 1.5.17 利用 escapeValToLabel 转义。 问题是这里是个异步, 没办法直接返回结果即使await可能渲染出来依然是Promise.toString
-      //  escapeValToLabel(component, val, props)
-
-      if (util.isArray(options)) { // 转义
-        const option = options.find(item => item[valKey] === val);
-        if (option) {
-          return option[labelKey]
-        }
-      } else if (options instanceof FastTableOption) {
-
-      }
-      return val;
+      return util.escapeLabel(val, this.options, valKey, labelKey)
     }
   }
 }

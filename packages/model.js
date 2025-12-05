@@ -116,7 +116,7 @@ export class Query {
 
     /**
      * @param cond
-     * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
+     * @param repeatable 是否允许重复的col, 默认true, 即若多次添加相同col的条件, 只会保留最新的
      * @return {Query}
      */
     addCond(cond, repeatable = true) {
@@ -848,6 +848,7 @@ class FastTableOption {
      * @param config
      */
     _list(query, config) {
+        this.conds.forEach(c => query.addCond(c)) // 内置conds添加
         return post(this.listUrl, query.toJson(), config)
     }
 

@@ -1,6 +1,7 @@
 import {colEditable} from "../components/table/src/util"
 import FastTableHeadCell from "../components/table/src/table-head-cell.vue"
 import FastCellContent from "../components/content-dialog/src/fast-cell-content.vue";
+import {convertKeyFromCaseToCamel, replaceKey} from "../util/util.js";
 
 export default {
     inject: ['openDynamicFilterForm', 'tableStyle', 'context'],
@@ -71,9 +72,12 @@ export default {
         }
     },
     data() {
+        let attrs = convertKeyFromCaseToCamel(this.$attrs, '-');
+        attrs = replaceKey(attrs, '_q')
+        attrs = replaceKey(attrs, '_e')
         return {
             columnProp: {
-                ...this.$attrs,
+                ...attrs,
                 prop: this.prop,
                 label: this.label,
                 filter: this.filter,

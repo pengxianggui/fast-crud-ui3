@@ -23,11 +23,9 @@
                        :size="option.style.size"
                        @change="pageLoad"/>
       </div>
-      <div class="fc-fast-table-expand-button">
-        <slot name="button" v-bind="scopeParam"></slot>
-      </div>
       <!-- 按钮功能区 -->
       <div class="fc-fast-table-operation-btn">
+        <slot name="button" v-bind="scopeParam"></slot>
         <template v-if="status === 'normal'">
           <el-button :size="option.style.size" @click="toInsert"
                      v-if="insertable">新建
