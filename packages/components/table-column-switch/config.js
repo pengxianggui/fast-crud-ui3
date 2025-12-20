@@ -1,5 +1,5 @@
 import {merge, ternary} from "../../util/util";
-import {Opt} from "../../model";
+import Opt from "../../model/opt.js";
 
 const defaultQueryConfig = {
     component: 'fast-select',

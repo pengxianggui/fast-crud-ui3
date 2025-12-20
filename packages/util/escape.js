@@ -1,5 +1,6 @@
-import * as util from "./util.js";
-import FastTableOption, {Query} from "../model.js";
+import * as util from './util.js'
+import FastTableOption from '../model/fastTableOption.js'
+import Query from '../model/query.js'
 
 // 需要转义值的组件
 const components = ['fast-checkbox-group', 'fast-select']

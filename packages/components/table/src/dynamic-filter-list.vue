@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import {Opt} from "../../../model";
+import Opt from "../../../model/opt.js";
 import {ellipsis} from '../../../util/util'
 import {Close, Search} from "@element-plus/icons-vue"
 

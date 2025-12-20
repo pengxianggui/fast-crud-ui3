@@ -144,8 +144,8 @@ import DynamicFilterForm from "./dynamic-filter-form.vue"
 import DynamicFilterList from "./dynamic-filter-list.vue"
 import RowForm from "./row-form.vue"
 import RowConfirm from "./RowConfirm.vue"
-import {PageQuery} from '../../../model'
-import FastTableOption from "../../../model"
+import PageQuery from '../../../model/pageQuery.js'
+import FastTableOption from "../../../model/fastTableOption.js"
 import {
   calLength,
   getFullHeight, getInnerHeight,

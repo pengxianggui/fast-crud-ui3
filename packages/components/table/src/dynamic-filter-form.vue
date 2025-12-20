@@ -52,7 +52,10 @@
 </template>
 
 <script>
-import FastTableOption, {FilterComponentConfig, Query, Opt} from "../../../model"
+import FastTableOption from '../../../model/fastTableOption.js'
+import FilterComponentConfig from '../../../model/filterComponentConfig.js'
+import Query from '../../../model/query.js'
+import Opt from '../../../model/opt.js'
 import {escapeValToLabel} from "../../../util/escape.js"
 import {isEmpty, isObject, toStr} from "../../../util/util"
 import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"

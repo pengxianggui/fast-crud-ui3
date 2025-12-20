@@ -5,7 +5,7 @@
   "main": "lib/fast-crud-ui3.cjs.js",
   "module": "lib/fast-crud-ui3.es.js",
   "scripts": {
-    "dev:local": "vite --mode local",
+    "dev:local": "vite --mode localhost",
     "dev:dev": "vite --mode dev",
     "build": "npm run build:lib && npm run build:demo",
     "build:lib": "vite build --mode library",

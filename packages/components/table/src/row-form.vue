@@ -29,7 +29,7 @@
 
 <script>
 import {ElMessage} from 'element-plus';
-import FastTableOption from "../../../model";
+import FastTableOption from "../../../model/fastTableOption.js";
 import {isEmpty} from "../../../util/util";
 import {colEditable} from "./util";
 

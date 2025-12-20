@@ -1,4 +1,5 @@
-import {EditComponentConfig, FilterComponentConfig} from "../model";
+import EditComponentConfig from '../model/editComponentConfig.js'
+import FilterComponentConfig from '../model/filterComponentConfig.js'
 import {isFunction, replaceKey} from "../util/util.js";
 import FastTableColumnConfig from './table-column/config';
 import FastTableColumnDatePickerConfig from './table-column-date-picker/config';

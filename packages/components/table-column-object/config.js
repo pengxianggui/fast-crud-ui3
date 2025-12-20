@@ -1,5 +1,6 @@
-import {easyOptParse, isArray, isSampleType, isUndefined, merge, ternary} from "../../util/util";
-import {Cond, Opt} from "../../model";
+import {isArray, isSampleType, isUndefined, merge, ternary} from "../../util/util";
+import Opt from '../../model/opt.js'
+import Cond from '../../model/cond.js'
 import tableColumnInputConfig from '../table-column-input/config.js'
 
 const defaultQueryConfig = {

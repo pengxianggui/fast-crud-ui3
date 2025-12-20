@@ -63,7 +63,7 @@ import {
   isUrl
 } from "../../../util/util"
 import UploadMixin from "../../../mixins/upload.js"
-import FastTableOption from "../../../model"
+import FastTableOption from "../../../model/fastTableOption.js"
 import {openDialog} from "../../../util/dialog"
 import {Delete, Paperclip, Plus, ZoomIn} from "@element-plus/icons-vue"
 

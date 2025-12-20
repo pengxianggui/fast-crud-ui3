@@ -13,7 +13,7 @@ import {version as elVersion} from 'element-plus'
 import FastJsonViewer from "../../json-viewer/src/fast-json-viewer.vue"
 import * as util from "../../../util/util.js"
 import {openDialog} from "../../../util/dialog.js"
-import FastTableOption from "../../../model.js"
+import FastTableOption from "../../../model/fastTableOption.js"
 
 export default {
   name: "FastCellContent",

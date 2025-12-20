@@ -41,7 +41,8 @@
 import tableColumn from "../../../mixins/table-column"
 import FastSelect from "../../select/src/fast-select.vue"
 import * as util from "../../../util/util.js"
-import FastTableOption, {Query} from "../../../model.js";
+import FastTableOption from '../../../model/fastTableOption.js'
+import Query from '../../../model/query.js'
 
 export default {
   name: "FastTableColumnSelect",

@@ -1,7 +1,7 @@
-import {buildFinalQueryComponentConfig, buildFinalEditComponentConfig} from "../../mapping";
+import {buildFinalQueryComponentConfig, buildFinalEditComponentConfig} from '../../mapping'
 import Schema from 'async-validator'
-import {Opt} from "../../../model.js";
-import * as util from "../../../util/util.js";
+import Opt from '../../../model/opt.js'
+import * as util from '../../../util/util.js'
 import * as cache from '../../../util/cache.js'
 
 /**
