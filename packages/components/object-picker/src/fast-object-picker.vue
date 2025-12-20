@@ -19,7 +19,7 @@
 <script>
 import {pick} from "../../../util/pick"
 import {defaultIfEmpty, isArray, isEmpty, isObject} from "../../../util/util"
-import FastTableOption from "../../../model.js"
+import FastTableOption from "../../../model/fastTableOption.js"
 
 export default {
   name: "FastObjectPicker",

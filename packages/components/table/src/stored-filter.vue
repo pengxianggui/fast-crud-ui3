@@ -33,7 +33,7 @@ import {nextTick} from "vue"
 import {dayjs} from "element-plus"
 import {ArrowDown, Star, Select} from "@element-plus/icons-vue"
 import * as util from "../../../util/util.js"
-import FastTableOption from "../../../model.js"
+import FastTableOption from "../../../model/fastTableOption.js"
 import {openDialog} from "../../../util/dialog.js";
 import StoredFilterManager from "./stored-filter-manager.vue";
 import {buildFilterGroups, buildStoredFilterComponent, getCustomFilterGroups} from "./util.js"

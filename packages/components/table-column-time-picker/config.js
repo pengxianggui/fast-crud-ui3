@@ -1,5 +1,6 @@
 import {isUndefined, merge, ternary} from "../../util/util";
-import {Cond, Opt} from "../../model";
+import Cond from '../../model/cond.js'
+import Opt from '../../model/opt.js'
 
 const defaultQueryConfig = {
     component: 'el-time-picker',

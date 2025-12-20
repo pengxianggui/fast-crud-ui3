@@ -54,7 +54,8 @@
 
 <script>
 import {Close, Plus} from "@element-plus/icons-vue";
-import FastTableOption, {Opt} from '../../../model.js'
+import FastTableOption from '../../../model/fastTableOption.js'
+import Opt from '../../../model/opt.js'
 import {buildStoredFilterComponent, setCustomFilterGroups} from "./util.js";
 import * as util from "../../../util/util.js";
 import {ElMessage} from "element-plus";

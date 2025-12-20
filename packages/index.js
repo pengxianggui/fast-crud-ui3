@@ -19,8 +19,12 @@ import FastTableColumnTimePicker from './components/table-column-time-picker'
 import {openDialog} from "./util/dialog";
 import {pick} from "./util/pick";
 import "./style.scss"
-import FastTableOption from "./model";
-import {PageQuery, Query, Order, Cond, Opt} from "./model";
+import FastTableOption from "./model/fastTableOption.js";
+import Opt from './model/opt.js'
+import Cond from './model/cond.js'
+import Order from './model/order.js'
+import Query from './model/query.js'
+import PageQuery from './model/pageQuery.js'
 import {
     isEmpty,
     isString,

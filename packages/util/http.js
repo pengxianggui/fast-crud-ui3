@@ -1,5 +1,5 @@
-import FastTableOption from "../model.js";
 import {v4 as uuidv4} from 'uuid'
+import FastTableOption from "../model/fastTableOption.js";
 
 /**
  * 发起post请求

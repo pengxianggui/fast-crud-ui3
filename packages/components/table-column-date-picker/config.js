@@ -1,5 +1,6 @@
 import {isUndefined, merge, ternary} from "../../util/util";
-import {Cond, Opt} from "../../model";
+import Cond from '../../model/cond.js'
+import Opt from '../../model/opt.js'
 
 const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD'
 const DEFAULT_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'

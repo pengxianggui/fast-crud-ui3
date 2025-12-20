@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import FastTableOption from "../../../model.js"
+import FastTableOption from "../../../model/fastTableOption.js"
 
 export default {
   name: 'RowConfirm',

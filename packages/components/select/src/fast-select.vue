@@ -12,7 +12,8 @@
 </template>
 
 <script>
-import FastTableOption, {Query} from "../../../model.js";
+import FastTableOption from '../../../model/fastTableOption.js'
+import Query from '../../../model/query.js'
 import * as util from '../../../util/util.js'
 
 export default {

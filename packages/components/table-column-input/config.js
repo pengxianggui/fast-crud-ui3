@@ -1,5 +1,5 @@
 import {easyOptParse, isUndefined, merge, ternary} from "../../util/util";
-import {Opt} from "../../model";
+import Opt from "../../model/opt.js";
 
 const defaultQueryConfig = {
     component: 'el-input',
