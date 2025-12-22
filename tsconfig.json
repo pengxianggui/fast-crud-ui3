@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": false,            // JS项目不要开启严格模式，否则全是红线
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+
+    // === 关键配置 ===
+    "allowJs": true,            // 允许处理 JS 文件
+    "checkJs": false,           // 不检查 JS 语法错误（避免老代码报错）
+    "declaration": true,        // 生成声明文件
+    "emitDeclarationOnly": true,// 只生成声明文件，不输出 JS（JS 由 Vite 处理）
+    "outDir": "lib",            // 类型输出目录，需与 vite build.outDir 保持结构一致
+
+    // === 路径别名 (需要与 vite.config.js 对应) ===
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    // 处理 element-plus 类型
+    "types": ["element-plus/global"]
+  },
+  "include": [
+    "packages/**/*.js",
+    "packages/**/*.vue",
+    "packages/**/*.ts",
+//    "src/**/*.js",
+//    "src/**/*.vue"
+  ],
+  "exclude": ["node_modules", "dist", "lib"]
+}

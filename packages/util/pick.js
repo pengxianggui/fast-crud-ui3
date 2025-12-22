@@ -7,10 +7,10 @@ import FastTable from '../components/table'
 
 /**
  * pick弹窗选择表格数据
- * @param option FastTableOption实例
- * @param multiple 是否多选
- * @param dialog 弹窗配置
- * @returns {Promise<*>|*}
+ * @param option {FastTableOption} FastTableOption实例
+ * @param multiple {boolean} 是否多选
+ * @param dialog {Object} 弹窗配置
+ * @returns {Promise<*>|*} 返回Promise
  */
 export function pick({option, multiple = false, dialog = {width: '70%'}}) {
     const _this = this
