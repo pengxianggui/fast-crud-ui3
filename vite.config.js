@@ -7,6 +7,7 @@ import vueJsx from '@vitejs/plugin-vue-jsx'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import {ElementPlusResolver} from 'unplugin-vue-components/resolvers'
+import dts from 'vite-plugin-dts'
 
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => {
@@ -39,6 +40,14 @@ export default defineConfig(({mode}) => {
                     importStyle: 'sass',
                     resolveIcons: true // 打包包含组件
                 })]
+            }),
+            // dts插件配置
+            isLibrary && dts({
+                entryRoot: 'packages', // 源码入口目录
+                outputDir: 'lib', // 输出目录
+                tsconfigPath: './tsconfig.json',
+                cleanVueFileName: true, // 将.vue.d.ts 转换为 .d.ts
+                // 如果你的包很大，可以开启 rollupTypes: true 把所有类型合并为一个文件（可选）
             })
         ],
         resolve: {
@@ -61,7 +70,9 @@ export default defineConfig(({mode}) => {
                     globals: {
                         vue: 'Vue',
                         'element-plus': 'ElementPlus',
-                    }
+                    },
+                    // === 关键：保持原来的目录结构，这样类型文件才能对应上 ===
+                    preserveModules: false
                 }
             },
             outDir: 'lib', // 指定输出目录为 lib

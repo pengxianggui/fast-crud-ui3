@@ -11,13 +11,17 @@
 </template>
 
 <script>
+import {defineComponent} from "vue";
 import {JsonViewer} from "vue3-json-viewer"
 import "vue3-json-viewer/dist/vue3-json-viewer.css"
 import {isObject} from "../../../util/util.js";
 
-export default {
+export default defineComponent({
   name: "fast-json-viewer",
-  components: {JsonViewer},
+  components: {
+    // JSDoc强制断言为any, 避免其私有类型CopyableOptions导致npm run build:lib 提示TS9006错误
+    JsonViewer: /** @type {any} **/ (JsonViewer)
+  },
   props: {
     value: null,
     copyable: {
@@ -42,7 +46,7 @@ export default {
       return isObject(this.value)
     }
   }
-}
+})
 </script>
 
 <style scoped lang="scss">

@@ -7,48 +7,194 @@ import {deleteFromSessionStorage, getFromSessionStorage, setToSessionStorage} fr
 import ExportConfirm from "../components/table/src/export-confirm.vue";
 import Cond from './cond.js'
 
+/**
+ * @typedef {import('vue').ComponentPublicInstance} ComponentInstance
+ */
 class FastTableOption {
+    /**
+     * 当前组件。一般配置当前组件(this), 这样钩子函数中可以使用this
+     * @type {ComponentInstance | null}
+     */
     context;
-    ref; // FastTable组件的this引用
+    ref; // FastTable组件的this引用, 不对外提供配置
+    /**
+     * 唯一id值。用于浏览器缓存时不同fast-table之间的隔离，不配置则内部默认生成(取baseUrl)
+     * @type {string}
+     */
     id = ''; // 用于在全局标识唯一FastTable实例：涉及一些localStorage数据, 默认取值为${baseUrl}
-    title = ''; // 标题: 显示在表头上方
+    /**
+     * 表格标题。配置后默认会显示在表格上方
+     * @type {string}
+     */
+    title = '';
+    /**
+     * 是否显示标题。默认true
+     * @type {boolean}
+     */
     showTitle = true; // 是否显示标题
+    /**
+     * 表格Rest接口的根path。
+     * @type {string}
+     */
     baseUrl = ''; // 内部接口的根url
-    pageUrl = ''; // 分页url: 默认为${baseUrl}/page
-    listUrl = ''; // 列表url: 默认为${baseUrl}/list
-    insertUrl = ''; // 新增url: 默认为${baseUrl}/insert
-    batchInsertUrl = ''; // 批量新增url: 默认为${baseUrl}/insert/batch
-    updateUrl = ''; // 更新url: 默认为${baseUrl}/update
-    batchUpdateUrl = ''; // 批量更新url: 默认为${baseUrl}/update/batch
-    deleteUrl = ''; // 删除url: 默认为${baseUrl}/delete
-    batchDeleteUrl = ''; // 批量删除url: 默认为${baseUrl}/delete/batch
-    uploadUrl = ''; // 文件上传接口: 默认为${baseUrl}/upload
-    exportUrl = ''; // 数据导出接口: 默认为${baseUrl}/export
-    existsUrl = ''; // 存在性判断接口: 默认为${baseUrl}/exists
+    /**
+     * 表格分页接口path。默认 ${baseUrl}/page
+     * @type {string}
+     */
+    pageUrl = '';
+    /**
+     * 列表url: 默认为${baseUrl}/list
+     * @type {string}
+     */
+    listUrl = '';
+    /**
+     * 新增url: 默认为${baseUrl}/insert
+     * @type {string}
+     */
+    insertUrl = '';
+    /**
+     * 批量新增url: 默认为${baseUrl}/insert/batch
+     * @type {string}
+     */
+    batchInsertUrl = '';
+    /**
+     * 更新url: 默认为${baseUrl}/update
+     * @type {string}
+     */
+    updateUrl = '';
+    /**
+     * 批量更新url: 默认为${baseUrl}/update/batch
+     * @type {string}
+     */
+    batchUpdateUrl = '';
+    /**
+     * 删除url: 默认为${baseUrl}/delete
+     * @type {string}
+     */
+    deleteUrl = '';
+    /**
+     * 批量删除url: 默认为${baseUrl}/delete/batch
+     * @type {string}
+     */
+    batchDeleteUrl = '';
+    /**
+     * 文件上传接口: 默认为${baseUrl}/upload
+     * @type {string}
+     */
+    uploadUrl = '';
+    /**
+     * 数据导出接口: 默认为${baseUrl}/export
+     * @type {string}
+     */
+    exportUrl = '';
+    /**
+     * 存在性判断接口path: 默认为${baseUrl}/exists
+     * @type {string}
+     */
+    existsUrl = '';
+    /**
+     * 是否启用双击编辑。默认true
+     * @type {boolean}
+     */
     enableDblClickEdit = true;
-    enableMulti = true; // 启用多选
-    enableIndex = false; // 是否启用序号列
-    enableColumnFilter = true; // 启用列过滤：即动筛
-    enableFilterCache = true; // 启用过滤条件缓存(支持值: true/false),若为true则缓存到session中,有效期为会话
-    lazyLoad = false; // 不立即加载数据
+    /**
+     * 是否启用表格多选。默认启用
+     * @type {boolean}
+     */
+    enableMulti = true;
+    /**
+     * 是否启用序号列
+     * @type {boolean}
+     */
+    enableIndex = false;
+    /**
+     * 启用列过滤：即动筛。默认启用，若为false, 则表头均无法点击
+     * @type {boolean}
+     */
+    enableColumnFilter = true;
+    /**
+     * 是否启用过滤条件缓存(页面刷新后过滤条件不丢失),若为true则缓存到session中,有效期为会话。默认启用
+     * @type {boolean}
+     */
+    enableFilterCache = true;
+    /**
+     * 是否延迟加载分页数据，即不立即加载数据。默认false，若设置true, 则表格渲染后不立即加载数据，需要手动触发加载。
+     * @type {boolean}
+     */
+    lazyLoad = false;
+    /**
+     * 编辑模式。可选值: inline/form, 默认为inline,即双击行内编辑，若配置为form，则双击将打开弹窗。
+     * @type {string}
+     */
     editType = 'inline'; // inline/form
-    queryable = true; //是否允许查询, 这个在静态表格等场景是有用的, 用于隐藏查询等按钮
-    insertable = true; // 是否支持内置新建
-    updatable = true; // 是否支持内置编辑
-    deletable = true; // 是否支持内置删除
-    exportable = true; // 是否支持导出
-    idField = 'id'; // 主键字段名
-    createTimeField = ''; // 创建时间字段名: 如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
-    parent = { // TODO 待实现 父子表级联(父表取choseRow作为选中的行)
+    /**
+     * 是否允许分页查询。默认为true。若为false, 则查询等按钮会隐藏, 一般静态表格(前端静态数据)有用。
+     * @type {boolean}
+     */
+    queryable = true;
+    /**
+     * 是否支持内置新建功能。默认为true
+     * @type {boolean}
+     */
+    insertable = true;
+    /**
+     * 是否支持内置编辑。默认true
+     * @type {boolean}
+     */
+    updatable = true;
+    /**
+     * 是否支持内置删除。默认true
+     * @type {boolean}
+     */
+    deletable = true;
+    /**
+     * 是否支持导出。默认true
+     * @type {boolean}
+     */
+    exportable = true;
+    /**
+     * 主键字段名。默认为"id"。必须正确设置，否则更新、删除等功能无法使用。
+     * @type {string}
+     */
+    idField = 'id';
+    /**
+     * "创建时间"的字段名。如果配置了，则内部动态构造3个存筛(当天/当周/当月), 此值必须为显示列
+     * @type {string}
+     */
+    createTimeField = '';
+    /**
+     * TODO 待实现 父子表级联(父表取choseRow作为选中的行)
+     * @type {{map: Object | ObjectConstructor, option: FastTableOption}}
+     */
+    parent = {
         option: FastTableOption, // 父表的option
         map: Object // 指定映射关系, 例如: {parentId: 'id'} —— 表示当前option中的parentId值关联 parent.option的id值, 以此作为构建当前表的预置筛选条件, 限定关联条件; 支持多个关联key映射
     };
-    sortField; // 排序字段: 默认取createTimeField或idField
-    sortDesc = true; // 默认降序
-    moreButtons = []; // “更多”按钮扩展，定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
+    /**
+     * 表格默认的排序字段。默认依次取createTimeField、idField
+     */
+    sortField;
+    /**
+     * 降序。若为false, 则为升序
+     * @type {boolean}
+     */
+    sortDesc = true;
+    /**
+     * 配置【更多】下拉功能按钮。定义: {label: String, click: Function<Promise>, icon: Component, showable: Boolean|Function<Boolean>, disable: Boolean|Function<Boolean>, }
+     * @type {[]}
+     */
+    moreButtons = [];
+    /**
+     * 分页条配置
+     * @type {{layout: string, size: number, "page-sizes": number[]}}
+     */
     pagination = {
         layout: 'total, sizes, prev, pager, next, jumper', 'page-sizes': [10, 20, 50, 100, 200], size: 10
     };
+    /**
+     * 样式配置
+     * @type {{flexHeight: boolean, quickFilterGridGap: string, formLabelWidth: string, formLayout: null, quickFilterSpan: number, bodyRowHeight: string, size: string}}
+     */
     style = {
         flexHeight: false, // 表格是否使用弹性高度: 自适应高度, 撑满全屏
         bodyRowHeight: '50px', // 行高
@@ -58,30 +204,128 @@ class FastTableOption {
         quickFilterSpan: 3, // 快筛每行几个筛选项
         quickFilterGridGap: '10px 20px', // 快筛项之间的间距(grid布局中的gap)
     };
+    /**
+     * render函数。当前FastTableOption对应的表格若被pick时有用
+     * @type {Function}
+     */
     render; // 渲染函数, 当前table需要被pick时有用
+    /**
+     * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消
+     * @type {Cond[]}
+     */
     conds = []; // 固定的筛选条件，内部无法取消
-    condGroups = []; // 开发层面预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}], important: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效
-    condExtra = {}; // 扩展的查询条件, 可在#quickFilter插槽中使用。例如配置了keyword, 则可将query.extra.keyword绑定到自定义输入控件上
+    /**
+     * 开发者预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}] <br/>
+     * 注意: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效。
+     * @type {[]}
+     */
+    condGroups = [];
+    /**
+     * 扩展的查询条件, 可配合#quickFilter插槽使用。例如配置了keyword(表格中并不存在此列), 则可将query.extra.keyword绑定到自定义输入控件上，
+     * 后端配合针对此值做自定义筛选功能。
+     * @type {{}}
+     */
+    condExtra = {};
 
+    /**
+     * 重置按钮点击前触发的钩子函数
+     * @type {Function}
+     */
     beforeReset;
+    /**
+     * 分页请求前触发的钩子函数
+     * @type {Function}
+     */
     beforeLoad;
+    /**
+     * 分页请求成功后的钩子函数
+     * @type {Function}
+     */
     loadSuccess;
+    /**
+     * 分页请求失败后的钩子函数
+     * @type {Function}
+     */
     loadFail;
+    /**
+     * 进入新建前(行内模式新增一行前，表单模式为弹窗前)的钩子函数
+     * @type {Function}
+     */
+    beforeToInsert;
+    /**
+     * 插入请求前执行的钩子函数
+     * @type {Function}
+     */
     beforeInsert;
+    /**
+     * 插入成功后的钩子函数
+     * @type {Function}
+     */
     insertSuccess;
+    /**
+     * 插入失败后的钩子函数
+     * @type {Function}
+     */
     insertFail;
+    /**
+     * 进入更新模式前的钩子函数(行内模式为行切换为可编辑模式前，表单模式为弹窗前)
+     * @type {Function}
+     */
+    beforeToUpdate;
+    /**
+     * 更新请求前的钩子函数
+     * @type {Function}
+     */
     beforeUpdate;
+    /**
+     * 更新成功后的钩子函数。
+     * @type {Function}
+     */
     updateSuccess;
+    /**
+     * 更新失败后的钩子函数
+     * @type {Function}
+     */
     updateFail;
-    beforeDelete;
-    deleteSuccess;
-    deleteFail;
-    beforeToInsert; // 进入新建前(行内编辑新建前，或新建表单弹窗前)
-    beforeToUpdate; // 进入更新前(行内编辑更新前，或更新表单弹窗前)
+    /**
+     * 删除提示前的钩子函数
+     * @type {Function}
+     */
     beforeDeleteTip;
-    beforeCancel; // 工能区中取消按钮点击前
-    beforeExport; // 导出前
-    exportSuccess; // 导出成功后
+    /**
+     * 删除请求前的钩子函数
+     * @type {Function}
+     */
+    beforeDelete;
+    /**
+     * 删除请求成功后的钩子函数
+     * @type {Function}
+     */
+    deleteSuccess;
+    /**
+     * 删除请求失败后的钩子函数
+     * @type {Function}
+     */
+    deleteFail;
+    /**
+     * 点击取消按钮前的钩子函数(处于新建、编辑模式时会有取消按钮)
+     * @type {Function}
+     */
+    beforeCancel;
+    /**
+     * 导出请求前的钩子函数
+     * @type {Function}
+     */
+    beforeExport;
+    /**
+     * 导出成功后的钩子函数
+     * @type {Function}
+     */
+    exportSuccess;
+    /**
+     * 导出失败后的钩子函数
+     * @type Function
+     */
     exportFail; // 导出失败后
 
     static $http; // Axios实例
@@ -92,7 +336,7 @@ class FastTableOption {
                     id = '',
                     title = '',
                     showTitle = true,
-                    module = '', // @deprecated 1.6, 替换为baseUrl
+                    module = '', // deprecated 1.6, 替换为baseUrl
                     baseUrl = '',
                     pageUrl = '',
                     listUrl = '',

@@ -45,12 +45,23 @@ export function addStartWith(str, startWith) {
     return str.startsWith(startWith) ? str : startWith + str;
 }
 
+/**
+ * 若为空字符串，则取默认值
+ * @param str {string}
+ * @param defaultStr {string}
+ * @return {*}
+ */
 export function defaultIfBlank(str, defaultStr) {
     return ifBlank(str) ? defaultStr : str;
 }
 
+/**
+ * 是否是空字符串. undefined和null、均为空格也视为空字符串
+ * @param str {string}
+ * @return {boolean}
+ */
 export function ifBlank(str) {
-    return str === undefined || str === null || str.trim().length === 0;
+    return str === undefined || str === null || (isString(str) && str.trim().length === 0);
 }
 
 export function toStr(val) {
@@ -68,14 +79,20 @@ export function ternary(cond, trueVal, falseVal) {
     return cond ? trueVal : falseVal
 }
 
+/**
+ * val若为空则取默认值defaultVal
+ * @param val {string | Array | Object}
+ * @param defaultVal {any}
+ * @return {*}
+ */
 export function defaultIfEmpty(val, defaultVal) {
     return isEmpty(val) ? defaultVal : val;
 }
 
 /**
  * 驼峰转=>?(默认下划线)
- * @param str
- * @param separator
+ * @param str {string} 待处理的字符串
+ * @param separator {string} 默认为下划线("_"), 表示驼峰转下划线
  * @returns {*}
  */
 export function camelCaseTo(str, separator = '_') {
@@ -85,7 +102,7 @@ export function camelCaseTo(str, separator = '_') {
 
 /**
  * ?(默认下划线)转驼峰。单个字符串转换
- * @param str
+ * @param str {string} 待处理字符串
  * @param separator 默认下划线
  */
 export function caseToCamel(str, separator = '_') {
@@ -115,43 +132,78 @@ export function convertKeyFromCaseToCamel(obj, separator = "_") {
 
 /**
  * 判断值是否为对象. 数组、null等都将返回false, 只有严格的{}才会返回true
- * @param val
+ * @param val {any}
  */
 export function isObject(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Object]'
 }
 
+/**
+ * 是否是数组类型
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isArray(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Array]'
 }
 
+/**
+ * 是否是布尔值
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isBoolean(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Boolean]'
 }
 
+/**
+ * 是否是字符串
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isString(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object String]'
 }
 
+/**
+ * 是否是数值类型
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isNumber(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Number]'
 }
 
+/**
+ * 是否是函数
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isFunction(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Function]'
 }
 
+/**
+ * 是否是null值
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isNull(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Null]'
 }
 
+/**
+ * 是否是undefined值
+ * @param val {any}
+ * @return {boolean}
+ */
 export function isUndefined(val) {
     let toStr = Object.prototype.toString.call(val);
     return toStr === '[object Undefined]'
@@ -258,7 +310,7 @@ export function typeOf(value) {
 
 
 /**
- * 判断一个值是否为空.
+ * 判断一个值是否为空。
  * 如果是
  * 1. 字符串, 则判断是否为空字符串(空格也被视为空)
  * 2. 对象, 则判断是否无任何键值
@@ -266,6 +318,8 @@ export function typeOf(value) {
  * 4. null, 返回true
  * 5. undefined, true
  * 6. 其他情况均返回false
+ * @param value {string | Object | Array | undefined | null}
+ * @return {boolean}
  */
 export function isEmpty(value) {
     if (value && typeof value === 'object' && value.$ && value.$.vnode) {
@@ -287,7 +341,7 @@ export function isEmpty(value) {
 
 /**
  * 清空对象所有的键值
- * @param obj
+ * @param obj {Object}
  */
 export function clear(obj) {
     if (isObject(obj)) {
@@ -299,8 +353,8 @@ export function clear(obj) {
 
 /**
  * 将字符串转为对象或数组
- * @param str
- * @returns {{}|any}
+ * @param str {string}
+ * @returns {Object | Array}
  */
 export function parse(str) {
     if (isEmpty(str)) {
@@ -310,6 +364,11 @@ export function parse(str) {
     return JSON.parse(str)
 }
 
+/**
+ * 深度拷贝。如果非对象或数组，直接返回。
+ * @param obj {Object | Array}
+ * @return {Object | Array | any}
+ */
 export function deepClone(obj) {
     if (isObject(obj)) {
         // return Object.assign({}, obj)
@@ -335,12 +394,12 @@ export function deepClone(obj) {
 /**
  * @description merge 策略: 将opt2 merge到opt1, 对于opt1已有的key-value, 默认不覆盖(可由predicate决定), 对于opt2中新的key-value, 追加到opt1中。传入
  * deep值表示是否深度执行merge逻辑(不传入则为true). 函数将更改opt1的值, 同时返回opt1
- * @param opt1 opt1中的k-v将保留。如果不是object类型或者是null类型，则直接返回op1
- * @param opt2 不会改变opt2。如果不是object类型或者是null类型，则直接返回op1
- * @param deep 是否深拷贝模式, 默认true
- * @param ignoreNullAndUndefined 若为true, 则当opt2中的键值如果是null或undefined, 则不会覆盖到opt1中。默认是false
- * @param coverFn 具体k-v合并时的断言。当opt1, opt2有相同key时, 有时我们也希望能合并, 这时可以通过此参数来决定， 提供一个函数，参数: opt1, opt2, key, 返回true/false， 为true则表示也合并, 否则不合并
- * @returns {} 返回merge后的opt1的深拷贝对象
+ * @param opt1 {Object} opt1中的k-v将保留。如果不是object类型或者是null类型，则直接返回op1
+ * @param opt2 {Object} 不会改变opt2。如果不是object类型或者是null类型，则直接返回op1
+ * @param deep {boolean} 是否深拷贝模式, 默认true
+ * @param ignoreNullAndUndefined {boolean} 若为true, 则当opt2中的键值如果是null或undefined, 则不会覆盖到opt1中。默认是false
+ * @param coverFn {Function} 具体k-v合并时的断言。当opt1, opt2有相同key时, 有时我们也希望能合并, 这时可以通过此参数来决定， 提供一个函数，参数: opt1, opt2, key, 返回true/false， 为true则表示也合并, 否则不合并
+ * @returns {Object} 返回merge后的opt1的深拷贝对象
  */
 export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, coverFn = (obj1, obj2, key, valueOfObj2) => {
 }) {
@@ -379,10 +438,10 @@ export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, c
 /**
  * 将opt2中key的值，赋值到opt1中的同名key上；若opt1上没有同名key则忽略。返回值更新后的opt1
  * @description
- * @param opt1
- * @param opt2
- * @param deep
- * @param ignoreNullAndUndefined
+ * @param opt1 {Object}
+ * @param opt2 {Object}
+ * @param deep {boolean}
+ * @param ignoreNullAndUndefined {boolean}
  */
 export function mergeValue(opt1, opt2, deep = true, ignoreNullAndUndefined = false) {
     if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
@@ -413,11 +472,11 @@ export function mergeValue(opt1, opt2, deep = true, ignoreNullAndUndefined = fal
 /**
  * @description merge 策略2： 对两个对象中的属性和值执行merge操作, 将opt2中的key-value根据key merge到opt1上： 若op1也存在这个key，则取opt2这个key的值
  * 覆盖到opt1上； 若opt1中不存在, 则会被直接追加到opt1中， 因此函数会更改opt1, 执行完后, opt1将是merge后的对象。最后将opt1的深拷贝返回
- * @param opt1 opt1中的k-v将被覆盖。如果不是object类型或者是null类型，则直接返回op1
- * @param opt2 如果不是object类型或者是null类型，则直接返回op1
- * @param deep 是否深拷贝模式, 默认true
- * @param ignoreNullAndUndefined 若为true, 则当opt2中的键值如果是null或undefined, 则不会覆盖到opt1中。默认是false
- * @returns {} 返回merge后的opt1的深拷贝对象
+ * @param opt1 {Object} opt1中的k-v将被覆盖。如果不是object类型或者是null类型，则直接返回op1
+ * @param opt2 {Object} 如果不是object类型或者是null类型，则直接返回op1
+ * @param deep {boolean} 是否深拷贝模式, 默认true
+ * @param ignoreNullAndUndefined {boolean} 若为true, 则当opt2中的键值如果是null或undefined, 则不会覆盖到opt1中。默认是false
+ * @returns {Object} 返回merge后的opt1的深拷贝对象
  */
 export function coverMerge(opt1, opt2, deep = true, ignoreNullAndUndefined = false) {
     if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
