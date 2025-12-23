@@ -1,10 +1,12 @@
-import {isUndefined} from "../util/util.js"
+import _ from 'lodash-es'
+import {isString, isUndefined} from "../util/util.js"
 import {escapeValToLabel} from "../util/escape.js"
 import Cond from './cond.js'
 import Opt from './opt.js'
 
 /**
  * 筛选组件配置
+ * @typedef {typeof Opt[keyof typeof Opt]} OptValue
  */
 class FilterComponentConfig {
     component; // 渲染组件
@@ -22,13 +24,14 @@ class FilterComponentConfig {
 
     /**
      * 构造函数
-     * @param component 组件
-     * @param col 字段名
-     * @param opt 操作符
-     * @param val 值
-     * @param label 中文名
-     * @param props 组件对应的props
-     * @param condMapFn 条件获取过滤函数
+     * @param component {string} 组件名
+     * @param col {string} 字段名
+     * @param opt {OptValue} 操作符
+     * @param val {any} 值
+     * @param label {string} 中文名
+     * @param props {Object} 组件对应的props
+     * @param condMapFn {Function} 条件获取过滤函数
+     * @param type {string} quick|easy|dynamic
      */
     constructor({
                     component,
@@ -50,11 +53,11 @@ class FilterComponentConfig {
         if (!isUndefined(condMapFn)) {
             this.condMapFn = condMapFn;
         }
-
-        this.defaultVal = val;
+        const finalVal = isString(val) ? _.trim(val) : val
+        this.defaultVal = finalVal;
         this.disabled = false;
         this.type = type;
-        this.val = val;
+        this.val = finalVal;
     }
 
     /**
@@ -88,6 +91,9 @@ class FilterComponentConfig {
     getConds() {
         if (this.opt === Opt.NULL || this.opt === Opt.NNULL || this.opt === Opt.EMPTY || this.opt === Opt.NEMPTY) {
             return [new Cond(this.col, this.opt, null)]
+        }
+        if (isString(this.val)) {
+            this.val = _.trim(this.val)
         }
         return this.condMapFn(new Cond(this.col, this.opt, this.val));
     }

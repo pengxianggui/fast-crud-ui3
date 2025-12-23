@@ -1,4 +1,4 @@
-import {cloneDeep, isEmpty as _isEmpty} from 'lodash-es'
+import _ from 'lodash-es'
 import moment from "moment/moment"
 import {ElMessage} from "element-plus";
 
@@ -329,7 +329,7 @@ export function isEmpty(value) {
         case '[object String]':
             return value.trim() === '';
         case "[object Object]":
-            return _isEmpty(value);
+            return _.isEmpty(value);
         case "[object Array]":
             return value.length === 0;
         case "[object Undefined]":
@@ -373,7 +373,7 @@ export function deepClone(obj) {
     if (isObject(obj)) {
         // return Object.assign({}, obj)
         try {
-            return cloneDeep(obj);
+            return _.cloneDeep(obj);
         } catch (err) {
             console.error(err)
             return {...obj}
@@ -382,7 +382,7 @@ export function deepClone(obj) {
     if (isArray(obj)) {
         // return Object.assign([], obj)
         try {
-            return cloneDeep(obj);
+            return _.cloneDeep(obj);
         } catch (err) {
             console.error(err);
             return [...obj];
@@ -520,9 +520,9 @@ export function easyOptParse(cond, optMapping = {}) {
         const regex = new RegExp(reg);
         const {opt, valExtract} = obj
         if (regex.test(cond.val)) {
-            cond.opt = opt;
-            cond.val = valExtract(cond);
-            break;
+            cond.opt = opt
+            cond.val = valExtract(cond)
+            break
         }
     }
     return cond;
@@ -676,7 +676,7 @@ export const getBeginOfDate = function (date) {
     if (isEmpty(date)) {
         d = new Date()
     } else {
-        d = cloneDeep(date)
+        d = _.cloneDeep(date)
     }
     d.setHours(0, 0, 0, 0)
     return d
@@ -692,7 +692,7 @@ export const getBeginOfWeek = function (date) {
     if (isEmpty(date)) {
         d = new Date()
     } else {
-        d = cloneDeep(date)
+        d = _.cloneDeep(date)
     }
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1)
@@ -710,7 +710,7 @@ export const getBeginOfMonth = function (date) {
     if (isEmpty(date)) {
         d = new Date()
     } else {
-        d = cloneDeep(date)
+        d = _.cloneDeep(date)
     }
     d.setDate(1);  // 设置为当月的 1 号
     d.setHours(0, 0, 0, 0);
