@@ -92,7 +92,7 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 | formLayout                               | 弹窗表单的字段布局, 例如:`id,avatarUrl,name\|age\|sex,createTime`表示第一行是id和avatarUrl各占50%,第二行是name、age、sex各占33.3%, 第三行是createTime独占一行 | `String`         | -           |
 | quickFilterToggle(`@remove 1.5.9`)       | 快筛项过多时，是否折叠                                                                                                               | `Boolean`        | false       |
 | quickFilterToggleExceed(`@remove 1.5.9`) | quickFilterToggle为true时, 快筛项多于此值时产生"收缩/展开"                                                                                | `Number`         | 4           |
-| quickFilterSpan                          | 快筛表单的布局, 表示每行几个筛选项(也就是几列),值为`auto`时表示自动调整                                                                                 | `Number\|'auto'` | 3           |
+| quickFilterSpan                          | 快筛表单的布局, 表示每行几个筛选项(也就是几列),值为`auto`时表示自动调整(`1.5.18+`支持auto值)                                                               | `Number\|'auto'` | 3           |
 | quickFilterGridGap(`1.5.9+`)             | 快筛表单项的间隙, 同grid布局中的gap                                                                                                    | `String`         | `10px 20px` |
 
 ### conds
