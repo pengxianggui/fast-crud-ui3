@@ -28,13 +28,16 @@
 
 ### quickFilterConfig
 
-| 属性       | 说明        | 类型                                                       | 默认值 |
-|----------|-----------|----------------------------------------------------------|-----|
-| onChange | 监听快筛项值改变  | `Function<(val, formModel, filter, filtersMap) => void>` | -   |
-| onClick  | 监听快筛项点击事件 | `Function<(formModel, filter, filtersMap) => void>`      | -   |
+| 属性                      | 说明           | 类型                                                        | 默认值 |
+|-------------------------|--------------|-----------------------------------------------------------|-----|
+| ~~onChange~~            | ~~监听快筛项值改变~~ | `Function<(val, formModel, filter, filtersMap) => void>`  | -   |
+| onChange(`1.5.8+(新格式)`) | 监听快筛项值改变     | `Function<({val, model, filter, filters, refs}) => void>` | -   |
+| ~~onClick~~             | 监听快筛项点击事件    | `Function<(formModel, filter, filtersMap) => void>`       | -   |
+| onClick(`1.5.8+(新格式)`)  | 监听快筛项点击事件    | `Function<({model, filter, filters, refs}) => void>`      | -   |
 
 :::warning
-无论是onChange还是onClick, 对formModel更改值没有意义, 只能针对filter(当前快筛控件)或filtersMap(全部快筛控件)中的val值更改才会有实际作用。
+1. 无论是onChange还是onClick, 对formModel/model更改值没有意义, 只能针对filter(当前快筛控件)或filtersMap(全部快筛控件)中的val值更改才会有实际作用。
+2. 为使用方便,filters和refs均为map结构, refs可以拿到控件对象，从而按需调用其内部方法
 :::
 
 :::tip

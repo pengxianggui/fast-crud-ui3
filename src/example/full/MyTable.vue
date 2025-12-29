@@ -7,7 +7,7 @@
               @selection-change="handleSelectionChange"
               @select-all="handleSelectAll">
     <template #quickFilter="{size, query}">
-      <el-form-item label="自定义筛选项" style="grid-area: c1;/*grid-column: c2/c3*/">
+      <el-form-item label="自定义筛选项" style="order: 11">
         <el-input :size="size" v-model="query.extra.keyword" placeholder="同时筛选姓名和仰慕者姓名"/>
       </el-form-item>
     </template>
@@ -37,15 +37,16 @@
       </template>
     </fast-table-column-select>
     <fast-table-column-select label="属国" prop="state" required :quick-filter="true" quick-filter-block
-                              :options="stateOptions" quick-filter-checkbox val-key="code" label-key="name"
+                              :options="stateOptions" :quick-filter-checkbox="true" val-key="code" label-key="name"
                               :default-val_q="['1', '2', '3']" :disable-val="['4']"/>
     <fast-table-column-object label="仰慕者" prop="loveId" quick-filter
                               :quick-filter-config="loveIdQuickFilterConfig"
-                              :table-option="personOption" val-key="id" label-key_q="name" :pick-map="{name: 'loveName'}"
+                              :table-option="personOption" val-key="id" label-key_q="name"
+                              :pick-map="{name: 'loveName'}"
                               :multiple_q="true"/>
     <fast-table-column label="仰慕者姓名" prop="loveName"/>
-        <fast-table-column-select label="仇人" prop="foeId" quick-filter :options="personOption" width="100"
-                                  val-key="id" label-key="name" />
+    <fast-table-column-select label="仇人" prop="foeId" quick-filter :options="personOption" width="100"
+                              val-key="id" label-key="name"/>
     <fast-table-column-textarea label="简介" prop="info" link="withdrawSampleDetail?id={id}&pageType=detail"
                                 :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" required
@@ -174,7 +175,7 @@ export default {
           bodyRowHeight: '45px',
           formLabelWidth: 'auto', // 默认为auto
           formLayout: 'id,avatarUrl, name|age|sex, graduated|state|state, loveId|loveName|loveName, info, birthday|luckTime, resumeUrl, createTime', // 弹窗表单布局设置
-          quickFilterSpan: 3
+          quickFilterSpan: 'auto' // 或者数字代表快筛有几列
         },
         beforeReset({query}) {
           return Promise.resolve()
@@ -310,14 +311,19 @@ export default {
       defaultQueryOfCreatedTime: [monthAgo, now],
       ...staticDict,
       loveIdQuickFilterConfig: {
-        onClick: (model, filter, filtersMap) => {
+        onClick: ({model, filter, filters}) => {
           if (this.params.enableCascading === true && !util.isEmpty(model.state)) {
             filter.props.tableOption.addCond({col: 'state', opt: 'in', val: model.state})
           } else {
             filter.props.tableOption.removeCond('state')
           }
         },
-        onChange: (val, model, filter, filtersMap) => {
+        onChange: ({val, model, filter, filters, refs}) => {
+          const foeIdFilter = filters['foeId']
+          debugger
+          foeIdFilter.val = null
+          const foeIdRef = refs['foeId']
+          foeIdRef.getOptions(true)
           ElMessage.info(`仰慕者快筛项值更新:${val}`)
         }
       }

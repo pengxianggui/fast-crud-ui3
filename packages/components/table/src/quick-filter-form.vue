@@ -1,14 +1,13 @@
 <template>
   <el-form ref="quickFilterForm" :inline="true" :label-width="option.style.formLabelWidth" class="fc-quick-filter-form"
            :style="formStyle">
-    <el-form-item v-for="filter in visibleFilters"
+    <el-form-item v-for="(filter, index) in visibleFilters"
                   :key="filter.col"
                   :prop="filter.col"
                   :label="filter.label + ':'"
-                  :style="filter.props && filter.props.quickFilterBlock !== false ? formItemBlockStyle : ''"
-                  :class="{'fc-block': filter.props && filter.props.quickFilterBlock !== false}"
+                  :style="getStyle(filter, index)"
                   class="fc-quick-filter-form-item">
-      <component :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
+      <component :ref="filter.col" :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
                  @change="handleChange(filter)" @click="handleClick(filter)"/>
     </el-form-item>
     <slot></slot>
@@ -17,7 +16,7 @@
 
 <script>
 import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
-import {buildGridTemplateAreas, isFunction} from "../../../util/util.js";
+import {isFunction, unwrapArr} from "../../../util/util.js";
 import {FastTableOption} from "../../../index.js";
 
 export default {
@@ -32,8 +31,6 @@ export default {
   },
   data() {
     return {
-      showNum: 3, // 收缩展示数量
-      showFormItems: [] // 显示的formItem, 元素对象格式为 {block: Boolean}
     }
   },
   computed: {
@@ -59,18 +56,17 @@ export default {
     formStyle() {
       const rowSpan = this.option.style.quickFilterSpan
       const gridGap = this.option.style.quickFilterGridGap
-      const gridTemplateAreas = buildGridTemplateAreas(rowSpan, this.showFormItems)
+      // 1.5.18 利用grid实现自动适应列数(quickFilterSpan=auto)，并修复部分组件(如select)被挤压
+      const gridTemplateColumns = (rowSpan === 'auto' ? 'repeat(auto-fill, minmax(380px, 1fr))' : `repeat(${rowSpan}, minmax(0, 1fr))`);
       return {
         display: 'grid',
-        gridTemplateColumns: `repeat(${rowSpan}, 1fr)`,
-        gridTemplateAreas: gridTemplateAreas,
+        gridTemplateColumns: gridTemplateColumns,
         gap: gridGap
       }
     },
     formItemBlockStyle() {
-      const rowSpan = this.option.style.quickFilterSpan
       return {
-        gridColumn: `span ${rowSpan}`
+        gridColumn: `1 / -1` // grid独占一行
       }
     },
     formModel() {
@@ -79,31 +75,35 @@ export default {
       return model
     }
   },
-  mounted() {
-    this.$nextTick(() => {
-      if (this.$refs.quickFilterForm) {
-        const formItemEls = this.$refs.quickFilterForm.$el.querySelectorAll(".el-form-item")
-        this.showFormItems = Array.prototype.map.call(formItemEls, e => {
-          return {
-            block: e.classList.contains('fc-block')
-          }
-        })
-      }
-    })
-  },
   methods: {
+    getStyle(filter, index) {
+      const style = {
+        order: (index + 1) * 10
+      }
+      if (filter.props && filter.props.quickFilterBlock !== false) {
+        return {
+          ...style,
+          ...this.formItemBlockStyle
+        }
+      }
+      return style
+    },
     handleChange(filter) {
       const {props: {quickFilterConfig = {}}} = filter
       const {onChange} = quickFilterConfig
       if (!isFunction(onChange)) {
         return
       }
-      const filtersMap = this.filters.reduce((result, item) => {
-        result[item.col] = item
-        return result
-      }, {})
+      const _this = this
+      const filters = {}
+      const refs = {}
+      this.visibleFilters.forEach(filter => {
+        const col = filter.col
+        filters[col] = filter
+        refs[col] = unwrapArr(_this.$refs[col])
+      })
       const context = this.option.context
-      onChange.call(context, filter.val, this.formModel, filter, filtersMap)
+      onChange.call(context, {val: filter.val, model: this.formModel, filter: filter, filters: filters, refs: refs})
     },
     handleClick(filter) {
       const {props: {quickFilterConfig = {}}} = filter
@@ -111,12 +111,16 @@ export default {
       if (!isFunction(onClick)) {
         return
       }
-      const filtersMap = this.filters.reduce((result, item) => {
-        result[item.col] = item
-        return result
-      }, {})
+      const _this = this
+      const filters = {}
+      const refs = {}
+      this.visibleFilters.forEach(filter => {
+        const col = filter.col
+        filters[col] = filter
+        refs[col] = unwrapArr(_this.$refs[col])
+      })
       const context = this.option.context
-      onClick.call(context, this.formModel, filter, filtersMap)
+      onClick.call(context, {val: filter.val, model: this.formModel, filter: filter, filters: filters, refs: refs})
     }
   }
 }

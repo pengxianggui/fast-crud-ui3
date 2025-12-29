@@ -181,7 +181,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             showLength: showLength,
-            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除 TODO 1.5.16 针对FastTableColumn* props中定义的属性，而又不希望透传给内置控件的, 应当在FastTableColumn*中声明, 而不是在这里设置"黑名单"
+            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除 TODO 1.5.19 针对FastTableColumn* props中定义的属性，而又不希望透传给内置控件的, 应当在FastTableColumn*中声明, 而不是在这里设置"黑名单"
             props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption', 'quickFilterConfig'])
             // props: leftProp
         }

@@ -10,6 +10,7 @@ const defaultQueryConfig = {
         clearable: true,
         filterable: true,
         multiple: true,
+        collapseTags: true, // 默认合并
         placeholder: '请选择..'
     },
     condMapFn: (cond) => {

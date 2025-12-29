@@ -55,7 +55,7 @@ export default {
   },
   async mounted() {
     if (this.options instanceof FastTableOption) {
-      await this.buildSelectOptions()
+      await this.getOptions()
     }
   },
   computed: {
@@ -69,12 +69,16 @@ export default {
     }
   },
   methods: {
-    buildSelectOptions() {
+    /**
+     * 获取options选项值，只有当options为FastTableOption类型时此方法有效
+     * @param force {boolean} 是否强制刷新, 前端有缓存, 默认为false, 可能会从缓存取
+     */
+    getOptions(force = false) {
       if (!(this.options instanceof FastTableOption)) {
         return
       }
       const query = new Query().setDistinct().setCols([this.valKey, this.labelKey]);
-      this.options._buildSelectOptions(query, this.valKey, this.labelKey).then(options => {
+      this.options._buildSelectOptions(query, this.valKey, this.labelKey, force).then(options => {
         this.nativeOptions = options
       }).catch(err => {
         console.error(err)

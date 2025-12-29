@@ -193,14 +193,14 @@ class FastTableOption {
     };
     /**
      * 样式配置
-     * @type {{flexHeight: boolean, quickFilterGridGap: string, formLabelWidth: string, formLayout: null, quickFilterSpan: number, bodyRowHeight: string, size: string}}
+     * @type {{flexHeight: boolean, quickFilterGridGap: string, formLabelWidth: string, formLayout: null, quickFilterSpan: number|string, bodyRowHeight: string, size: string}}
      */
     style = {
         flexHeight: false, // 表格是否使用弹性高度: 自适应高度, 撑满全屏
         bodyRowHeight: '50px', // 行高
         size: 'default',  // 尺寸
         formLabelWidth: 'auto', // 表单标签宽度:
-        formLayout: null, // 表单布局: 只作用于form表单, 对快筛和行内编辑无效
+        formLayout: null, // 表单布局: 只作用于form表单, 对快筛和行内编辑无效。内容为列名、|、和, 组成的字符，指示新增、编辑时表单的控件布局。不指定则默认按顺序
         quickFilterSpan: 3, // 快筛每行几个筛选项
         quickFilterGridGap: '10px 20px', // 快筛项之间的间距(grid布局中的gap)
     };
@@ -515,6 +515,7 @@ class FastTableOption {
      * 向内置条件组中增加条件
      * @param cond
      * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
+     * @return {FastTableOption} 返回当前对象
      */
     addCond(cond, repeatable = false) {
         const c = Cond.build(cond)
@@ -522,11 +523,13 @@ class FastTableOption {
             this.removeCond(c.col)
         }
         this.conds.push(c)
+        return this
     }
 
     /**
      * 从内置条件组中移除条件
-     * @param col
+     * @param col {string} 字段名
+     * @return {FastTableOption} 返回当前对象
      */
     removeCond(col) {
         for (let i = this.conds.length - 1; i >= 0; i--) {
@@ -534,6 +537,7 @@ class FastTableOption {
                 this.conds.splice(i, 1)
             }
         }
+        return this
     }
 
     /**
@@ -727,12 +731,16 @@ class FastTableOption {
      * @param query
      * @param valKey
      * @param labelKey
+     * @param forceRefresh 是否强制刷新，若true则跳过缓存
      * @return {Promise<*>}
      */
-    _buildSelectOptions(query, valKey, labelKey) {
+    _buildSelectOptions(query, valKey, labelKey, forceRefresh = false) {
         return new Promise((resolve, reject) => {
             const key = `OPTIONS:${this.id}_${valKey}_${labelKey}_` + md5(JSON.stringify(util.sortKey(query)))
-            let options = getFromSessionStorage(key)
+            let options
+            if (!forceRefresh) {
+                options = getFromSessionStorage(key)
+            }
             if (util.isArray(options)) {
                 try {
                     resolve(options)

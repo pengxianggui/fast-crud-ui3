@@ -150,6 +150,18 @@ export function isArray(val) {
 }
 
 /**
+ * 若为数组, 则将其中的第一个元素提取出来并返回(若为空数组，则返回null)；否则返回原值。
+ * @param arr {any}
+ * @return {*|null}
+ */
+export function unwrapArr(arr) {
+    if (isArray(arr)) {
+        return arr.length > 0 ? arr[0] : null
+    }
+    return arr
+}
+
+/**
  * 是否是布尔值
  * @param val {any}
  * @return {boolean}
@@ -726,42 +738,6 @@ export function extractEventName(key) {
     if (isEmpty(key) || !key.startsWith('on')) return null;
     const raw = key.slice(2);
     return raw.charAt(0).toLowerCase() + raw.slice(1); // 保留驼峰
-}
-
-/**
- * 生成css grid布局中的gridTemplateAreas值
- * @param rowNum 每行的数量
- * @param totalItems 对象数组或者普通数组, 如果是对象数组, 则判断每个元素是否含有block, 若含有则将当前行全部命名为相同的区域名；若非对象数组或者不含有block则维持原逻辑
- * @return {string} 可直接用于grid-template-areas
- */
-export function buildGridTemplateAreas(rowNum, totalItems) {
-    const rows = [];
-    let rowCharCode = 97; // 'a'
-    let count = 0;
-
-    while (count < totalItems.length) {
-        const row = [];
-        const item = totalItems[count];
-
-        if (item && typeof item === 'object' && item.block) {
-            // 整行都是同一块，rowNum 列都填相同区域名
-            for (let j = 0; j < rowNum; j++) {
-                row.push(String.fromCharCode(rowCharCode) + (j + 1));
-            }
-            count += 1; // block行只占1个元素
-        } else {
-            // 普通行，按照原逻辑填充
-            for (let j = 0; j < rowNum; j++) {
-                row.push(String.fromCharCode(rowCharCode) + (j + 1));
-                count++;
-            }
-        }
-
-        rows.push(`"${row.join(' ')}"`);
-        rowCharCode++;
-    }
-
-    return rows.join('\n');
 }
 
 /**
