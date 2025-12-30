@@ -568,7 +568,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        ElMessage.success(`成功新增${postData.length}条记录`); // TODO 成功几条使用后端返回的数据
+                        ElMessage.success(`成功新增${res}条记录`);
                     });
                 }).catch(err => {
                     reject(err);
@@ -615,7 +615,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        ElMessage.success(`成功更新${postData.length}条记录`); // TODO 成功几条使用后端返回的数据
+                        ElMessage.success(`成功更新${res}条记录`);
                     });
                 }).catch(err => {
                     reject(err);
