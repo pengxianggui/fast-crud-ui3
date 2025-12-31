@@ -181,9 +181,8 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             showLength: showLength,
-            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除 TODO 1.5.19 针对FastTableColumn* props中定义的属性，而又不希望透传给内置控件的, 应当在FastTableColumn*中声明, 而不是在这里设置"黑名单"
-            props: filterConflictKey(leftProp, columnVNode, ['quickFilterCheckbox', 'quickFilterBlock', 'tableOption', 'quickFilterConfig'])
-            // props: leftProp
+            // 对于FastTableColumn*中定义了的prop, 从leftProp中移除
+            props: getCustomConfigProps(leftProp, columnVNode)
         }
         try {
             if (filter !== false) {
@@ -201,17 +200,18 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
 
 
 /**
- * 排除掉props中那些已经在vnode里静态定义过的属性(包括事件), 视为columnVNode的，无需透传给底层控件
+ * 获取最终customConfig的props属性。
+ *
+ * 排除掉props中那些已经在vnode里静态定义过的属性(包括事件), 视为columnVNode的，无需透传给底层控件, 除非声明dispatch:true, 表示需要分发到控件配置里
  *
  * 例如:
  * props中有属性onChange, vnode里在emits中定义了change(columnVNode.type.emits或vnode.type.mixins[*].emits), 则返回的对象中不会包含onChange。
  * 针对事件的过滤，主要目的是预防vnode对应的组件中定义了透传给底层控件的事件，却被传入的覆盖，导致内部的不触发。
  * @param props 属性键值对象
  * @param columnVNode vnode节点
- * @param ignoreKeys 忽略的属性
  * @return 返回过滤后新的props属性
  */
-function filterConflictKey(props, columnVNode, ignoreKeys) {
+function getCustomConfigProps(props, columnVNode) {
     const {type: {emits = [], props: _props, mixins = []} = {}} = columnVNode
     // 定义的属性
     const allProps = {
@@ -233,17 +233,12 @@ function filterConflictKey(props, columnVNode, ignoreKeys) {
 
     const newProps = {}
     for (const [key, value] of Object.entries(props)) {
-        if (ignoreKeys.indexOf(key) > -1) {
+        // 通过在FastTableColumn*中定义的prop中声明一个自定义属性dispatch为true，表示此属性需要分发到控件上，此法可替代目前的冲突策略
+        if (allProps[key]?.dispatch === true) {
             newProps[key] = value
             continue
         }
-
-        // 通过在FastTableColumn*中定义的prop中声明一个自定义属性skip为true，表示此属性需要透传到控件上，此法可替代目前的冲突策略。不过还没考虑清楚，先不启用
-        // if (_props[key]?.skip === true) {
-        //     newProps[key] = value
-        //     continue
-        // }
-
+        // column vnode中定义的属性默认不向下透传
         if (allPropKeys.indexOf(key) > -1) {
             continue
         }

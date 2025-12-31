@@ -435,7 +435,7 @@ export default {
       if (type === 'code') {
         window.open('https://github.com/pengxianggui/fast-crud-ui3/blob/main/src/example/full/MyTable.vue', '_blank')
       } else if (type === 'doc') {
-        window.open('http://pengxg.cc/tags/fast-crud', '_blank')
+        window.open('http://fastcrud-doc.pengxg.cc', '_blank')
       }
     },
     tryPick(multiple) {

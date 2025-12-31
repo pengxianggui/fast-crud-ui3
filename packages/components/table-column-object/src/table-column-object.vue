@@ -56,7 +56,8 @@ export default {
     },
     tableOption: {
       type: [FastTableOption, Function],
-      required: true
+      required: true,
+      dispatch: true // 分发到底层组件里
     }
   },
   methods: {

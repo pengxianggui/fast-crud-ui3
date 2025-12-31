@@ -86,7 +86,8 @@
       <dynamic-filter-list :filters="dynamicFilters" :size="option.style.size" @search="pageLoad"></dynamic-filter-list>
     </div>
     <div class="fc-fast-table-wrapper">
-      <el-table v-bind="$attrs"
+      <el-table border
+                v-bind="$attrs"
                 :data="list"
                 ref="table"
                 :row-style="rowStyle"
@@ -100,8 +101,7 @@
                 v-loading="loading"
                 :key="tableKey"
                 :height="heightTable"
-                :size="option.style.size"
-                border>
+                :size="option.style.size">
         <el-table-column type="selection" width="55" v-if="enableMulti"/>
         <el-table-column label="序号" :min-width="indexWith" v-if="enableIndex">
           <template #default="{ $index }">
@@ -256,7 +256,9 @@ export default {
     },
     // 行样式
     rowStyle() {
+      const {rowStyle = {}} = this.$attrs
       return {
+        ...rowStyle,
         height: this.option.style.bodyRowHeight
       }
     },
@@ -1228,6 +1230,10 @@ export default {
   }
 
   :deep(.el-table__cell) {
+    padding: 0;
+  }
+
+  :deep(th.fc-table-column > .cell) {
     padding: 0;
   }
 

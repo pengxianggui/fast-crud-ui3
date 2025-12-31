@@ -28,11 +28,14 @@ export default {
   white-space: nowrap;
   height: 38px;
   line-height: 38px;
-  margin: 0 10px;
+  //margin: 0 10px;
 }
 
 .fc-table-column-head-cell.filter {
   cursor: pointer;
+  &:hover {
+    background-color: #f8f8f8;
+  }
 }
 
 .sort-icon {

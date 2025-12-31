@@ -31,17 +31,32 @@ export default {
             type: [Boolean, Number],
             default: () => true
         },
-        // 此列是否支持快筛
+        /**
+         * 此列是否支持快筛。若为数字，则表示快筛项目的排序(值越小，优先级越高)
+         */
         quickFilter: {
             type: [Boolean, Number],
             default: () => false
         },
+        /**
+         * 快筛项是否独占一行
+         */
         quickFilterBlock: {
             type: Boolean,
-            default: () => false
+            default: () => false,
+            dispatch: true // 分发到底层组件里
         },
-        // 快筛更多配置: 解决筛选项级联问题
-        quickFilterConfig: Object, // {onChange: Function, onClick: Function}
+        /**
+         * @type {import('vue').PropType<{
+         *  onChange?: (ctx: {val: any, model: Object, filter: import('../model/filterComponentConfig').default, filters: Object, refs: Object}) => void,
+         *  onClick?: (ctx: {model: Object, filter: Object, filters: Object, refs: Object}) => void
+         * }>}
+         */
+        quickFilterConfig: {
+            type: Object,
+            default: () => ({}),
+            dispatch: true // 分发到底层组件里
+        },
         // 此列是否支持动筛: 若为false, 则列头不可点击
         dynamicFilter: {
             type: Boolean,

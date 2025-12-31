@@ -56,7 +56,8 @@ export default {
     },
     quickFilterCheckbox: {
       type: Boolean,
-      default: () => false
+      default: () => false,
+      dispatch: true // 分发到底层组件里
     }
   },
   data() {
