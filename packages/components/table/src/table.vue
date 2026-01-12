@@ -480,15 +480,20 @@ export default {
             post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
               this.exitEditStatus();
               const loadSuccess = this.option.loadSuccess;
-              loadSuccess.call(context, {query: this.pageQuery, res: res}).then(({records = [], total = 0}) => {
-                this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
-                this.total = total;
-                nextTick(() => {
-                  this.setChoseRow(0); // 默认选中第一行
-                  this.syncRowSelection(); // 同步可能得选中状态
+              // TODO FIXME 这里如果不这么做，直接在下面赋值，有时莫名其妙会触发错误：Uncaught (in promise) NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node
+              //  至今不知道具体原因，因为同样的表格、响应数据，有时又不会
+              this.list = []
+              this.$nextTick(() => {
+                loadSuccess.call(context, {query: this.pageQuery, res: res}).then(({records = [], total = 0}) => {
+                  this.list = records.map(r => toTableRow(r, this.columnConfig, 'normal', 'inline'));
+                  this.total = total;
+                  nextTick(() => {
+                    this.setChoseRow(0); // 默认选中第一行
+                    this.syncRowSelection(); // 同步可能得选中状态
+                  })
+                }).finally(() => {
+                  resolve()
                 })
-              }).finally(() => {
-                resolve()
               })
             }).catch(err => {
               const loadFail = this.option.loadFail;

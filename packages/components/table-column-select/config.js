@@ -5,7 +5,7 @@ import Opt from '../../model/opt.js'
 const defaultQueryConfig = {
     component: 'fast-select',
     opt: Opt.IN,
-    val: [], // 默认值
+    val: null,
     props: {
         clearable: true,
         filterable: true,
@@ -40,7 +40,7 @@ export default {
         let component = 'fast-select';
 
         if (type === 'quick') {
-            val = ternary(isUndefined(defaultVal), defaultQueryConfig.val, defaultVal);
+            val = ternary(isUndefined(defaultVal), validProps.multiple === true ? [] : null, defaultVal);
             if (validProps.quickFilterCheckbox !== false) {
                 component = 'fast-checkbox-group';
             }
