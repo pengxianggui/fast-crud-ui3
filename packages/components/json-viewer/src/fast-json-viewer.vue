@@ -6,7 +6,7 @@
                 :expandDepth="expandDepth"
                 :theme="theme"
                 v-if="isJson"></JsonViewer>
-    <span style="word-wrap: break-word;" v-else>{{ value }}</span>
+    <span style="word-wrap: break-word; white-space: pre-line;" v-else>{{ value }}</span>
   </div>
 </template>
 

@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import {isArray} from '../../../util/util.js'
 export default {
   name: "fast-checkbox-group",
   emits: ['update:modelValue', 'change'],
@@ -23,7 +24,9 @@ export default {
     },
     options: {
       type: Array,
-      required: true
+      default: () => {
+        return []
+      }
     },
     labelKey: {
       type: String,
@@ -46,7 +49,7 @@ export default {
   computed: {
     value: {
       get() {
-        return this.modelValue
+        return isArray(this.modelValue) ? this.modelValue : []
       },
       set(val) {
         this.$emit('update:modelValue', val)

@@ -136,7 +136,7 @@
 |--------|---------------|--------------------------------------------------|
 | change | 行内编辑时控件值发生变更时 | `Function<(val, {row, column, $index}) => void>` |
 
-## FastTableColumnTextArea
+## FastTableColumnTextarea
 
 多行文本输入项。`prop`参考`ElInput`
 
