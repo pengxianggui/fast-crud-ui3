@@ -435,8 +435,9 @@ export default {
     /**
      * 分页加载请求
      * @param page 第几页, 可不传(默认为当前页码)
+     * @param tmpConds 临时条件, 用于临时添加条件而不影响快筛、简筛、动筛等状态
      */
-    pageLoad(page) {
+    pageLoad(page, tmpConds = []) {
       if (!this.queryable) {
         return
       }
@@ -447,7 +448,7 @@ export default {
           })
           : Promise.resolve()
       confirmPromise.then(() => {
-        const conds = []
+        const conds = [...tmpConds]
         // 添加快筛条件
         const quickConds = this.quickFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
         conds.push(...quickConds)
