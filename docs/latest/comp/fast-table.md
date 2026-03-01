@@ -78,20 +78,20 @@ FastTable提供了丰富的配置、插槽、方法。
 
 ## 方法
 
-| 方法名              | 说明                         | 类型                                   |
-|------------------|----------------------------|--------------------------------------|
-| addRow           | 新建一行，表格进入新增状态              | `Function<(row) => void>`            |
-| addRows          | 新建多行，表格进入新增状态              | `Function<(rows) => void>`           |
-| addForm          | 弹窗新增，表格进入新增状态              | `Function<(row) => void>`            |
-| updateForm       | 弹窗更新指定行，表格进入更新状态           | `Function<(fatRow) => void>`         |
-| reRender         | 重新渲染表格                     | `Function<() => void>`               |
-| pageLoad         | 分页加载                       | `Function<(page, tmpConds) => void>` |
-| resetFilter      | 重置筛选条件并分页请求                | `Function<() => void>`               |
-| deleteRow        | 删除当前选中行                    | `Function<() => void>`               |
-| deleteRows       | 删除当前勾选行                    | `Function<() => void>`               |
-| setChoseRow      | 手动设置选中行                    | `Function<(index) => void>`          |
-| getChoseRow      | 获取选中行                      | `Function<() => FatRow>`             |
-| getCheckedRows   | 获取勾选行                      | `Function<() => Array<FatRow>>`      |
-| activeBatchEdit  | 激活批量编辑                     | `Function<() => void>`               |
-| cancelEditStatus | 取消编辑(会触发beforeCancel钩子)    | `Function<() => void>`               |
-| exitEditStatus   | 退出编辑状态(不会触发beforeCancel钩子) | `Function<() => void>`               |
+| 方法名              | 说明                         | 类型                              |
+|------------------|----------------------------|---------------------------------|
+| addRow           | 新建一行，表格进入新增状态              | `Function<(row) => void>`       |
+| addRows          | 新建多行，表格进入新增状态              | `Function<(rows) => void>`      |
+| addForm          | 弹窗新增，表格进入新增状态              | `Function<(row) => void>`       |
+| updateForm       | 弹窗更新指定行，表格进入更新状态           | `Function<(fatRow) => void>`    |
+| reRender         | 重新渲染表格                     | `Function<() => void>`          |
+| pageLoad         | 分页加载                       | `Function<() => void>`          |
+| resetFilter      | 重置筛选条件并分页请求                | `Function<() => void>`          |
+| deleteRow        | 删除当前选中行                    | `Function<() => void>`          |
+| deleteRows       | 删除当前勾选行                    | `Function<() => void>`          |
+| setChoseRow      | 手动设置选中行                    | `Function<(index) => void>`     |
+| getChoseRow      | 获取选中行                      | `Function<() => FatRow>`        |
+| getCheckedRows   | 获取勾选行                      | `Function<() => Array<FatRow>>` |
+| activeBatchEdit  | 激活批量编辑                     | `Function<() => void>`          |
+| cancelEditStatus | 取消编辑(会触发beforeCancel钩子)    | `Function<() => void>`          |
+| exitEditStatus   | 退出编辑状态(不会触发beforeCancel钩子) | `Function<() => void>`          |
