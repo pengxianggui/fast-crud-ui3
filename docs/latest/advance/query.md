@@ -14,7 +14,8 @@ export class Query {
     conds = []; // 条件, 结构参考Cond章节
     distinct = false; // 是否distinct去重
     orders = []; // 排序
-    extra = {}; // 扩展字段
+    extra = {}; // 扩展字段: 通过body传参
+    params = {}; // 扩展字段: 通过query传参
 
     constructor() {
     }
@@ -32,6 +33,7 @@ export class PageQuery {
     distinct = false; // 是否distinct去重
     orders = []; // 排序
     extra = {}; // 扩展字段
+    params = {}; // 扩展字段: 通过query传参
     current = 1;
     size = 20;
 
