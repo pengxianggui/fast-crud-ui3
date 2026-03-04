@@ -559,7 +559,7 @@ class FastTableOption {
                 editRows: editRows
             }).then((postData) => {
                 const {insertUrl, batchInsertUrl, insertSuccess, insertFail} = this;
-                const postPromise = (postData.length === 1 ? post(insertUrl, postData[0]) : post(batchInsertUrl, postData))
+                const postPromise = (postData.length === 1 ? post(insertUrl, {}, postData[0]) : post(batchInsertUrl, {}, postData))
                 postPromise.then(res => {
                     resolve();
                     insertSuccess.call(context, {
@@ -606,7 +606,7 @@ class FastTableOption {
                 editRows: editRows
             }).then((postData) => {
                 const {updateUrl, batchUpdateUrl, updateSuccess, updateFail} = this;
-                const postPromise = (postData.length === 1 ? post(updateUrl, postData[0]) : post(batchUpdateUrl, postData))
+                const postPromise = (postData.length === 1 ? post(updateUrl, {}, postData[0]) : post(batchUpdateUrl, {}, postData))
                 postPromise.then(res => {
                     resolve();
                     updateSuccess.call(context, {
@@ -641,7 +641,7 @@ class FastTableOption {
      */
     _list(query, config) {
         this.conds.forEach(c => query.addCond(c)) // 内置conds添加
-        return post(this.listUrl, query.toJson(), config)
+        return post(this.listUrl, {}, query.toJson(), config)
     }
 
     /**
@@ -667,7 +667,7 @@ class FastTableOption {
                     handleOk: ({columns, all = false}) => {
                         // 导出数据
                         const {title, exportUrl, exportSuccess, exportFail} = this;
-                        post(exportUrl, {
+                        post(exportUrl, {},{
                             columns: columns,
                             all: all, // false-当前页; true-全部
                             pageQuery: pageQuery
@@ -718,7 +718,7 @@ class FastTableOption {
         }
         const {existsUrl} = this
         return new Promise((resolve, reject) => {
-            post(existsUrl, conds).then(result => {
+            post(existsUrl, {}, conds).then(result => {
                 resolve(result)
             }).catch(err => {
                 reject(err)

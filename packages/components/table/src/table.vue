@@ -478,7 +478,7 @@ export default {
               if (this.enableFilterCache) {
                 this.stashFilter() // 缓存分页筛选条件
               }
-              post(this.option.pageUrl, this.pageQuery.toJson()).then(res => {
+              post(this.option.pageUrl, this.pageQuery.params, this.pageQuery.toJson()).then(res => {
                 this.exitEditStatus();
                 const loadSuccess = this.option.loadSuccess;
                 // TODO FIXME 这里如果不这么做，直接在下面赋值，有时莫名其妙会触发错误：Uncaught (in promise) NotFoundError: Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node
@@ -668,7 +668,7 @@ export default {
               return
             }
             const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this.option;
-            const postPromise = (postData.length === 1 ? post(deleteUrl, postData[0]) : post(batchDeleteUrl, postData))
+            const postPromise = (postData.length === 1 ? post(deleteUrl, {}, postData[0]) : post(batchDeleteUrl, {}, postData))
             postPromise.then(res => {
               this.checkedRows.length = 0 // 删除成功则清除已勾选数据
               this.pageLoad() // 刷新分页数据

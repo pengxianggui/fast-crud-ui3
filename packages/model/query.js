@@ -27,10 +27,15 @@ class Query {
      */
     orders = [];
     /**
-     * 扩展字段
+     * 扩展字段。通过body传输
      * @type {{}}
      */
     extra = {};
+    /**
+     * 扩展参数。通过query传输
+     * @type {{}}
+     */
+    params = {};
 
     constructor() {
     }

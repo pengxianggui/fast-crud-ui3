@@ -4,15 +4,17 @@ import FastTableOption from "../model/fastTableOption.js";
 /**
  * 发起post请求
  * @param url
+ * @param params
  * @param data
  * @param config
  * @return {*}
  */
-export function post(url, data, config = {}) {
+export function post(url, params, data, config = {}) {
     return FastTableOption.$http.post(url, data, {
         headers: {
             'Fc-Request-Id': uuidv4()
         },
+        params: params,
         ...config
     })
 }
