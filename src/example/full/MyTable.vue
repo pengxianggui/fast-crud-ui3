@@ -187,6 +187,7 @@ export default {
          */
         beforeLoad({query}) {
           if (this.params.pageLoadable) {
+            query.params = { p1: 'query1', p2: 'query2'}
             return Promise.resolve();
           }
           this.showMsg('warning', '未勾选【允许加载分页】, 不会分页请求')
