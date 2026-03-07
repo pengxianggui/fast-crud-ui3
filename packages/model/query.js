@@ -58,7 +58,7 @@ class Query {
      */
     addCond(cond, repeatable = true) {
         if (repeatable === false) {
-            this.removeCond(c.col)
+            this.removeCond(cond.col)
         }
         this.conds.push(cond);
         return this;
