@@ -69,10 +69,7 @@ export default {
     option: FastTableOption,
     filter: FilterComponentConfig,
     order: [String],
-    conds: {
-      type: Array,
-      default: () => []
-    }
+    query: Query
   },
   mounted() {
     console.log(this.localFilter)
@@ -116,7 +113,8 @@ export default {
 
       const distinctQuery = new Query().setDistinct().setCols([col]);
       if (this.reuseCond) {
-        distinctQuery.setConds(this.conds);
+        distinctQuery.setConds(this.query.conds);
+        distinctQuery.setParams(this.query.params);
       }
       this.option._list(distinctQuery, {signal: this.distinctAbortCtrl.signal}).then((res) => {
         if (res.length > 1000) { // 为防止页面卡死, 最多显示1000个

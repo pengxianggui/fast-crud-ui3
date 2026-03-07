@@ -712,7 +712,7 @@ export default {
           option: this.option,
           filter: dynamicFilter,
           order: order,
-          conds: this.pageQuery.conds,
+          query: this.pageQuery,
         },
         dialogProps: {
           width: '480px',

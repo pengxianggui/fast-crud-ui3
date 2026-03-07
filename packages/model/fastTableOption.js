@@ -210,7 +210,7 @@ class FastTableOption {
      */
     render; // 渲染函数, 当前table需要被pick时有用
     /**
-     * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消
+     * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消。TODO 支持一个返回Conds数组的函数
      * @type {Cond[]}
      */
     conds = []; // 固定的筛选条件，内部无法取消
@@ -641,7 +641,7 @@ class FastTableOption {
      */
     _list(query, config) {
         this.conds.forEach(c => query.addCond(c)) // 内置conds添加
-        return post(this.listUrl, {}, query.toJson(), config)
+        return post(this.listUrl, query.params, query.toJson(), config)
     }
 
     /**
@@ -667,7 +667,7 @@ class FastTableOption {
                     handleOk: ({columns, all = false}) => {
                         // 导出数据
                         const {title, exportUrl, exportSuccess, exportFail} = this;
-                        post(exportUrl, {},{
+                        post(exportUrl, pageQuery.params,{
                             columns: columns,
                             all: all, // false-当前页; true-全部
                             pageQuery: pageQuery

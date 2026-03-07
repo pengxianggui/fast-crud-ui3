@@ -75,6 +75,16 @@ class Query {
     }
 
     /**
+     * 设置query参数
+     * @param params
+     * @return {Query}
+     */
+    setParams(params) {
+        this.params = params;
+        return this;
+    }
+
+    /**
      * 设置条件。会覆盖已有条件！
      * @param conds {Array[Cond]} 条件数组
      * @return {Query} 返回当前对象
