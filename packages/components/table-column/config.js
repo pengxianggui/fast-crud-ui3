@@ -7,7 +7,6 @@ const defaultQueryConfig = {
     val: null, // 默认值
     props: {
         clearable: true,
-        placeholder: '请输入..'
     },
     condMapFn: (cond) => {
         const operators = {

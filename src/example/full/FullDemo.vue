@@ -1,4 +1,5 @@
 <template>
+  <el-config-provider :locale="elementLocale">
   <div class="demo">
     <div class="param">
       <h5>行为配置</h5>
@@ -26,6 +27,10 @@
       </el-checkbox>
 
       <h5>外观配置</h5>
+      <div class="line">
+        <label>语言</label>
+        <fast-select class="comp" size="small" :options="langOptions" v-model="params.lang" @change="(val) => changeLang(val)"/>
+      </div>
       <div class="line">
         <label>尺寸</label>
         <fast-select class="comp" size="small" :options="sizeOptions" v-model="params.size" @change="(val) => updateOptionStyle('size', val)"/>
@@ -61,20 +66,27 @@
 
     <my-table ref="myTable" :params="params" class="table"></my-table>
   </div>
+  </el-config-provider>
 </template>
 
 <script>
 import MyTable from "./MyTable.vue";
 import FastSelect from "../../../packages/components/select/src/fast-select.vue";
 import staticDict from './dict'
+import {setLanguage} from "../../../packages/index.js";
+import {ElConfigProvider} from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import en from 'element-plus/es/locale/lang/en';
 
 export default {
   name: "FastTableDemo",
-  components: {FastSelect, MyTable},
+  components: {FastSelect, MyTable, ElConfigProvider},
   data() {
     return {
       sizeOptions: staticDict.sizeOptions,
+      langOptions: staticDict.langOptions,
       params: {
+        lang: 'zh-cn',
         editType: 'inline',
         // 允许分页加载
         pageLoadable: true,
@@ -131,12 +143,21 @@ export default {
       }
     }
   },
+  computed: {
+    elementLocale() {
+      return this.params.lang === 'zh-cn' ? zhCn : en
+    }
+  },
   methods: {
     updateOption(key, val, refresh = false) {
       this.$refs.myTable.updateOption(key, val, refresh)
     },
     updateOptionStyle(key, val, refresh = true) {
       this.$refs.myTable.updateOptionStyle(key, val, refresh)
+    },
+    changeLang(val) {
+      this.params.lang = val
+      setLanguage(val)
     }
   }
 }

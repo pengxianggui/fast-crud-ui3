@@ -37,9 +37,10 @@ const stateOptions = [
 ]
 
 const sizeOptions = [{label: '小', value: 'small'}, {label: '中/默认', value: 'default'}, {label: '大', value: 'large'}]
-
+const langOptions = [{label: '中文', value: 'zh-cn'}, {label: '英文', value: 'en'}]
 export default {
     sexOptions,
     stateOptions,
-    sizeOptions
+    sizeOptions,
+    langOptions
 }

@@ -71,6 +71,7 @@
       </template>
     </el-table-column>
     <template #button="scope">
+      <el-button @click="changeLang">changeLang</el-button>
       <el-button :size="scope.size" @click="tryPick(false)">Try Pick</el-button>
       <el-button :size="scope.size" @click="tryPick(true)">Try Pick(多选)</el-button>
       <!--      <div class="sick-msg">这是一段提示</div>-->
@@ -85,7 +86,14 @@
 <script>
 import {h, markRaw} from 'vue'
 import {ElMessage, ElMessageBox} from 'element-plus';
-import {FastTableColumnImg, FastTableColumn, FastTableColumnSelect, FastTableOption, util} from "../../../packages";
+import {
+  FastTableColumnImg,
+  FastTableColumn,
+  FastTableColumnSelect,
+  FastTableOption,
+  util,
+  setLanguage
+} from "../../../packages";
 import staticDict from './dict'
 import {pick} from "../../../packages/util/pick";
 import {Cpu, Link, Plus} from "@element-plus/icons-vue";
@@ -331,6 +339,9 @@ export default {
     }
   },
   methods: {
+    changeLang() {
+      setLanguage('en')
+    },
     updateOption(key, val, refresh = false) {
       this.tableOption[key] = val;
       if (refresh) {
