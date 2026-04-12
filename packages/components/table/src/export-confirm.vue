@@ -2,12 +2,12 @@
   <div class="export-confirm">
     <el-table :data="columns">
 <!--      <el-table-column prop="col" label="字段"/>-->
-      <el-table-column prop="label" label="标题行">
+      <el-table-column prop="label" :label="t('crud.exports.titleRow')">
         <template #default="{row}">
-          <el-input v-model="row.label" size="default" placeholder="请输入名称"></el-input>
+          <el-input v-model="row.label" size="default" :placeholder="t('crud.exports.enterName')"></el-input>
         </template>
       </el-table-column>
-      <el-table-column prop="exportable" label="是否导出">
+      <el-table-column prop="exportable" :label="t('crud.exports.exportable')">
         <template #default="{row}">
           <el-switch v-model="row.exportable"></el-switch>
         </template>
@@ -15,17 +15,24 @@
     </el-table>
     <div class="footer">
       <span class="flex"></span>
-      <el-button :icon="Download" size="default" type="primary" plain @click="exportData(false)">导出当前页</el-button>
-      <el-button :icon="Download" size="default" type="primary" @click="exportData(true)">导出全部</el-button>
+      <el-button :icon="Download" size="default" type="primary" plain @click="exportData(false)">{{ t('crud.exports.exportCurrentPage') }}</el-button>
+      <el-button :icon="Download" size="default" type="primary" @click="exportData(true)">{{ t('crud.exports.exportAll') }}</el-button>
     </div>
   </div>
 </template>
 
 <script>
 import {Download} from "@element-plus/icons-vue";
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: "export-confirm",
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   computed: {
     Download() {
       return Download

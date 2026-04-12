@@ -3,6 +3,7 @@ import {isString, isUndefined} from "../util/util.js"
 import {escapeValToLabel} from "../util/escape.js"
 import Cond from './cond.js'
 import Opt from './opt.js'
+import { t } from '../i18n/index.js'
 
 /**
  * 筛选组件配置
@@ -108,7 +109,7 @@ class FilterComponentConfig {
             const props = this.props
             if (!this.isEffective()) {
                 this.disabled = true
-                this.condMsg = `[${label}]无有效值`
+                this.condMsg = t('crud.filter.cond.noEffectiveVal', { label })
                 resolve()
                 return
             }
@@ -129,40 +130,40 @@ class FilterComponentConfig {
                                 text = `${label} ${opt} ${showVal}`;
                                 break;
                             case Opt.LIKE:
-                                text = `${label} 包含'${showVal}'`;
+                                text = `${label} ${t('crud.filter.cond.like')} '${showVal}'`;
                                 break;
                             case Opt.LLIKE:
-                                text = `${label}以'${showVal}'结尾`
+                                text = `${label} ${t('crud.filter.cond.leftLike')} '${showVal}'`
                                 break;
                             case Opt.RLIKE:
-                                text = `${label}以'${showVal}'打头`
+                                text = `${label} ${t('crud.filter.cond.rightLike')} '${showVal}'`
                                 break;
                             case Opt.NLIKE:
-                                text = `${label} 不包含'${showVal}'`;
+                                text = `${label} ${t('crud.filter.cond.notLike')} '${showVal}'`;
                                 break;
                             case Opt.IN:
-                                text = `${label} 包含 ${showVal}`;
+                                text = `${label} ${t('crud.filter.cond.in')} ${showVal}`;
                                 break;
                             case Opt.NIN:
-                                text = `${label} 不包含 ${showVal}`;
+                                text = `${label} ${t('crud.filter.cond.notIn')} ${showVal}`;
                                 break;
                             case Opt.NULL:
-                                text = `${label} 为null`;
+                                text = `${label} ${t('crud.filter.cond.isNull')}`;
                                 break;
                             case Opt.NNULL:
-                                text = `${label} 不为null`;
+                                text = `${label} ${t('crud.filter.cond.notNull')}`;
                                 break;
                             case Opt.EMPTY:
-                                text = `${label} 为空`;
+                                text = `${label} ${t('crud.filter.cond.isEmpty')}`;
                                 break;
                             case Opt.NEMPTY:
-                                text = `${label} 不为空`;
+                                text = `${label} ${t('crud.filter.cond.notEmpty')}`;
                                 break;
                             case Opt.BTW:
-                                text = `${label} 在${showVal}之间`;
+                                text = `${label} ${t('crud.filter.cond.between')} ${showVal}`;
                                 break;
                             default:
-                                text = `${label}未知的比较符`
+                                text = `${label} ${t('crud.filter.cond.unknown')}`
                                 break
                         }
                         resolve(text)
@@ -178,7 +179,7 @@ class FilterComponentConfig {
                 for (let i = 0; i < texts.length; i++) {
                     condMsg += texts[i]
                     if (i !== texts.length - 1) {
-                        condMsg += " 且 "
+                        condMsg += ` ${t('crud.filter.and')} `
                     }
                 }
                 this.condMsg = condMsg

@@ -21,8 +21,8 @@
       </el-row>
     </el-form>
     <div class="fc-table-edit-form-btns">
-      <el-button :size="option.style.size" type="primary" @click="submit">保存</el-button>
-      <el-button :size="option.style.size" @click="cancel">取消</el-button>
+      <el-button :size="option.style.size" type="primary" @click="submit">{{ t('crud.save') }}</el-button>
+      <el-button :size="option.style.size" @click="cancel">{{ t('crud.cancel') }}</el-button>
     </div>
   </div>
 </template>
@@ -32,10 +32,18 @@ import {ElMessage} from 'element-plus';
 import FastTableOption from "../../../model/fastTableOption.js";
 import {isEmpty} from "../../../util/util";
 import {colEditable} from "./util";
+import { useI18n } from 'vue-i18n';
+import { t } from '../../../i18n/index.js';
 
 export default {
   name: "row-form",
   emits: ['ok', 'cancel'],
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     option: FastTableOption,
     config: Object,
@@ -114,7 +122,7 @@ export default {
         })
       }).catch((err) => {
         console.error(err)
-        ElMessage.warning('表单校验未通过! 请检查输入内容');
+        ElMessage.warning(this.t('crud.form.validateFailed'));
       })
     }
   }

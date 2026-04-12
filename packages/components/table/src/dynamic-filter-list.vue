@@ -13,18 +13,18 @@
       <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false" @change="onChange(f)"
                  v-if="f.opt !== Opt.NULL && f.opt !== Opt.NNULL && f.opt !== Opt.EMPTY && f.opt !== Opt.NEMPTY"/>
       <div class="fc-dynamic-filter-footer">
-        <el-button type="primary" size="small" :icon="Search" @click="confirm">查询</el-button>
+        <el-button type="primary" size="small" :icon="Search" @click="confirm">{{ t('crud.filter.query') }}</el-button>
         <el-button :type="f.disabled ? 'primary' : 'info'" plain size="small" @click="toggleFilter(f)">
-          {{ f.disabled ? '启用' : '禁用' }}
+          {{ f.disabled ? t('crud.filter.enable') : t('crud.filter.disable') }}
         </el-button>
       </div>
     </el-popover>
     <template v-if="filters.length > 1">
       <el-button class="fc-dynamic-filter-clear-btn" link style="padding: 0; color: #d37c84" @click="clearFilters">
-        清空
+        {{ t('crud.filter.clear') }}
       </el-button>
       <el-button class="fc-dynamic-filter-clear-btn" type="info" link style="padding: 0;" @click="toggleAllFilters">
-        {{ allDisabled ? '全启' : '全禁' }}
+        {{ allDisabled ? t('crud.filter.enableAll') : t('crud.filter.disableAll') }}
       </el-button>
     </template>
   </div>
@@ -34,10 +34,17 @@
 import Opt from "../../../model/opt.js";
 import {ellipsis} from '../../../util/util'
 import {Close, Search} from "@element-plus/icons-vue"
+import {useI18n} from "vue-i18n";
 
 export default {
   name: "dynamic-filter-list",
   emits: ['search'],
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     filters: {
       type: Array,

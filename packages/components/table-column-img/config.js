@@ -6,6 +6,7 @@ import {
     ternary
 } from "../../util/util";
 import Opt from "../../model/opt.js"
+import { t } from '../../i18n/index.js'
 
 const defaultQueryConfig = {
     component: 'el-input',
@@ -68,7 +69,7 @@ export default {
         const {label, props = {}} = config;
         const {defaultVal, rules = [], ...validProps} = props;
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
-            rules.push({required: true, message: `${label}不能为空`})
+            rules.push({required: true, message: `${t('crud.form.required')}: ${label}`})
         }
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal)
         config.props = {

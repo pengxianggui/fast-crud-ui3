@@ -1,12 +1,12 @@
 <template>
   <div class="fc-dynamic-filter-form">
     <div class="fc-dynamic-filter-sort-btn">
-      <el-radio v-model="asc" label="" border :size="size">不排序</el-radio>
-      <el-radio v-model="asc" :label="true" border :size="size">升序</el-radio>
-      <el-radio v-model="asc" :label="false" border :size="size">降序</el-radio>
+      <el-radio v-model="asc" label="" border :size="size">{{ t('crud.filter.noSort') }}</el-radio>
+      <el-radio v-model="asc" :label="true" border :size="size">{{ t('crud.filter.asc') }}</el-radio>
+      <el-radio v-model="asc" :label="false" border :size="size">{{ t('crud.filter.desc') }}</el-radio>
     </div>
     <div class="fc-dynamic-filter-component-wrapper">
-      <div class="title">输入过滤：</div>
+      <div class="title">{{ t('crud.filter.inputFilter') }}</div>
       <div class="fc-dynamic-filter-component">
         <component :is="localFilter.component" v-model="localFilter.val" v-bind="localFilter.props"/>
       </div>
@@ -14,8 +14,8 @@
     <div class="fc-dynamic-filter-distinct-wrapper">
       <div class="title">
         <div>
-          <span>去重筛选：</span>
-          <el-checkbox size="small" type="info" v-model="reuseCond" @change="distinctLoad">复用已生效的条件
+          <span>{{ t('crud.filter.distinctFilter') }}</span>
+          <el-checkbox size="small" type="info" v-model="reuseCond" @change="distinctLoad">{{ t('crud.filter.reuseCondition') }}
           </el-checkbox>
         </div>
         <el-button link
@@ -27,14 +27,14 @@
       <!-- 由于distinct查询可能比较慢, 因此由用户点击触发展示 -->
       <div class="fc-dynamic-filter-distinct" v-loading="distinctLoading">
         <!-- distinct 勾选项 -->
-        <el-input size="small" v-model="distinctOptionFilterKeyword" :clearable="true" placeholder="输入过滤.."
+        <el-input size="small" v-model="distinctOptionFilterKeyword" :clearable="true" :placeholder="t('crud.filter.inputFilterPlaceholder')"
                   v-if="distinctLoaded"></el-input>
         <fast-checkbox-group :options="distinctFilteredOptions" :show-chose-all="false"
                              class="fc-dynamic-filter-distinct-options"
                              v-model="distinctCheckedValue"
                              v-if="distinctLoaded"></fast-checkbox-group>
         <div style="display: flex; justify-content: center;" v-if="!distinctLoaded">
-          <el-button link style="color: gray;" @click="distinctLoad">请点击加载</el-button>
+          <el-button link style="color: gray;" @click="distinctLoad">{{ t('crud.filter.clickToLoad') }}</el-button>
         </div>
         <el-empty v-if="distinctLoaded && distinctOptions.length === 0">
           <template #image><span></span></template>
@@ -42,11 +42,11 @@
       </div>
     </div>
     <div class="fc-dynamic-filter-form-btn">
-      <el-button :size="size" @click="getEmpty">查空值</el-button>
-      <el-button :size="size" @click="getNotEmpty">查非空值</el-button>
+      <el-button :size="size" @click="getEmpty">{{ t('crud.filter.queryEmpty') }}</el-button>
+      <el-button :size="size" @click="getNotEmpty">{{ t('crud.filter.queryNotEmpty') }}</el-button>
       <span style="flex: 1;"></span>
-      <el-button type="primary" :size="size" @click="ok">确认</el-button>
-      <el-button :size="size" @click="close">关闭</el-button>
+      <el-button type="primary" :size="size" @click="ok">{{ t('crud.confirm') }}</el-button>
+      <el-button :size="size" @click="close">{{ t('crud.filter.close') }}</el-button>
     </div>
   </div>
 </template>
@@ -60,11 +60,18 @@ import {escapeValToLabel} from "../../../util/escape.js"
 import {isEmpty, isObject, toStr} from "../../../util/util"
 import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"
 import {Sort, SortUp, SortDown} from "@element-plus/icons-vue"
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: "dynamic-filter-form",
   components: {FastCheckboxGroup},
   emits: ['ok', 'cancel'],
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     option: FastTableOption,
     filter: FilterComponentConfig,

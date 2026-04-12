@@ -1,13 +1,13 @@
 import {easyOptParse, isUndefined, merge, ternary} from "../../util/util";
 import Opt from "../../model/opt.js";
+import { t } from '../../i18n/index.js'
 
 const defaultQueryConfig = {
     component: 'el-input',
     opt: Opt.LIKE,
     val: null, // 默认值
     props: {
-        clearable: true,
-        placeholder: `请输入..`
+        clearable: true
     },
     condMapFn: (cond) => {
         const operators = {
@@ -44,8 +44,7 @@ const defaultEditConfig = {
         rows: 1,
         class: 'fc-table-inline-edit-component',
         editable: true,
-        rules: [],
-        placeholder: '请输入..'
+        rules: []
     }
 }
 export default {
@@ -64,7 +63,7 @@ export default {
         const {defaultVal, rules = [], ...validProps} = props;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
-            rules.push({required: true, message: `${label}不能为空`})
+            rules.push({required: true, message: `${t('crud.form.required')}: ${label}`})
         }
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal);
         config.props = {

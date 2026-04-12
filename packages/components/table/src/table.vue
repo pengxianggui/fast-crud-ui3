@@ -28,24 +28,26 @@
         <slot name="button" v-bind="scopeParam"></slot>
         <template v-if="status === 'normal'">
           <el-button :size="option.style.size" @click="toInsert"
-                     v-if="insertable">新建
+                     v-if="insertable">{{ t('crud.add') }}
           </el-button>
           <el-button type="danger" plain :size="option.style.size" @click="deleteRow"
-                     v-if="deletable">删除
+                     v-if="deletable">{{ t('crud.delete') }}
           </el-button>
         </template>
         <template v-if="(updatable && status === 'update') || (insertable && status === 'insert')">
-          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">移除
+          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">
+            {{ t('crud.delete') }}
           </el-button>
-          <el-button type="primary" :size="option.style.size" @click="saveEditRows">保存</el-button>
-          <el-button :size="option.style.size" @click="toInsert" v-if="status === 'insert' && insertable">继续新建
+          <el-button type="primary" :size="option.style.size" @click="saveEditRows">{{ t('crud.save') }}</el-button>
+          <el-button :size="option.style.size" @click="toInsert" v-if="status === 'insert' && insertable">
+            {{ t('crud.add') }}
           </el-button>
-          <el-button :size="option.style.size" @click="cancelEditStatus">取消</el-button>
+          <el-button :size="option.style.size" @click="cancelEditStatus">{{ t('crud.cancel') }}</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
         <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size" v-if="showMoreBtn">
           <el-button type="primary" plain :size="option.style.size">
-            <span>更多</span>
+            <span>{{ t('crud.more') }}</span>
             <el-icon class="el-icon--right">
               <ArrowDown/>
             </el-icon>
@@ -56,7 +58,7 @@
                 <el-icon>
                   <Edit/>
                 </el-icon>
-                <span>批量编辑</span>
+                <span>{{ t('crud.edit') }}</span>
               </el-dropdown-item>
               <!-- TODO 1.6 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
@@ -64,7 +66,7 @@
                 <el-icon>
                   <Download/>
                 </el-icon>
-                <span>导出</span>
+                <span>{{ t('crud.export') }}</span>
               </el-dropdown-item>
               <template v-for="button in moreButtons">
                 <el-dropdown-item :disabled="getBoolVal(button.disable, false)"
@@ -114,10 +116,9 @@
     <div ref="pagination" class="fc-pagination-wrapper">
       <div class="fc-footer-wrapper">
         <div class="fc-check-tip" v-if="queryable && checkedRows.length > 0">
-          <el-link underline="always" @click="clearCheckedRows">清除</el-link>
-          <el-text>已勾选的</el-text>
+          <el-link underline="always" @click="clearCheckedRows">{{ t('crud.operation.clearCheckedRow') }}:</el-link>
           <el-link underline="always" @click="viewCheckedRows">{{ checkedRows.length }}</el-link>
-          <el-text>条记录</el-text>
+          <el-text></el-text>
         </div>
         <slot name="foot" v-bind="scopeParam"></slot>
       </div>
@@ -137,6 +138,7 @@
 import {nextTick} from "vue"
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {remove} from 'lodash-es'
+import {useI18n} from 'vue-i18n'
 import QuickFilterForm from "./quick-filter-form.vue"
 import EasyFilter from "./easy-filter.vue"
 import StoredFilter from "./stored-filter.vue"
@@ -164,11 +166,18 @@ import {buildFinalQueryComponentConfig} from "../../mapping"
 import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
 import * as util from "../../../util/util.js";
+import { t } from "../../../i18n/index.js"
 
 export default {
   name: "FastTable",
   components: {ArrowDown, Download, Edit, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
+  setup() {
+    const {t} = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     option: {
       type: FastTableOption,
@@ -442,8 +451,8 @@ export default {
       }
       const confirmPromise = (this.status !== 'normal')
           ? ElMessageBox.confirm('当前处于编辑状态, 点击【确定】将丢失已编辑内容?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消'
+            confirmButtonText: this.t('crud.confirm'),
+            cancelButtonText: this.t('crud.cancel')
           })
           : Promise.resolve()
       confirmPromise.then(() => {
@@ -573,7 +582,7 @@ export default {
           },
           dialogProps: {
             width: '50%',
-            title: '新增',
+            title: this.t('crud.add'),
             'close-on-click-modal': false
           }
         }).then(() => {
@@ -621,7 +630,7 @@ export default {
       const enableMulti = this.enableMulti
       let beDeleteRows = (enableMulti ? this.checkedRows : (util.isEmpty(this.choseRow) ? [] : [this.choseRow]))
       if (util.isEmpty(beDeleteRows)) {
-        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要删除的行`)
+        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要${this.t('crud.delete')}的行`)
         return
       }
 
@@ -641,18 +650,18 @@ export default {
             action: 'delete'
           },
           dialogProps: {
-            title: `确认删除以下记录?`,
+            title: `${this.t('crud.operation.confirmDelete', {count: beDeleteRows.length})}`,
             width: '90%',
             buttons: [
               {
-                text: '确定删除',
+                text: this.t('crud.delete'),
                 type: 'danger',
                 onClick: (component) => {
                   return Promise.resolve(component.getRows())
                 }
               },
               {
-                text: '取消',
+                text: this.t('crud.cancel'),
                 onClick: () => {
                   return Promise.reject() // 走catch逻辑
                 }
@@ -676,11 +685,11 @@ export default {
                 ...param,
                 res: res
               }).then(() => {
-                ElMessage.success('删除成功')
+                ElMessage.success(this.t('crud.operation.deleteSuccess'))
               })
             }).catch(err => {
               deleteFail.call(context, {...param, error: err}).then(() => {
-                ElMessage.error('删除失败:' + JSON.stringify(err));
+                ElMessage.error(this.t('crud.operation.deleteFail') + ':' + JSON.stringify(err));
               })
             })
           }).catch(() => {
@@ -716,7 +725,7 @@ export default {
         },
         dialogProps: {
           width: '480px',
-          title: `数据筛选及排序: ${label}`,
+          title: `${this.t('crud.filter.dynamic.dialogTitle', {field: label})}`,
         }
       }).then(async ({filter: dynamicFilter, order}) => {
         if (dynamicFilter.isEffective()) {
@@ -844,7 +853,7 @@ export default {
           },
           dialogProps: {
             width: '50%',
-            title: '编辑',
+            title: this.t('crud.edit'),
             'close-on-click-modal': false
           }
         }).then(() => {
@@ -946,7 +955,7 @@ export default {
           columnConfigs: columnConfigs
         },
         dialogProps: {
-          title: '所有勾选的行',
+          title: this.t('crud.table.checkedRowDialogTitle'),
           width: '90%',
           handleCancel: () => {
             this.$nextTick(() => {

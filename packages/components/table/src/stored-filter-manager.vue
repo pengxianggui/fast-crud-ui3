@@ -1,20 +1,20 @@
 <template>
   <div class="fc-stored-filter-manager">
     <div class="fc-stored-filter-manager-btns">
-      <el-button :icon="Plus" type="primary" plain @click="addStoreGroup">添加</el-button>
-      <el-button type="success" plain @click="saveStoreGroup">保存</el-button>
+      <el-button :icon="Plus" type="primary" plain @click="addStoreGroup">{{ t('crud.filter.add') }}</el-button>
+      <el-button type="success" plain @click="saveStoreGroup">{{ t('crud.save') }}</el-button>
     </div>
     <template v-for="g in groups">
       <el-card class="fc-stored-filter-item" shadow="hover" v-if="hiddenBuildIn === false || g.buildIn === false">
         <template #header>
           <div class="fc-stored-filter-item-header">
             <div style="display: flex">
-              <el-input class="fc-stored-filter-item-label" placeholder="请输入组合名" v-model="g.label"
+              <el-input class="fc-stored-filter-item-label" :placeholder="t('crud.filter.groupNamePlaceholder')" v-model="g.label"
                         :disabled="g.buildIn"/>&nbsp;
-              <el-alert type="warning" :closable="false" show-icon v-if="!g.compatible">此筛选组不兼容, 请修改
+              <el-alert type="warning" :closable="false" show-icon v-if="!g.compatible">{{ t('crud.filter.incompatibleFilter') }}
               </el-alert>
             </div>
-            <el-button type="danger" link @click="delStoreGroup(g)" v-if="!g.buildIn">删除</el-button>
+            <el-button type="danger" link @click="delStoreGroup(g)" v-if="!g.buildIn">{{ t('crud.delete') }}</el-button>
           </div>
         </template>
         <div class="fc-dynamic-filter-list">
@@ -28,7 +28,7 @@
                 <el-button link class="fc-dynamic-filter-del-btn" :icon="Close" v-if="!g.buildIn"
                            @click.stop="delConfig(index, g.filters)"></el-button>
 
-                <span style="margin-right: 10px; color: #909090;">且</span>
+                <span style="margin-right: 10px; color: #909090;">{{ t('crud.filter.and') }}</span>
               </div>
             </template>
             <component class="component" :is="f.component" v-model="f.val" v-bind="f.props" :teleported="false" @change="onChange(f)"
@@ -47,7 +47,7 @@
       </el-card>
     </template>
     <el-button style="text-decoration: underline;" link @click="() => hiddenBuildIn = !hiddenBuildIn">
-      {{ hiddenBuildIn ? '显示' : '隐藏' }}内置的组合筛选项
+      {{ hiddenBuildIn ? t('crud.filter.show') : t('crud.filter.hide') }} {{ t('crud.filter.builtInFilterGroups') }}
     </el-button>
   </div>
 </template>
@@ -59,10 +59,17 @@ import Opt from '../../../model/opt.js'
 import {buildStoredFilterComponent, setCustomFilterGroups} from "./util.js";
 import * as util from "../../../util/util.js";
 import {ElMessage} from "element-plus";
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: "stored-filter-manager",
   emits: ['ok'],
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     tableOption: FastTableOption,
     columnConfig: Object,
@@ -150,7 +157,7 @@ export default {
         util.assertTip(filters.every(f => f.isEffective()), `“${label}”存在无效筛选项`)
       }
       setCustomFilterGroups(this.tableOption, toBeSavedGroups)
-      ElMessage.success('保存成功')
+      ElMessage.success(this.t('crud.operation.saveSuccess'))
       this.$emit('ok')
     }
   }

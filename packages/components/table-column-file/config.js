@@ -6,14 +6,14 @@ import {
     ternary
 } from "../../util/util";
 import Opt from "../../model/opt.js"
+import { t } from '../../i18n/index.js'
 
 const defaultQueryConfig = {
     component: 'el-input',
     opt: Opt.LIKE,
     val: null, // 默认值
     props: {
-        clearable: true,
-        placeholder: '请输入文件名...'
+        clearable: true
     },
     condMapFn: (cond) => {
         const operators = {
@@ -68,7 +68,7 @@ export default {
         const {label, props = {}} = config;
         const {defaultVal, rules = [], ...validProps} = props;
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
-            rules.push({required: true, message: `${label}不能为空`})
+            rules.push({required: true, message: `${t('crud.form.required')}: ${label}`})
         }
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal)
         config.props = {

@@ -22,7 +22,7 @@
             </el-icon>
             <span>{{ item.label }}</span>
           </el-dropdown-item>
-          <el-dropdown-item divided @click="toCustom">自定义</el-dropdown-item>
+          <el-dropdown-item divided @click="toCustom">{{ t('crud.filter.custom') }}</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
@@ -32,6 +32,7 @@
 import {nextTick} from "vue"
 import {dayjs} from "element-plus"
 import {ArrowDown, Star, Select} from "@element-plus/icons-vue"
+import { useI18n } from 'vue-i18n'
 import * as util from "../../../util/util.js"
 import FastTableOption from "../../../model/fastTableOption.js"
 import {openDialog} from "../../../util/dialog.js";
@@ -42,6 +43,12 @@ export default {
   name: "stored-filter",
   components: {ArrowDown, Star, Select},
   emits: ['change', 'update:modelValue'],
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     // 存筛label名组成的数组, 表示勾选项
     groupLabels: Array,
@@ -99,17 +106,17 @@ export default {
       }
 
       this.storeGroups.push({
-        label: '当天新建', buildIn: true, compatible: true, filters: () => {
+        label: this.t('crud.filter.todayCreate'), buildIn: true, compatible: true, filters: () => {
           return getFilters('day')
         }
       })
       this.storeGroups.push({
-        label: '当周新建', buildIn: true, compatible: true, filters: () => {
+        label: this.t('crud.filter.thisWeekCreate'), buildIn: true, compatible: true, filters: () => {
           return getFilters('week')
         }
       })
       this.storeGroups.push({
-        label: '当月新建', buildIn: true, compatible: true, filters: () => {
+        label: this.t('crud.filter.thisMonthCreate'), buildIn: true, compatible: true, filters: () => {
           return getFilters('month')
         }
       })
@@ -144,7 +151,7 @@ export default {
           storeGroups: this.storeGroups
         },
         dialogProps: {
-          title: '自定义组合筛选',
+          title: this.t('crud.filter.customFilter'),
           width: '60%'
         }
       }).then(() => {

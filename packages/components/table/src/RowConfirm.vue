@@ -11,16 +11,23 @@
     </template>
     <template #button>
       <el-button type="danger" plain :disabled="checkedRows.length === 0" @click="handleRemove"
-                 v-if="action === 'delete' && rows.length > 1">从删除清单里移出</el-button>
+                 v-if="action === 'delete' && rows.length > 1">{{ t('crud.row.removeFromList') }}</el-button>
     </template>
   </fast-table>
 </template>
 
 <script>
 import FastTableOption from "../../../model/fastTableOption.js"
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'RowConfirm',
+  setup() {
+    const { t } = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     rows: {
       type: Array,

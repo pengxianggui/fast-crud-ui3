@@ -25,6 +25,7 @@ import Cond from './model/cond.js'
 import Order from './model/order.js'
 import Query from './model/query.js'
 import PageQuery from './model/pageQuery.js'
+import i18n, { useFastCrudI18n, setLanguage, getLanguage, configureI18n } from './i18n/index.js'
 import {
     isEmpty,
     isString,
@@ -78,6 +79,12 @@ const install = function (app, opts = {}) {
     if (opts.hasOwnProperty('$router')) {
         FastTableOption.$router = opts.$router
     }
+    // 配置i18n
+    if (opts.i18n) {
+        configureI18n(opts.i18n)
+    }
+    // 注册i18n
+    app.use(i18n)
     components.forEach(component => {
         app.component(component.name, component);
     });
@@ -134,7 +141,11 @@ export {
     Query,
     Order,
     Cond,
-    util
+    util,
+    useFastCrudI18n,
+    setLanguage,
+    getLanguage,
+    configureI18n
 }
 
 // 获取App上下文

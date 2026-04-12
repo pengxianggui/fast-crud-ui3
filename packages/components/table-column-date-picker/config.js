@@ -1,81 +1,84 @@
 import {isUndefined, merge, ternary} from "../../util/util";
 import Cond from '../../model/cond.js'
 import Opt from '../../model/opt.js'
+import { t } from '../../i18n/index.js'
 
 const DEFAULT_DATE_FORMAT = 'YYYY-MM-DD'
 const DEFAULT_DATETIME_FORMAT = 'YYYY-MM-DD HH:mm:ss'
-const defaultQueryConfig = {
-    component: 'el-date-picker',
-    opt: Opt.BTW,
-    val: [], // 默认值
-    props: {
-        type: `daterange`,
-        clearable: true,
-        valueFormat: DEFAULT_DATE_FORMAT,
-        // (易用性提升)
-        shortcuts: [{
-            text: '最近1h',
-            value: () => {
-                const end = new Date()
-                const start = new Date(end)
-                start.setTime(start.getTime() - 3600 * 1000)
-                return [start, end]
+const defaultQueryConfigFn = () => {
+    return {
+        component: 'el-date-picker',
+        opt: Opt.BTW,
+        val: [], // 默认值
+        props: {
+            type: `daterange`,
+            clearable: true,
+            valueFormat: DEFAULT_DATE_FORMAT,
+            // (易用性提升)
+            shortcuts: [{
+                text: t('crud.filter.date.recent1h'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date(end)
+                    start.setTime(start.getTime() - 3600 * 1000)
+                    return [start, end]
+                }
+            }, {
+                text: t('crud.filter.date.recent1d'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date(end)
+                    start.setTime(start.getTime() - 3600 * 1000 * 24)
+                    return [start, end]
+                }
+            }, {
+                text: t('crud.filter.date.recent1w'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date()
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                    return [start, end]
+                }
+            }, {
+                text: t('crud.filter.date.recent1m'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date()
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                    return [start, end]
+                }
+            }, {
+                text: t('crud.filter.date.recent3m'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date()
+                    start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                    return [start, end]
+                }
+            }, {
+                text: t('crud.filter.date.recent1y'),
+                value: () => {
+                    const end = new Date()
+                    const start = new Date(end)
+                    start.setFullYear(end.getFullYear() - 1)
+                    return [start, end]
+                }
+            }]
+        },
+        condMapFn: (cond) => {
+            const conds = []
+            const [start, end] = cond.val
+            if (start) {
+                conds.push(new Cond(cond.col, Opt.GE, start))
             }
-        }, {
-            text: '最近1天',
-            value: () => {
-                const end = new Date()
-                const start = new Date(end)
-                start.setTime(start.getTime() - 3600 * 1000 * 24)
-                return [start, end]
+            if (end) {
+                conds.push(new Cond(cond.col, Opt.LE, end))
             }
-        }, {
-            text: '最近1周',
-            value: () => {
-                const end = new Date()
-                const start = new Date()
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
-                return [start, end]
-            }
-        }, {
-            text: '最近1月',
-            value: () => {
-                const end = new Date()
-                const start = new Date()
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
-                return [start, end]
-            }
-        }, {
-            text: '最近3月',
-            value: () => {
-                const end = new Date()
-                const start = new Date()
-                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
-                return [start, end]
-            }
-        }, {
-            text: '最近1年',
-            value: () => {
-                const end = new Date()
-                const start = new Date(end)
-                start.setFullYear(end.getFullYear() - 1)
-                return [start, end]
-            }
-        }]
-    },
-    condMapFn: (cond) => {
-        const conds = []
-        const [start, end] = cond.val
-        if (start) {
-            conds.push(new Cond(cond.col, Opt.GE, start))
+            return conds
         }
-        if (end) {
-            conds.push(new Cond(cond.col, Opt.LE, end))
-        }
-        return conds
     }
-
 }
+
 const defaultEditConfig = {
     component: 'el-date-picker',
     opt: Opt.BTW,
@@ -92,6 +95,7 @@ const defaultEditConfig = {
 
 export default {
     query: (config, type) => {
+        const defaultQueryConfig = defaultQueryConfigFn()
         let val = defaultQueryConfig.val;
         const {props: {defaultVal, ...validProps} = {}} = config
         const {type: dateType = 'date'} = validProps;
@@ -123,7 +127,7 @@ export default {
         const {rules = []} = validProps;
         // 如果含有值不为false的required属性, 则将其转换为rules规则添加到props中
         if (validProps.hasOwnProperty('required') && validProps.required !== false) {
-            rules.push({required: true, message: `${label}不能为空`})
+            rules.push({required: true, message: `${t('crud.form.required')}: ${label}`})
         }
         config.val = ternary(isUndefined(defaultVal), defaultEditConfig.val, defaultVal);
         const {valueFormat} = validProps;
