@@ -1,10 +1,10 @@
 import { createI18n } from 'vue-i18n'
 import zhCN from './lang/zh-cn'
-import enUS from './lang/en-us'
+import en from './lang/en'
 
 const messages = {
   'zh-cn': zhCN,
-  'en-us': enUS
+  'en': en
 }
 
 // 创建 i18n 实例，但不立即设置 locale
