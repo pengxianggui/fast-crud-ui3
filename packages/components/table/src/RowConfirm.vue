@@ -18,7 +18,7 @@
 
 <script>
 import FastTableOption from "../../../model/fastTableOption.js"
-import { useI18n } from 'vue-i18n'
+import { useI18n } from '../../../i18n/index.js'
 
 export default {
   name: 'RowConfirm',

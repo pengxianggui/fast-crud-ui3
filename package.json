@@ -1,6 +1,6 @@
 {
   "name": "fast-crud-ui3",
-  "version": "1.5.22-beta.0",
+  "version": "1.5.22-beta.6",
   "type": "module",
   "main": "lib/fast-crud-ui3.cjs.js",
   "module": "lib/fast-crud-ui3.es.js",
@@ -64,7 +64,8 @@
   "peerDependencies": {
     "axios": "^1.7.9",
     "element-plus": "^2.3.12",
-    "vue": "^3.4.0"
+    "vue": "^3.4.0",
+    "vue-i18n": "^12.0.0-alpha.3"
   },
   "homepage": "http://pengxg.cc/tags/fast-crud-ui3",
   "author": {
@@ -75,7 +76,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pengxianggui/fast-crud"
+    "url": "https://github.com/pengxianggui/fast-crud-ui3"
   },
   "files": [
     "lib",

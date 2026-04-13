@@ -32,8 +32,7 @@ import {ElMessage} from 'element-plus';
 import FastTableOption from "../../../model/fastTableOption.js";
 import {isEmpty} from "../../../util/util";
 import {colEditable} from "./util";
-import { useI18n } from 'vue-i18n';
-import { t } from '../../../i18n/index.js';
+import { useI18n } from '../../../i18n/index.js';
 
 export default {
   name: "row-form",

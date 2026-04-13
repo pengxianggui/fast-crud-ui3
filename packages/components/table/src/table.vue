@@ -138,7 +138,7 @@
 import {nextTick} from "vue"
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {remove} from 'lodash-es'
-import {useI18n} from 'vue-i18n'
+import { useI18n } from '../../../i18n/index.js'
 import QuickFilterForm from "./quick-filter-form.vue"
 import EasyFilter from "./easy-filter.vue"
 import StoredFilter from "./stored-filter.vue"
@@ -166,7 +166,6 @@ import {buildFinalQueryComponentConfig} from "../../mapping"
 import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
 import * as util from "../../../util/util.js";
-import { t } from "../../../i18n/index.js"
 
 export default {
   name: "FastTable",

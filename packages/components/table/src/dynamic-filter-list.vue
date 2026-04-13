@@ -34,7 +34,7 @@
 import Opt from "../../../model/opt.js";
 import {ellipsis} from '../../../util/util'
 import {Close, Search} from "@element-plus/icons-vue"
-import {useI18n} from "vue-i18n";
+import { useI18n } from '../../../i18n/index.js';
 
 export default {
   name: "dynamic-filter-list",

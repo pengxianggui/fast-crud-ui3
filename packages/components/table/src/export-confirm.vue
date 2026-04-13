@@ -23,7 +23,7 @@
 
 <script>
 import {Download} from "@element-plus/icons-vue";
-import { useI18n } from 'vue-i18n'
+import { useI18n } from '../../../i18n/index.js'
 
 export default {
   name: "export-confirm",

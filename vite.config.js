@@ -65,11 +65,12 @@ export default defineConfig(({mode}) => {
                 formats: ['es', 'cjs', 'umd']  // 输出 ESM, CJS 和 UMD 格式
             },
             rollupOptions: {
-                external: ['vue', /^element-plus(\/.*)?$/],
+                external: ['vue', /^element-plus(\/.*)?$/, /^vue-i18n(\/.*)?$/],
                 output: {
                     globals: {
                         vue: 'Vue',
                         'element-plus': 'ElementPlus',
+                        'vue-i18n': 'VueI18n',
                     },
                     // === 关键：保持原来的目录结构，这样类型文件才能对应上 ===
                     preserveModules: false

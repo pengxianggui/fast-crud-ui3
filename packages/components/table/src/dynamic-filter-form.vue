@@ -60,7 +60,7 @@ import {escapeValToLabel} from "../../../util/escape.js"
 import {isEmpty, isObject, toStr} from "../../../util/util"
 import FastCheckboxGroup from "../../checkbox-group/src/fast-checkbox-group.vue"
 import {Sort, SortUp, SortDown} from "@element-plus/icons-vue"
-import { useI18n } from 'vue-i18n'
+import { useI18n } from '../../../i18n/index.js'
 
 export default {
   name: "dynamic-filter-form",

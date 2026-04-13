@@ -6,6 +6,7 @@ import {openDialog} from "../util/dialog.js";
 import {deleteFromSessionStorage, getFromSessionStorage, setToSessionStorage} from "../util/cache.js";
 import ExportConfirm from "../components/table/src/export-confirm.vue";
 import Cond from './cond.js'
+import {t} from '../i18n/index.js'
 
 /**
  * @typedef {import('vue').ComponentPublicInstance} ComponentInstance
@@ -661,13 +662,13 @@ class FastTableOption {
                     columns: columnConfigs
                 },
                 dialogProps: {
-                    title: '导出设置',
+                    title: `${t('crud.exports.title')}`,
                     width: '60%',
                     okClose: false,
                     handleOk: ({columns, all = false}) => {
                         // 导出数据
                         const {title, exportUrl, exportSuccess, exportFail} = this;
-                        post(exportUrl, pageQuery.params,{
+                        post(exportUrl, pageQuery.params, {
                             columns: columns,
                             all: all, // false-当前页; true-全部
                             pageQuery: pageQuery

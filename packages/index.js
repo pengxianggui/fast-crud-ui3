@@ -25,7 +25,7 @@ import Cond from './model/cond.js'
 import Order from './model/order.js'
 import Query from './model/query.js'
 import PageQuery from './model/pageQuery.js'
-import i18n, { useFastCrudI18n, setLanguage, getLanguage, configureI18n } from './i18n/index.js'
+import i18n, { useFastCrudI18n, setLanguage, getLanguage, configureI18n, i18nMessages } from './i18n/index.js'
 import {
     isEmpty,
     isString,
@@ -69,22 +69,40 @@ const components = [
 const directives = [
 ]
 
-// 全局应用上下文
 let globalAppContext = null
+
+function findExistingI18nInstance(app) {
+    const provides = app._context && app._context.provides
+    if (!provides) return null
+    const keys = Object.getOwnPropertySymbols(provides)
+    for (const key of keys) {
+        const value = provides[key]
+        if (value && value.global && typeof value.global.mergeLocaleMessage === 'function' && typeof value.global.t === 'function') {
+            return value
+        }
+    }
+    return null
+}
+
 const install = function (app, opts = {}) {
-    globalAppContext = app._context // 保存上下文
+    globalAppContext = app._context
     if (opts.hasOwnProperty('$http')) {
         FastTableOption.$http = opts.$http
     }
     if (opts.hasOwnProperty('$router')) {
         FastTableOption.$router = opts.$router
     }
-    // 配置i18n
     if (opts.i18n) {
         configureI18n(opts.i18n)
     }
-    // 注册i18n
-    app.use(i18n)
+    const existingI18n = findExistingI18nInstance(app)
+    if (existingI18n) {
+        for (const lang in i18nMessages) {
+            existingI18n.global.mergeLocaleMessage(lang, i18nMessages[lang])
+        }
+    } else {
+        app.use(i18n)
+    }
     components.forEach(component => {
         app.component(component.name, component);
     });
@@ -145,7 +163,8 @@ export {
     useFastCrudI18n,
     setLanguage,
     getLanguage,
-    configureI18n
+    configureI18n,
+    i18nMessages
 }
 
 // 获取App上下文
