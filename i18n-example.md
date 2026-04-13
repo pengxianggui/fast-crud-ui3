@@ -47,7 +47,7 @@ app.mount('#app')
 ```javascript
 <template>
   <div>
-    <el-button @click="switchLanguage('zh-cn')">中文</el-button>
+    <el-button @click="switchLanguage('zh-CN')">中文</el-button>
     <el-button @click="switchLanguage('en')">English</el-button>
     
     <!-- 其他组件内容 -->
@@ -64,12 +64,7 @@ import { setLanguage } from 'fast-crud-ui3'
 const switchLanguage = (lang) => {
   // 切换 Fast-CRUD-UI3 的语言
   setLanguage(lang)
-  
-  // 同时切换 Element Plus 的语言
-  const ElementPlus = await import('element-plus/es')
-  ElementPlus.use(app, {
-    locale: lang === 'zh-cn' ? await import('element-plus/es/locale/lang/zh-cn') : await import('element-plus/es/locale/lang/en')
-  })
+  // ElementPlus语言切换参考官方
 }
 </script>
 ```
@@ -89,12 +84,14 @@ const customMessages = {
     crud: {
       // 自定义中文翻译
       save: '保存数据'
+      // 更多... 
     }
   },
   'en': {
     crud: {
       // 自定义英文翻译
       save: 'Save Data'
+      // 更多...
     }
   }
 }
@@ -107,7 +104,7 @@ for (const lang in customMessages) {
 
 ## 支持的语言
 
-- 中文 (zh-cn)
+- 简体中文 (zh-CN)
 - 英文 (en)
 
 ## 已国际化的组件
@@ -126,13 +123,14 @@ for (const lang in customMessages) {
 ```javascript
 app.use(FastCrudUI, {
   i18n: {
-    locale: 'zh-cn', // 设置默认语言
+    locale: 'zh-CN', // 设置默认语言
     fallbackLocale: 'en', // 设置回退语言
     messages: {
       // 自定义翻译
-      'zh-cn': {
+      'zh-CN': {
         crud: {
           save: '保存数据'
+          // 更多...
         }
       }
     }
@@ -145,7 +143,7 @@ app.use(FastCrudUI, {
 动态配置国际化选项。
 
 - `options`: 配置对象
-  - `locale`: 语言代码，可选值为 'zh-cn' 或 'en'
+  - `locale`: 语言代码，可选值为 'zh-CN' 或 'en'
   - `fallbackLocale`: 回退语言代码
   - `messages`: 自定义翻译消息对象
 
@@ -153,7 +151,7 @@ app.use(FastCrudUI, {
 
 切换组件库的语言。
 
-- `lang`: 语言代码，可选值为 'zh-cn' 或 'en'
+- `lang`: 语言代码，可选值为 'zh-CN' 或 'en'
 
 ### `getLanguage()`
 

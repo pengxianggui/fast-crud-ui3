@@ -56,7 +56,8 @@ export default defineConfig({
                     {text: 'Query/PageQuery', link: '/latest/advance/query'},
                     {text: 'FatRow', link: '/latest/advance/fat-row'},
                     {text: 'openDialog', link: '/latest/advance/open-dialog'},
-                    {text: 'pick', link: '/latest/advance/pick'}
+                    {text: 'pick', link: '/latest/advance/pick'},
+                    {text: '国际化', link: '/latest/advance/i18n'}
                 ]
             },
             {
