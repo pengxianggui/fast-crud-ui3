@@ -103,6 +103,7 @@ export function toTableRow(row, columnConfig, status = 'normal', editType) {
         })
         util.merge(row, newRow, true, false)
     }
+    // TODO 定义为TYPE
     return {
         row: row,
         editRow: {...row},

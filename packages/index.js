@@ -25,7 +25,7 @@ import Cond from './model/cond.js'
 import Order from './model/order.js'
 import Query from './model/query.js'
 import PageQuery from './model/pageQuery.js'
-import i18n, { useFastCrudI18n, setLanguage, getLanguage, configureI18n, i18nMessages } from './i18n/index.js'
+import i18n, { useFastCrudI18n, setLanguage, getLanguage, configureI18n, i18nMessages, setAppI18n } from './i18n/index.js'
 import {
     isEmpty,
     isString,
@@ -97,11 +97,13 @@ const install = function (app, opts = {}) {
     }
     const existingI18n = findExistingI18nInstance(app)
     if (existingI18n) {
+        setAppI18n(existingI18n)
         for (const lang in i18nMessages) {
             existingI18n.global.mergeLocaleMessage(lang, i18nMessages[lang])
         }
     } else {
         app.use(i18n)
+        setAppI18n(i18n)
     }
     components.forEach(component => {
         app.component(component.name, component);
@@ -164,6 +166,7 @@ export {
     setLanguage,
     getLanguage,
     configureI18n,
+    setAppI18n,
     i18nMessages
 }
 

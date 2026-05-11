@@ -1,4 +1,4 @@
-import { createI18n } from 'vue-i18n'
+import { createI18n, useI18n as vueUseI18n } from 'vue-i18n'
 import zhCn from './lang/zh-cn'
 import en from './lang/en'
 
@@ -14,16 +14,27 @@ const i18n = createI18n({
   messages
 })
 
+let _appI18n = null
+
+export function setAppI18n(instance) {
+  _appI18n = instance
+}
+
+function getAppI18n() {
+  return _appI18n || i18n
+}
+
 export function configureI18n(options) {
+  const target = getAppI18n()
   if (options.locale) {
-    i18n.global.locale.value = options.locale
+    target.global.locale.value = options.locale
   }
   if (options.fallbackLocale) {
-    i18n.global.fallbackLocale = options.fallbackLocale
+    target.global.fallbackLocale = options.fallbackLocale
   }
   if (options.messages) {
     for (const lang in options.messages) {
-      i18n.global.mergeLocaleMessage(lang, options.messages[lang])
+      target.global.mergeLocaleMessage(lang, options.messages[lang])
     }
   }
 }
@@ -31,23 +42,23 @@ export function configureI18n(options) {
 export default i18n
 
 export function useFastCrudI18n() {
-  return i18n
+  return getAppI18n()
 }
 
 export function setLanguage(lang) {
-  i18n.global.locale.value = lang
+  getAppI18n().global.locale.value = lang
 }
 
 export function getLanguage() {
-  return i18n.global.locale.value
+  return getAppI18n().global.locale.value
 }
 
 export function t(key, options = {}) {
-  return i18n.global.t(key, options)
+  return getAppI18n().global.t(key, options)
 }
 
 export function useI18n() {
-  return { t }
+  return vueUseI18n()
 }
 
 export { messages as i18nMessages }
