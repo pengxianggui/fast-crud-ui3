@@ -13,9 +13,9 @@
       </el-form-item>
       <slot></slot>
       <el-form-item class="fc-quick-filter-form-action" v-if="option.style.showQuickFilterBtn">
-        <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
+        <el-button type="primary" class="fc-quick-filter-form-search-btn" :size="option.style.size" :icon="Search"
                    @click="handleSearch">{{t('crud.search')}}</el-button>
-        <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft"
+        <el-button type="info" class="fc-quick-filter-form-reset-btn" plain :size="option.style.size" :icon="RefreshLeft"
                    @click="handleReset">{{t('crud.reset')}}</el-button>
       </el-form-item>
     </el-form>
