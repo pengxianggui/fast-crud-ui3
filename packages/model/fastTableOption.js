@@ -194,7 +194,7 @@ class FastTableOption {
     };
     /**
      * 样式配置
-     * @type {{flexHeight: boolean, quickFilterGridGap: string, formLabelWidth: string, formLayout: null, quickFilterSpan: number|string, bodyRowHeight: string, size: string}}
+     * @type {{flexHeight: boolean, quickFilterGridGap: string, formLabelWidth: string, formLayout: null, quickFilterSpan: number|string, showQuickFilterBtn: boolean, bodyRowHeight: string, size: string}}
      */
     style = {
         flexHeight: false, // 表格是否使用弹性高度: 自适应高度, 撑满全屏
@@ -204,6 +204,7 @@ class FastTableOption {
         formLayout: null, // 表单布局: 只作用于form表单, 对快筛和行内编辑无效。内容为列名、|、和, 组成的字符，指示新增、编辑时表单的控件布局。不指定则默认按顺序
         quickFilterSpan: 3, // 快筛每行几个筛选项
         quickFilterGridGap: '10px 20px', // 快筛项之间的间距(grid布局中的gap)
+        showQuickFilterBtn: false // 展示快筛按钮
     };
     /**
      * render函数。当前FastTableOption对应的表格若被pick时有用
@@ -569,7 +570,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        ElMessage.success(`成功新增${res}条记录`);
+                        ElMessage.success(t('crud.operation.successInsert', {count: res}));
                     });
                 }).catch(err => {
                     reject(err);
@@ -579,7 +580,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        ElMessage.error('新增失败:' + JSON.stringify(err));
+                        ElMessage.error('Fail:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
@@ -616,7 +617,7 @@ class FastTableOption {
                         editRows: editRows,
                         res: res
                     }).then(() => {
-                        ElMessage.success(`成功更新${res}条记录`);
+                        ElMessage.success(t('crud.operation.successUpdate', {count: res}));
                     });
                 }).catch(err => {
                     reject(err);
@@ -626,7 +627,7 @@ class FastTableOption {
                         editRows: editRows,
                         error: err
                     }).then(() => {
-                        ElMessage.error('更新失败:' + JSON.stringify(err));
+                        ElMessage.error('Fail:' + JSON.stringify(err));
                     });
                 })
             }).catch(err => {
@@ -694,7 +695,7 @@ class FastTableOption {
                                 pageQuery: pageQuery,
                                 error: err
                             }).then(() => {
-                                ElMessage.error('导出失败:' + err.message)
+                                ElMessage.error('Fail:' + err.message)
                             })
                         })
                     },

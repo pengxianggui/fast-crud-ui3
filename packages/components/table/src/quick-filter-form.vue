@@ -1,27 +1,44 @@
 <template>
-  <el-form ref="quickFilterForm" :inline="true" :label-width="option.style.formLabelWidth" class="fc-quick-filter-form"
-           :style="formStyle">
-    <el-form-item v-for="(filter, index) in visibleFilters"
-                  :key="filter.col"
-                  :prop="filter.col"
-                  :label="filter.label + ':'"
-                  :style="getStyle(filter, index)"
-                  class="fc-quick-filter-form-item">
-      <component :ref="filter.col" :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
-                 @change="handleChange(filter)" @click="handleClick(filter)"/>
-    </el-form-item>
-    <slot></slot>
-  </el-form>
+  <div class="fc-quick-filter-form-wrapper">
+    <el-form ref="quickFilterForm" :inline="true" :label-width="option.style.formLabelWidth" class="fc-quick-filter-form"
+             :style="formStyle">
+      <el-form-item v-for="(filter, index) in visibleFilters"
+                    :key="filter.col"
+                    :prop="filter.col"
+                    :label="filter.label + ':'"
+                    :style="getStyle(filter, index)"
+                    class="fc-quick-filter-form-item">
+        <component :ref="filter.col" :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
+                   @change="handleChange(filter)" @click="handleClick(filter)"/>
+      </el-form-item>
+      <slot></slot>
+      <el-form-item class="fc-quick-filter-form-action" v-if="option.style.showQuickFilterBtn">
+        <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
+                   @click="handleSearch">{{t('crud.search')}}</el-button>
+        <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft"
+                   @click="handleReset">{{t('crud.reset')}}</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
 </template>
 
 <script>
 import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
 import {isFunction, unwrapArr} from "../../../util/util.js";
 import {FastTableOption} from "../../../index.js";
+import {RefreshLeft, Search} from "@element-plus/icons-vue";
+import {useI18n} from "../../../i18n/index.js";
 
 export default {
   name: "quick-filter-form",
   components: {ArrowDown, ArrowUp},
+  emits: ['search', 'reset'],
+  setup() {
+    const {t} = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     option: FastTableOption,
     filters: {
@@ -34,6 +51,12 @@ export default {
     }
   },
   computed: {
+    RefreshLeft() {
+      return RefreshLeft
+    },
+    Search() {
+      return Search
+    },
     /**
      * quickFilterBlock的独占一行且排前面。注意: 必须浅拷贝
      * @return {*[]}
@@ -121,6 +144,12 @@ export default {
       })
       const context = this.option.context
       onClick.call(context, {val: filter.val, model: this.formModel, filter: filter, filters: filters, refs: refs})
+    },
+    handleSearch() {
+      this.$emit('search')
+    },
+    handleReset() {
+      this.$emit('reset')
     }
   }
 }
@@ -132,12 +161,20 @@ export default {
 }
 </style>
 <style scoped lang="scss">
-.fc-quick-filter-form {
-  .fc-quick-filter-form-btns {
-    margin-left: 10px;
+.fc-quick-filter-form-wrapper {
+  .fc-quick-filter-form {
+    .fc-quick-filter-form-btns {
+      margin-left: 10px;
+    }
+
+    :deep(.el-form-item__content > *) {
+      flex: 1;
+    }
   }
-  :deep(.el-form-item__content > *) {
-    flex: 1;
+  .fc-quick-filter-form-action {
+    grid-column: 1 / -1;
+    justify-self: end;
+    order: 999999999
   }
 }
 

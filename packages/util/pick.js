@@ -4,6 +4,7 @@ import {FastTableOption} from "../index";
 import {defaultIfEmpty, isEmpty, isFunction} from "./util";
 import {openDialog} from "./dialog";
 import FastTable from '../components/table'
+import {t} from '../i18n/index.js'
 
 /**
  * pick弹窗选择表格数据
@@ -64,7 +65,7 @@ export function pick({option, multiple = false, dialog = {width: '70%'}}) {
                     const tableRef = instance.getTableRef();
                     const data = multiple ? tableRef.getCheckedRows() : tableRef.getChoseRow();
                     if (isEmpty(data)) {
-                        ElMessage.warning('请选择数据');
+                        ElMessage.warning(t('crud.operation.pleaseSelectData'));
                         return; // 返回非Promise则不会关闭对话框
                     }
                     return Promise.resolve(data);

@@ -183,7 +183,8 @@ export default {
           bodyRowHeight: '45px',
           formLabelWidth: 'auto', // 默认为auto
           formLayout: 'id,avatarUrl, name|age|sex, graduated|state|state, loveId|loveName|loveName, info, birthday|luckTime, resumeUrl, createTime', // 弹窗表单布局设置
-          quickFilterSpan: 'auto' // 或者数字代表快筛有几列
+          quickFilterSpan: 'auto', // 或者数字代表快筛有几列
+          showQuickFilterBtn: true, // 展示快筛按钮
         },
         beforeReset({query}) {
           return Promise.resolve()

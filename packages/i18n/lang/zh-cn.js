@@ -24,7 +24,15 @@ export default {
       selectAll: '全选',
       selectNone: '取消全选',
       selectInvert: '反选',
-      checkedRowDialogTitle: '所有勾选的行'
+      checkedRowDialogTitle: '所有勾选的行',
+      notSelectDeleteTip: '请点选/勾选要删除的行项',
+      cannotAddWhen: '当状态为{status}时, 不允许新增',
+      cannotEditWhen: '当状态为{status}时, 不允许编辑',
+      notDataDelete: '无可删除数据',
+      exitEditMode: '请先退出编辑状态',
+      choseOrCheckNewRows: '请先选择或勾选要移除的新建行',
+      onlyRemoveNewRows: '只能移除新建的行',
+      notExportable: '当前表格不允许导出',
     },
 
     // 操作相关
@@ -41,7 +49,10 @@ export default {
       updateFail: '更新失败',
       addSuccess: '新增成功',
       addFail: '新增失败',
-      clearCheckedRow: '清除选中记录'
+      clearCheckedRow: '清除选中记录',
+      successInsert: '成功插入{count}条记录',
+      successUpdate: '成功更新{count}条记录',
+      pleaseSelectData: '请选择数据',
     },
 
     // 表单相关

@@ -3,7 +3,8 @@
     <div ref="title" class="fc-fast-table-title" v-if="showTitle && option.title">{{ option.title }}</div>
     <div ref="quick" class="fc-quick-filter-wrapper" :style="quickFilterWrapperStyle" v-if="queryable">
       <!-- 快筛 -->
-      <quick-filter-form ref="quickForm" :filters="quickFilters" :option="option">
+      <quick-filter-form ref="quickForm" :filters="quickFilters" :option="option"
+                         @search="pageLoad" @reset="resetFilter">
         <slot name="quickFilter" v-bind="scopeParam"></slot>
       </quick-filter-form>
     </div>
@@ -138,7 +139,7 @@
 import {nextTick} from "vue"
 import {ElMessage, ElMessageBox} from 'element-plus'
 import {remove} from 'lodash-es'
-import { useI18n } from '../../../i18n/index.js'
+import {useI18n} from '../../../i18n/index.js'
 import QuickFilterForm from "./quick-filter-form.vue"
 import EasyFilter from "./easy-filter.vue"
 import StoredFilter from "./stored-filter.vue"
@@ -507,7 +508,7 @@ export default {
               }).catch(err => {
                 const loadFail = this.option.loadFail;
                 loadFail.call(context, {query: this.pageQuery, error: err}).then(() => {
-                  ElMessage.error('加载失败:' + JSON.stringify(err));
+                  ElMessage.error('Fail:' + JSON.stringify(err));
                 })
                 reject(err);
               })
@@ -606,7 +607,8 @@ export default {
         return
       }
       if (this.status !== 'normal' && this.status !== 'insert') {
-        ElMessage.warning(`当前表格处于${this.status}状态, 不允许新增`);
+        // ElMessage.warning(`当前表格处于${this.status}状态, 不允许新增`);
+        ElMessage.warning(`${this.t('crud.table.cannotAddWhen', {status: this.status})}`);
         return
       }
       const {context, beforeToInsert} = this.option;
@@ -629,7 +631,7 @@ export default {
       const enableMulti = this.enableMulti
       let beDeleteRows = (enableMulti ? this.checkedRows : (util.isEmpty(this.choseRow) ? [] : [this.choseRow]))
       if (util.isEmpty(beDeleteRows)) {
-        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要${this.t('crud.delete')}的行`)
+        ElMessage.warning(`${this.t('crud.table.notSelectDeleteTip')}`)
         return
       }
 
@@ -672,7 +674,8 @@ export default {
           param = {fatRows: confirmedRows, rows: confirmedRows.map(r => r.row)}
           beforeDelete.call(context, param).then((postData) => {
             if (postData.length === 0) {
-              ElMessage.warning('无可删除数据')
+              // ElMessage.warning('无可删除数据')
+              ElMessage.warning(this.t('crud.table.notDataDelete'))
               return
             }
             const {deleteUrl, batchDeleteUrl, deleteSuccess, deleteFail} = this.option;
@@ -867,7 +870,8 @@ export default {
         return
       }
       if (this.status !== 'normal' && this.status !== 'update') {
-        ElMessage.warning(`当前表格处于${this.status}状态, 不允许更新`);
+        // ElMessage.warning(`当前表格处于${this.status}状态, 不允许更新`);
+        ElMessage.warning(`${this.t('crud.table.cannotEditWhen', {status: this.status})}`);
         return
       }
       const {context, beforeToUpdate} = this.option;
@@ -883,7 +887,8 @@ export default {
      */
     activeBatchEdit() {
       if (this.status !== 'normal') {
-        ElMessage.warning('请先退出编辑状态')
+        // ElMessage.warning('请先退出编辑状态')
+        ElMessage.warning(this.t('crud.table.exitEditMode'))
         return;
       }
       const {context, beforeToUpdate} = this.option
@@ -981,14 +986,16 @@ export default {
       const enableMulti = this.enableMulti
       let beRemoveRows = (enableMulti ? this.checkedRows : (util.isEmpty(this.choseRow) ? [] : [this.choseRow]))
       if (isEmpty(beRemoveRows)) {
-        ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要移除的新建行`)
+        // ElMessage.warning(`请先${enableMulti ? '勾' : '点'}选要移除的新建行`)
+        ElMessage.warning(this.t('crud.table.choseOrCheckNewRows'))
         return
       }
       if (beRemoveRows.some(r => r.status !== 'insert')) {
-        ElMessage.warning('只能移除新建的行')
+        // ElMessage.warning('只能移除新建的行')
+        ElMessage.warning(this.t('crud.table.onlyRemoveNewRows'))
         return
       }
-      ElMessageBox.confirm(`确定移除这${beRemoveRows.length}条记录吗？`, '移除确认', {}).then(() => {
+      ElMessageBox.confirm(this.t('crud.operation.confirmDelete', {count: beRemoveRows.length}), this.t('crud.confirm'), {}).then(() => {
         remove(this.list, item => beRemoveRows.indexOf(item) > -1)
         if (this.editRows.length === 0) {
           this.exitEditStatus()
@@ -1037,7 +1044,8 @@ export default {
      */
     exportData() {
       if (!this.exportable) {
-        ElMessage.warning('当前表格不允许导出')
+        // ElMessage.warning('当前表格不允许导出')
+        ElMessage.warning(this.t('crud.table.notExportable'))
         return
       }
       this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);

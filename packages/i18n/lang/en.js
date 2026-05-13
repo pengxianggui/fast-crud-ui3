@@ -24,7 +24,15 @@ export default {
       selectAll: 'Select All',
       selectNone: 'Select None',
       selectInvert: 'Invert Selection',
-      checkedRowDialogTitle: 'All checked rows'
+      checkedRowDialogTitle: 'All checked rows',
+      notSelectDeleteTip: 'Please select or check items to delete',
+      cannotAddWhen: 'Cannot add when status is {status}',
+      cannotEditWhen: 'Cannot edit when status is {status}',
+      notDataDelete: 'No data to delete',
+      exitEditMode: 'Please exit edit mode first',
+      choseOrCheckNewRows: 'Please choose or check new rows to remove',
+      onlyRemoveNewRows: 'Only new rows can be removed',
+      notExportable: 'Not Exportable',
     },
 
     // Operation related
@@ -42,6 +50,9 @@ export default {
       addSuccess: 'Add successful',
       addFail: 'Add failed',
       clearCheckedRow: 'Uncheck rows',
+      successInsert: 'Success insert record: {count}',
+      successUpdate: 'Success update record: {count}',
+      pleaseSelectData: 'Please select',
     },
 
     // Form related
@@ -182,7 +193,7 @@ export default {
       page: 'Page',
       total: 'Total {total} records',
       size: '{size} per page'
-    }
+    },
   },
   common: {
     yes: 'yes',
