@@ -51,8 +51,8 @@ export default {
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow;
       const value = (status === 'normal' ? row[this.prop] : editRow[this.prop]);
-      const {format} = config[this.prop]['props']
-      return formatToLocalTime(value, defaultIfBlank(format, 'YYYY-MM-DD HH:mm:ss'));
+      const {type='date', format} = config[this.prop]['props']
+      return formatToLocalTime(value, defaultIfBlank(format, type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD'));
     }
   }
 }
