@@ -47,8 +47,7 @@
     <fast-table-column label="仰慕者姓名" prop="loveName"/>
     <fast-table-column-select label="仇人" prop="foeId" quick-filter :options="personOption" width="100"
                               val-key="id" label-key="name"/>
-    <fast-table-column-textarea label="简介" prop="info" link="withdrawSampleDetail?id={id}&pageType=detail"
-                                :show-length="20"/>
+    <fast-table-column-textarea label="简介" prop="info" :show-length="20"/>
     <fast-table-column-switch label="已毕业" prop="graduated" required
                               active-text="Y" inactive-text="N" quick-filter/>
     <fast-table-column-time-picker label="幸运时刻" prop="luckTime" width="120px" required

@@ -1,7 +1,12 @@
 import _ from 'lodash-es'
 import moment from "moment/moment"
-import {ElMessage} from "element-plus";
-
+import {ElMessage} from "element-plus"
+import dayjs from "dayjs"
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+// 必须注册这两个核心插件
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 /**
  * 剪掉字符串指定的前缀, 如果不是此前缀开头，则直接返回str
@@ -727,6 +732,37 @@ export const getBeginOfMonth = function (date) {
     d.setDate(1);  // 设置为当月的 1 号
     d.setHours(0, 0, 0, 0);
     return d
+}
+
+/**
+ * 利用dayjs格式化日期为浏览器本地时间
+ * @param date
+ * @param formatStr
+ */
+export const formatToLocalTime = function (dateStr, formatStr = 'YYYY-MM-DD HH:mm:ss') {
+    if (!dateStr) return dateStr;
+    try {
+        return dayjs(dateStr).format(formatStr);
+    } catch (e) {
+        console.error(e);
+        return dateStr;
+    }
+}
+
+/**
+ * 利用dayjs格式化日期为指定时区的时间
+ * @param date 日期字符串
+ * @param zone 时区，默认是'Asia/Shanghai'
+ * @param formatStr 格式化字符串
+ */
+export const formatToTargetZone = function (dateStr, zone = 'Asia/Shanghai', formatStr = 'YYYY-MM-DD HH:mm:ss') {
+    if (!dateStr) return dateStr;
+    try {
+        return dayjs(dateStr).tz(zone).format(formatStr);
+    } catch (e) {
+        console.error(e);
+        return dateStr;
+    }
 }
 
 /**

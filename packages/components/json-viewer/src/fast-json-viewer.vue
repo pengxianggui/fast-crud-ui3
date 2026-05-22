@@ -6,13 +6,14 @@
                 :expandDepth="expandDepth"
                 :theme="theme"
                 v-if="isJson"></JsonViewer>
-    <span style="word-wrap: break-word; white-space: pre-line;" v-else>{{ value }}</span>
+    <span style="word-wrap: break-word; white-space: pre-line;" v-else v-html="purifyHtml"></span>
   </div>
 </template>
 
 <script>
 import {defineComponent} from "vue";
 import {JsonViewer} from "vue3-json-viewer"
+import DOMPurify from 'dompurify'
 import "vue3-json-viewer/dist/vue3-json-viewer.css"
 import {isObject} from "../../../util/util.js";
 
@@ -44,6 +45,9 @@ export default defineComponent({
   computed: {
     isJson() {
       return isObject(this.value)
+    },
+    purifyHtml() {
+      return this.isJson ? this.value : DOMPurify.sanitize(this.value)
     }
   }
 })

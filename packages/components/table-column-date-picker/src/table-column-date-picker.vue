@@ -36,6 +36,7 @@
 
 <script>
 import tableColumn from "../../../mixins/table-column"
+import {defaultIfBlank, formatToLocalTime} from "../../../util/util.js";
 
 export default {
   name: "FastTableColumnDatePicker",
@@ -44,6 +45,14 @@ export default {
     minWidth: {
       type: String,
       default: () => '150px'
+    }
+  },
+  methods: {
+    showLabel(fatRow) {
+      const {row, editRow, status, config} = fatRow;
+      const value = (status === 'normal' ? row[this.prop] : editRow[this.prop]);
+      const {format} = config[this.prop]['props']
+      return formatToLocalTime(value, defaultIfBlank(format, 'YYYY-MM-DD HH:mm:ss'));
     }
   }
 }
