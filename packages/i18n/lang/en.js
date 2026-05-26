@@ -39,6 +39,7 @@ export default {
     operation: {
       success: 'Operation successful',
       fail: 'Operation failed',
+      confirmPageLoad: 'Currently in editing status, click Confirm to lose the edited content?',
       confirmDelete: 'Are you sure you want to delete {count} selected records?',
       confirmDeleteSingle: 'Are you sure you want to delete this record?',
       deleteSuccess: 'Delete successful',
@@ -53,6 +54,9 @@ export default {
       successInsert: 'Success insert record: {count}',
       successUpdate: 'Success update record: {count}',
       pleaseSelectData: 'Please select',
+      valid: {
+        unique: '[{label}]already exists value:{value}, keep unique please!'
+      }
     },
 
     // Form related

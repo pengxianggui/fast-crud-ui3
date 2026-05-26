@@ -1,6 +1,7 @@
 import {isEmpty, isFunction, isNull, isUndefined} from "../util/util.js";
 import FastTableOption from "./fastTableOption.js";
 import Opt from './opt.js'
+import {t} from '../i18n/index.js'
 
 /**
  * 编辑组件配置
@@ -48,7 +49,7 @@ class EditComponentConfig {
                     const editRows = tableOption.ref.editRows.map(fatRow => fatRow.editRow)
                     const duplicates = editRows.filter(row => row[rule.field] === value && row[pkField] !== pkVal)
                     if (duplicates.length > 0) {
-                        return Promise.reject(`【${label}】${value}已存在于其它编辑行`)
+                        return Promise.reject(t('crud.operation.valid.unique', {label: label, value: value}))
                     }
                 }
 
@@ -58,7 +59,7 @@ class EditComponentConfig {
                     {col: col, opt: Opt.EQ, val: value}
                 ])
                 if (result) { // 表示存在
-                    return Promise.reject(`【${label}】${value}已存在`)
+                    return Promise.reject(t('crud.operation.valid.unique', {label: label, value: value}))
                 }
                 return Promise.resolve()
             }

@@ -39,6 +39,7 @@ export default {
     operation: {
       success: '操作成功',
       fail: '操作失败',
+      confirmPageLoad: '当前处于编辑状态, 点击【确认】将丢失已编辑内容?',
       confirmDelete: '确定要删除选中的 {count} 条记录吗？',
       confirmDeleteSingle: '确定要删除这条记录吗？',
       deleteSuccess: '删除成功',
@@ -53,6 +54,9 @@ export default {
       successInsert: '成功插入{count}条记录',
       successUpdate: '成功更新{count}条记录',
       pleaseSelectData: '请选择数据',
+      valid: {
+        unique: '[{label}]已经存在值:{value}, 请确保唯一!'
+      }
     },
 
     // 表单相关

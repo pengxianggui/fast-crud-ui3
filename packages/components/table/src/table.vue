@@ -448,7 +448,7 @@ export default {
         return
       }
       const confirmPromise = (this.status !== 'normal')
-          ? ElMessageBox.confirm('当前处于编辑状态, 点击【确定】将丢失已编辑内容?', '提示', {
+          ? ElMessageBox.confirm(this.t('crud.operation.confirmPageLoad'), this.t('crud.confirm'), {
             confirmButtonText: this.t('crud.confirm'),
             cancelButtonText: this.t('crud.cancel')
           })
