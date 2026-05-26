@@ -12,9 +12,9 @@
       <div class="fc-operation-filter" v-if="queryable">
         <!-- 简筛区 -->
         <easy-filter :filters="easyFilters" :size="option.style.size" @search="pageLoad"/>
-        <el-button type="primary" class="fc-easy-filter-btn" :size="option.style.size" :icon="Search"
+        <el-button class="fc-easy-filter-btn-search" type="primary" :size="option.style.size" :icon="Search"
                    @click="pageLoad"/>
-        <el-button type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
+        <el-button class="fc-easy-filter-btn-reset" type="info" plain :size="option.style.size" :icon="RefreshLeft" @click="resetFilter"/>
         <!-- 存筛区 -->
         <stored-filter class="fc-stored-btn-wrapper"
                        ref="storedFilter"
@@ -28,22 +28,20 @@
       <div class="fc-fast-table-operation-btn">
         <slot name="button" v-bind="scopeParam"></slot>
         <template v-if="status === 'normal'">
-          <el-button :size="option.style.size" @click="toInsert"
-                     v-if="insertable">{{ t('crud.add') }}
-          </el-button>
-          <el-button type="danger" plain :size="option.style.size" @click="deleteRow"
-                     v-if="deletable">{{ t('crud.delete') }}
-          </el-button>
+          <el-button class="fc-fast-table-operation-btn-add" :size="option.style.size" @click="toInsert"
+                     v-if="insertable">{{ t('crud.add') }}</el-button>
+          <el-button class="fc-fast-table-operation-btn-delete" type="danger" plain :size="option.style.size" @click="deleteRow"
+                     v-if="deletable">{{ t('crud.delete') }}</el-button>
         </template>
         <template v-if="(updatable && status === 'update') || (insertable && status === 'insert')">
-          <el-button type="danger" plain @click="removeNewRows" v-if="status === 'insert' && editRows.length > 0">
-            {{ t('crud.delete') }}
-          </el-button>
-          <el-button type="primary" :size="option.style.size" @click="saveEditRows">{{ t('crud.save') }}</el-button>
-          <el-button :size="option.style.size" @click="toInsert" v-if="status === 'insert' && insertable">
-            {{ t('crud.add') }}
-          </el-button>
-          <el-button :size="option.style.size" @click="cancelEditStatus">{{ t('crud.cancel') }}</el-button>
+          <el-button class="fc-fast-table-operation-btn-remove" type="danger" plain @click="removeNewRows"
+                     v-if="status === 'insert' && editRows.length > 0">{{ t('crud.delete') }}</el-button>
+          <el-button class="fc-fast-table-operation-btn-save" type="primary" :size="option.style.size"
+                     @click="saveEditRows">{{ t('crud.save') }}</el-button>
+          <el-button class="fc-fast-table-operation-btn-add-again" :size="option.style.size" @click="toInsert"
+                     v-if="status === 'insert' && insertable">{{ t('crud.add') }}</el-button>
+          <el-button class="fc-fast-table-operation-btn-canel" :size="option.style.size"
+                     @click="cancelEditStatus">{{ t('crud.cancel') }}</el-button>
         </template>
         <!-- 下拉按钮-更多 -->
         <el-dropdown class="fc-fast-table-operation-more" :size="option.style.size" v-if="showMoreBtn">
@@ -55,7 +53,7 @@
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item @click="activeBatchEdit" v-if="updatable">
+              <el-dropdown-item class="fc-fast-table-operation-more-batch-edit" @click="activeBatchEdit" v-if="updatable">
                 <el-icon>
                   <Edit/>
                 </el-icon>
@@ -63,7 +61,7 @@
               </el-dropdown-item>
               <!-- TODO 1.6 批量修改: 指定一些记录，批量将某些字段修改为指定值 -->
               <!--  <el-dropdown-item @click="activeBatchUpdate" >批量修改</el-dropdown-item>-->
-              <el-dropdown-item @click="exportData" v-if="exportable">
+              <el-dropdown-item class="fc-fast-table-operation-more-export" @click="exportData" v-if="exportable">
                 <el-icon>
                   <Download/>
                 </el-icon>
