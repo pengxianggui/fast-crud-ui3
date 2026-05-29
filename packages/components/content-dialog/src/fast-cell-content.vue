@@ -14,10 +14,17 @@ import FastJsonViewer from "../../json-viewer/src/fast-json-viewer.vue"
 import * as util from "../../../util/util.js"
 import {openDialog} from "../../../util/dialog.js"
 import FastTableOption from "../../../model/fastTableOption.js"
+import {useI18n} from "../../../i18n/index.js";
 
 export default {
   name: "FastCellContent",
   components: {FastJsonViewer},
+  setup() {
+    const {t} = useI18n()
+    return {
+      t
+    }
+  },
   props: {
     value: {
       type: null // 任意类型
@@ -94,7 +101,7 @@ export default {
           value: (util.isObject(this.value) || util.isJsonStr(this.value)) ? util.toJson(this.value) : this.value
         },
         dialogProps: {
-          title: '值预览',
+          title: this.t('crud.table.valuePreview'),
           width: '500px'
         }
       })

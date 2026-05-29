@@ -33,6 +33,7 @@ export default {
       choseOrCheckNewRows: '请先选择或勾选要移除的新建行',
       onlyRemoveNewRows: '只能移除新建的行',
       notExportable: '当前表格不允许导出',
+      valuePreview: '值预览'
     },
 
     // 操作相关

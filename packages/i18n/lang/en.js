@@ -33,6 +33,7 @@ export default {
       choseOrCheckNewRows: 'Please choose or check new rows to remove',
       onlyRemoveNewRows: 'Only new rows can be removed',
       notExportable: 'Not Exportable',
+      valuePreview: 'Preview data'
     },
 
     // Operation related
