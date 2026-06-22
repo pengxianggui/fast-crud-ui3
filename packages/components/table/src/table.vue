@@ -991,7 +991,10 @@ export default {
         ElMessage.warning(this.t('crud.table.onlyRemoveNewRows'))
         return
       }
-      ElMessageBox.confirm(this.t('crud.operation.confirmDelete', {count: beRemoveRows.length}), this.t('crud.confirm'), {}).then(() => {
+      ElMessageBox.confirm(this.t('crud.operation.confirmDelete', {count: beRemoveRows.length}), this.t('crud.confirm'), {
+        confirmButtonText: this.t('crud.confirm'),
+        cancelButtonText: this.t('crud.cancel')
+      }).then(() => {
         remove(this.list, item => beRemoveRows.indexOf(item) > -1)
         if (this.editRows.length === 0) {
           this.exitEditStatus()
