@@ -66,7 +66,7 @@
     "axios": "^1.7.9",
     "element-plus": "^2.3.12",
     "vue": "^3.4.0",
-    "vue-i18n": "^12.0.0-alpha.3"
+    "vue-i18n": "^9.2.2"
   },
   "homepage": "http://pengxg.cc/tags/fast-crud-ui3",
   "author": {
