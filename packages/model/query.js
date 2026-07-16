@@ -1,4 +1,4 @@
-import {caseToCamel, isBoolean, isEmpty} from "../util/util.js"
+import {caseToCamel, isBoolean, isEmpty, isObject} from "../util/util.js"
 import Cond from './cond.js'
 import Order from './order.js'
 
@@ -101,6 +101,24 @@ class Query {
      */
     getConds(col) {
         return this.conds.filter(cond => cond.col === col);
+    }
+
+    /**
+     * 向 extra 中添加自定义扩展属性和值
+     * @param obj
+     */
+    setExtra(obj) {
+        if (isEmpty(obj) || !isObject(obj)) {
+            return;
+        }
+        this.extra = {...obj};
+    }
+
+    /**
+     * 清空 extra
+     */
+    clearExtra() {
+        this.extra = {};
     }
 
     /**

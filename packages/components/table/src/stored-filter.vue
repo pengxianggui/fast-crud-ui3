@@ -58,7 +58,7 @@ export default {
   },
   data() {
     return {
-      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], buildIn: false, compatible: true}
+      storeGroups: [], // 存筛分组列表。元素格式: {label: '存筛名', filters: [{..}], extra: {}, buildIn: false, compatible: true}
     }
   },
   computed: {
@@ -181,6 +181,24 @@ export default {
         effectFilters.push(...filters)
       }
       return effectFilters
+    },
+    /**
+     * 获取生效的扩展查询字段，通过勾选的存筛组(groupLabels), 从 storeGroups 中解析出所有生效的 extra，合并后返回
+     * @return {{}}
+     */
+    getStoreExtra() {
+      const effectExtra = {}
+      for (const g of this.storeGroups) {
+        if (this.groupLabels.indexOf(g.label) === -1) {
+          continue
+        }
+        const extra = util.isFunction(g.extra) ? g.extra.call(this.tableOption.context) : g.extra
+        util.assert(util.isObject(extra), `the extra prop of group(${g.label}) is wrong type, it should be a object, or a function that return a object`)
+        util.merge(effectExtra, extra, false, false, (obj1, obj2, key) => {
+          obj1[key] = obj2[key] // 对于同名的扩展属性，后者优先
+        })
+      }
+      return effectExtra
     }
   }
 }

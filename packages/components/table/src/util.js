@@ -428,13 +428,13 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
         return filterGroups
     }
     for (let i = 0; i < condGroups.length; i++) {
-        const {label, conds = []} = condGroups[i]
+        const {label, conds = [], extra = {}} = condGroups[i]
         if (util.isEmpty(label)) {
             console.error('label can not be empty in storeFilters of tableOption')
             continue
         }
-        if (util.isEmpty(conds)) {
-            console.error('conds can not be empty in storeFilters of tableOption')
+        if (util.isEmpty(conds) && util.isEmpty(extra)) {
+            console.error(`conds and extra are both empty in storeFilters of tableOption: ${label}`)
             continue
         }
         if (!util.isArray(conds)) {
@@ -444,6 +444,7 @@ export function buildFilterGroups(tableOption, columnConfig, condGroups, buildIn
         const filterGroup = {
             label: label,
             filters: [],
+            extra: { ...extra },
             buildIn: buildIn,
             compatible: true
         }

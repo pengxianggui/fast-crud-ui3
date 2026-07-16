@@ -415,10 +415,10 @@ export function deepClone(obj) {
  * @param opt2 {Object} 不会改变opt2。如果不是object类型或者是null类型，则直接返回op1
  * @param deep {boolean} 是否深拷贝模式, 默认true
  * @param ignoreNullAndUndefined {boolean} 若为true, 则当opt2中的键值如果是null或undefined, 则不会覆盖到opt1中。默认是false
- * @param coverFn {Function} 具体k-v合并时的断言。当opt1, opt2有相同key时, 有时我们也希望能合并, 这时可以通过此参数来决定， 提供一个函数，参数: opt1, opt2, key, 返回true/false， 为true则表示也合并, 否则不合并
+ * @param coverFn {Function} 具体k-v合并时的断言。当opt1, opt2有相同key时, 有时我们也希望能合并, 这时可以通过此参数来决定， 提供一个函数，参数: opt1, opt2, key, 自行决定如何覆盖
  * @returns {Object} 返回merge后的opt1的深拷贝对象
  */
-export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, coverFn = (obj1, obj2, key, valueOfObj2) => {
+export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, coverFn = (obj1, obj2, key) => {
 }) {
     if (opt1 === null || !isObject(opt1) || opt2 === null || !isObject(opt2)) {
         return opt1;
@@ -440,8 +440,7 @@ export function merge(opt1, opt2, deep = true, ignoreNullAndUndefined = false, c
                 if (isObject(valueOfObj1) && isObject(valueOfObj2) && deep) {
                     deepMerge(valueOfObj1, valueOfObj2);
                 } else {
-                    coverFn(obj1, obj2, key, valueOfObj2)
-                    // obj1[key] = deepClone(valueOfObj2);
+                    coverFn(obj1, obj2, key)
                 }
             }
         }

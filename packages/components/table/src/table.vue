@@ -303,7 +303,6 @@ export default {
   data() {
     const size = this.option.pagination.size;
     const pageQuery = new PageQuery(1, size);
-    pageQuery.extra = this.option.condExtra
     if (!ifBlank(this.option.sortField)) {
       pageQuery.addOrder(this.option.sortField, !this.option.sortDesc);
     }
@@ -454,6 +453,9 @@ export default {
           })
           : Promise.resolve()
       confirmPromise.then(() => {
+        // 自定义扩展字段
+        const extra = {...this.option.condExtra, ...this.pageQuery.extra}
+        // 标准条件
         const conds = []
         // 添加快筛条件
         const quickConds = this.quickFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
@@ -469,10 +471,14 @@ export default {
           const storeFilters = this.$refs.storedFilter.getStoreFilters();
           const storedConds = storeFilters.filter(f => !f.disabled && f.isEffective()).map(f => f.getConds()).flat()
           conds.push(...storedConds)
+          // 添加存筛中的扩展属性
+          const storeExtra = this.$refs.storedFilter.getStoreExtra();
+          util.merge(extra, storeExtra, false, true, (obj1, obj2, key) => obj1[key] = obj2[key] )
         }
         // 添加固定的预置条件
         conds.push(...this.option.conds);
         this.pageQuery.setConds(conds);
+        this.pageQuery.setExtra(extra);
         const context = this.option.context;
         const beforeLoad = this.option.beforeLoad;
         return new Promise((resolve, reject) => {

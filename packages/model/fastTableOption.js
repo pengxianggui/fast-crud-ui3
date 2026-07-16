@@ -217,8 +217,8 @@ class FastTableOption {
      */
     conds = []; // 固定的筛选条件，内部无法取消
     /**
-     * 开发者预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}]}] <br/>
-     * 注意: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效。
+     * 开发者预置的条件组——即存筛，例如: [{label: '成年男孩', conds: [{col: 'sex', val: '1'}, {col: 'age', opt: Opt.LE, val: 18}], extra: {}}] <br/>
+     * 注意: 要求conds中每个col都必须启用了filter，只要有一项未启用则整个筛选组无效。extra 为自定义的扩展属性，注意: 若同时勾选了多个存筛，多个存筛定义了同名扩展属性，则后者覆盖前者
      * @type {[]}
      */
     condGroups = [];
@@ -228,7 +228,6 @@ class FastTableOption {
      * @type {{}}
      */
     condExtra = {};
-
     /**
      * 重置按钮点击前触发的钩子函数
      * @type {Function}

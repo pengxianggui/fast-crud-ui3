@@ -18,6 +18,12 @@
           </div>
         </template>
         <div class="fc-dynamic-filter-list">
+          <!-- TODO 除了支持渲染 extra, 还应支持新增存筛时，手选 extra 中定义的字段。思路：
+                对 tableOption 中的condExtra 格式做一个大升级，不仅仅是纯key-value 的键值对了，还得提供 label、甚至组件信息，拔高到和 Filter 同等结构 -->
+          <el-button link v-for="(val, key) in g.extra" class="fc-dynamic-filter-open-btn">
+            {{key}} = {{val}}
+          </el-button>
+          <span style="margin-right: 10px; color: #909090;" v-if="g.extra">{{ t('crud.filter.and') }}</span>
           <el-popover class="fc-stored-filter-item-cond" popper-style="max-width: none; width: auto; z-index: 3000"
                       v-for="(f, index) in g.filters" :key="f.col + '.' + index" :disabled="g.buildIn">
             <template v-slot:reference>
