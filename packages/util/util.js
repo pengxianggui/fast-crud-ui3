@@ -9,6 +9,15 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 
 /**
+ * 保存规则(rule)上"获取当前编辑行"回调的键。
+ * 使用 Symbol 而非普通字符串属性，是为了避免影响 async-validator 的校验器选择逻辑：
+ * async-validator 会根据 Object.keys(rule) 判断是纯 required 规则还是类型规则，
+ * 若使用可枚举字符串属性(如 getRow)，会导致纯 required 规则被误判为 string 类型规则，
+ * 从而对数字类型的值(如下拉选择的 id)执行字符串类型校验而报错。
+ */
+export const GET_ROW = Symbol('getRow')
+
+/**
  * 剪掉字符串指定的前缀, 如果不是此前缀开头，则直接返回str
  * @param str 待操作的字符串
  * @param prefix 指定前缀

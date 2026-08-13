@@ -18,7 +18,7 @@ export function colValid(editRow, config) {
             resolve()
             return
         }
-        props.rules.forEach(rule => rule.getRow = (() => editRow)) // 为了自定义验证器里能获取到当前行 煞费苦心
+        props.rules.forEach(rule => rule[util.GET_ROW] = (() => editRow)) // 为了自定义验证器里能获取到当前行 煞费苦心
         const validator = new Schema({
             [col]: util.defaultIfEmpty(props.rules, [])
         });

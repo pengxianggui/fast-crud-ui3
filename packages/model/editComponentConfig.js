@@ -1,4 +1,4 @@
-import {isEmpty, isFunction, isNull, isUndefined} from "../util/util.js";
+import {isEmpty, isFunction, isNull, isUndefined, GET_ROW} from "../util/util.js";
 import FastTableOption from "./fastTableOption.js";
 import Opt from './opt.js'
 import {t} from '../i18n/index.js'
@@ -34,7 +34,7 @@ class EditComponentConfig {
                     return Promise.resolve()
                 }
 
-                const {getRow} = rule
+                const getRow = rule[GET_ROW]
                 if (!isFunction(getRow)) {
                     // 无法获取当前行
                     console.error('无法进行唯一性校验:无法获取当前记录完整数据')

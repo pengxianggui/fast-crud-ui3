@@ -30,7 +30,7 @@
 <script>
 import {ElMessage} from 'element-plus';
 import FastTableOption from "../../../model/fastTableOption.js";
-import {isEmpty} from "../../../util/util";
+import {isEmpty, GET_ROW} from "../../../util/util";
 import {colEditable} from "./util";
 import { useI18n } from '../../../i18n/index.js';
 
@@ -56,7 +56,7 @@ export default {
     for (const col in this.config) {
       const {component, props: {rules = []}} = this.config[col];
       if (!isEmpty(rules)) {
-        rules.forEach(rule => rule.getRow = (() => formData)) // 为了自定义验证器里能获取到当前行 煞费苦心
+        rules.forEach(rule => rule[GET_ROW] = (() => formData)) // 为了自定义验证器里能获取到当前行 煞费苦心
         ruleMap[col] = rules;
       }
       if (component === 'fast-object-picker') { // 对于FastObjectPicker需要特别把formData传进去
