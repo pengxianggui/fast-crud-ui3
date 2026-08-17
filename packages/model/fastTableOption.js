@@ -9,6 +9,23 @@ import Cond from './cond.js'
 import {t} from '../i18n/index.js'
 
 /**
+ * 默认的固定筛选条件: 空数组。显式标注类型, 以支持"数组或返回Conds数组的函数"两种配置
+ * @type {any[] | (() => any[])}
+ */
+const DEFAULT_CONDS = [];
+
+/**
+ * 默认布尔开关: true。显式标注类型, 以支持"布尔值或返回布尔值的函数"两种配置
+ * @type {boolean | ((scope: any) => boolean)}
+ */
+const DEFAULT_TRUE = true;
+/**
+ * 默认布尔开关: false。显式标注类型, 以支持"布尔值或返回布尔值的函数"两种配置
+ * @type {boolean | ((scope: any) => boolean)}
+ */
+const DEFAULT_FALSE = false;
+
+/**
  * @typedef {import('vue').ComponentPublicInstance} ComponentInstance
  */
 class FastTableOption {
@@ -30,7 +47,7 @@ class FastTableOption {
     title = '';
     /**
      * 是否显示标题。默认true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     showTitle = true; // 是否显示标题
     /**
@@ -95,32 +112,32 @@ class FastTableOption {
     existsUrl = '';
     /**
      * 是否启用双击编辑。默认true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     enableDblClickEdit = true;
     /**
      * 是否启用表格多选。默认启用
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     enableMulti = true;
     /**
      * 是否启用序号列
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     enableIndex = false;
     /**
      * 启用列过滤：即动筛。默认启用，若为false, 则表头均无法点击
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     enableColumnFilter = true;
     /**
      * 是否启用过滤条件缓存(页面刷新后过滤条件不丢失),若为true则缓存到session中,有效期为会话。默认启用
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     enableFilterCache = true;
     /**
      * 是否延迟加载分页数据，即不立即加载数据。默认false，若设置true, 则表格渲染后不立即加载数据，需要手动触发加载。
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     lazyLoad = false;
     /**
@@ -130,27 +147,27 @@ class FastTableOption {
     editType = 'inline'; // inline/form
     /**
      * 是否允许分页查询。默认为true。若为false, 则查询等按钮会隐藏, 一般静态表格(前端静态数据)有用。
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     queryable = true;
     /**
      * 是否支持内置新建功能。默认为true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     insertable = true;
     /**
      * 是否支持内置编辑。默认true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     updatable = true;
     /**
      * 是否支持内置删除。默认true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     deletable = true;
     /**
      * 是否支持导出。默认true
-     * @type {boolean}
+     * @type {boolean | ((scope: any) => boolean)}
      */
     exportable = true;
     /**
@@ -339,7 +356,7 @@ class FastTableOption {
                     context,
                     id = '',
                     title = '',
-                    showTitle = true,
+                    showTitle = DEFAULT_TRUE,
                     module = '', // deprecated 1.6, 替换为baseUrl
                     baseUrl = '',
                     pageUrl = '',
@@ -353,18 +370,18 @@ class FastTableOption {
                     uploadUrl = '',
                     exportUrl = '',
                     existsUrl = '',
-                    enableDblClickEdit = true,
-                    enableMulti = true,
-                    enableIndex = false,
-                    enableColumnFilter = true,
-                    enableFilterCache = true,
-                    lazyLoad = false,
+                    enableDblClickEdit = DEFAULT_TRUE,
+                    enableMulti = DEFAULT_TRUE,
+                    enableIndex = DEFAULT_FALSE,
+                    enableColumnFilter = DEFAULT_TRUE,
+                    enableFilterCache = DEFAULT_TRUE,
+                    lazyLoad = DEFAULT_FALSE,
                     editType = 'inline',
-                    queryable = true,
-                    insertable = true,
-                    updatable = true,
-                    deletable = true,
-                    exportable = true,
+                    queryable = DEFAULT_TRUE,
+                    insertable = DEFAULT_TRUE,
+                    updatable = DEFAULT_TRUE,
+                    deletable = DEFAULT_TRUE,
+                    exportable = DEFAULT_TRUE,
                     idField = 'id',
                     createTimeField = '',
                     sortField = '',
@@ -377,7 +394,7 @@ class FastTableOption {
                     },
                     style = {},
                     render = () => [],
-                    conds = [],
+                    conds = DEFAULT_CONDS,
                     condGroups = [],
                     condExtra = {},
                     beforeReset = ({query}) => Promise.resolve(),
@@ -451,6 +468,7 @@ class FastTableOption {
 
         this.context = context;
         this.title = title;
+        this.showTitle = showTitle;
         this.baseUrl = util.defaultIfBlank(baseUrl, module);
         this.id = util.defaultIfBlank(id, this.baseUrl)
         this.pageUrl = util.defaultIfBlank(pageUrl, this.baseUrl + '/page');
