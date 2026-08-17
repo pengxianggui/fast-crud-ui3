@@ -193,6 +193,9 @@ export default {
           continue
         }
         const extra = util.isFunction(g.extra) ? g.extra.call(this.tableOption.context) : g.extra
+        if (util.isUndefined(extra) || util.isNull(extra)) {
+          continue
+        }
         util.assert(util.isObject(extra), `the extra prop of group(${g.label}) is wrong type, it should be a object, or a function that return a object`)
         util.merge(effectExtra, extra, false, false, (obj1, obj2, key) => {
           obj1[key] = obj2[key] // 对于同名的扩展属性，后者优先
