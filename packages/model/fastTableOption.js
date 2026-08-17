@@ -212,8 +212,11 @@ class FastTableOption {
      */
     render; // 渲染函数, 当前table需要被pick时有用
     /**
-     * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消。TODO 支持一个返回Conds数组的函数
-     * @type {Cond[]}
+     * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消。
+     * 支持两种配置:
+     * 1. 数组: 例如 [{col: 'name', opt: '=', val: '曹操'}]
+     * 2. 函数: () => Cond[], 每次查询时调用, 可用于动态生成条件, 函数内this指向当前FastTableOption
+     * @type {Cond[] | (() => Cond[])}
      */
     conds = []; // 固定的筛选条件，内部无法取消
     /**
@@ -442,7 +445,7 @@ class FastTableOption {
         util.assert(util.isFunction(beforeExport), "beforeExport必须是一个函数")
         util.assert(util.isFunction(exportSuccess), "exportSuccess必须是一个函数")
         util.assert(util.isFunction(exportFail), "exportFail必须是一个函数")
-        util.assert(util.isArray(conds), "conds必须是Cond对象(或可转换为Cond对象的json)组成的数组")
+        util.assert(util.isArray(conds) || util.isFunction(conds), "conds必须是Cond数组或返回Cond数组的函数")
         util.assert(util.isArray(condGroups), 'condGroups必须是数组')
         util.assert(util.isObject(condExtra), 'condExtra必须是对象')
 
@@ -480,7 +483,7 @@ class FastTableOption {
         this.moreButtons = moreButtons;
         util.mergeValue(this.pagination, pagination, true, true)
         util.mergeValue(this.style, style, true, true)
-        this.conds = conds.map(c => Cond.build(c));
+        this.conds = typeof conds === 'function' ? conds : conds.map(c => Cond.build(c));
         this.condGroups = condGroups;
         this.condExtra = condExtra;
 
@@ -513,12 +516,27 @@ class FastTableOption {
     }
 
     /**
+     * 获取内置固定筛选条件。
+     * conds配置为函数时, 每次调用都会重新执行该函数, 以便动态生成条件
+     * @return {Cond[]}
+     */
+    getConds() {
+        if (typeof this.conds === 'function') {
+            const conds = this.conds();
+            util.assert(Array.isArray(conds), 'conds函数必须返回Conds数组!')
+            return conds.map(c => Cond.build(c))
+        }
+        return this.conds
+    }
+
+    /**
      * 向内置条件组中增加条件
      * @param cond
      * @param repeatable 是否允许重复的col, 默认false, 即若多次添加相同col的条件, 只会保留最新的
      * @return {FastTableOption} 返回当前对象
      */
     addCond(cond, repeatable = false) {
+        util.assert(Array.isArray(this.conds), '当前conds为函数类型, 不支持动态添加条件, 请在conds函数中返回所需条件!')
         const c = Cond.build(cond)
         if (repeatable === false) {
             this.removeCond(c.col)
@@ -533,6 +551,7 @@ class FastTableOption {
      * @return {FastTableOption} 返回当前对象
      */
     removeCond(col) {
+        util.assert(Array.isArray(this.conds), '当前conds为函数类型, 不支持动态移除条件, 请调整conds函数返回的条件!')
         for (let i = this.conds.length - 1; i >= 0; i--) {
             if (this.conds[i].col === col) {
                 this.conds.splice(i, 1)
@@ -641,7 +660,7 @@ class FastTableOption {
      * @param config
      */
     _list(query, config) {
-        this.conds.forEach(c => query.addCond(c)) // 内置conds添加
+        this.getConds().forEach(c => query.addCond(c)) // 内置conds添加
         return post(this.listUrl, query.params, query.toJson(), config)
     }
 

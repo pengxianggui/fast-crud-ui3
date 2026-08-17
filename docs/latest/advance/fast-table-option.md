@@ -52,7 +52,7 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 | sortField                    | 排序字段(默认取createTimeField或idField)                           | `String`                                                  | `${createTimeField}、${idField}`                                                                     |
 | sortDesc                     | 是否倒序                                                       | `Boolean`                                                 | true                                                                                                |
 | style                        | 表格样式。详见[style](#style)                                     | `Object`                                                  | -                                                                                                   |
-| conds                        | 分页内置条件, 用户无法取消。详见[conds](#conds)                           | `Array`                                                   | `[]`                                                                                                |
+| conds(`1.5.35+`支持函数)     | 分页内置条件, 用户无法取消。详见[conds](#conds)                           | `Array\|Function`                                         | `[]`                                                                                                |
 | condGroups(`1.5.2+`)         | 开发预置的存筛筛选组。详见[condGroups](#condgroups)                     | `Array`                                                   | `[]`                                                                                                |
 | condExtra(`1.5.12+`)         | 扩展筛选字段。详见[condExtra](#condextra)                           | `Object`                                                  | `{}`                                                                                                |
 | moreButtons                  | "更多"下拉按钮的扩展配置。详见[moreButtons](#morebuttons)                | `Array`                                                   | -                                                                                                   |
@@ -98,12 +98,16 @@ FastTableOption必须配合[FastTable](/latest/comp/fast-table)组件使用
 
 ### conds
 
-`conds`接受一个数组，如下:
+`conds`接受一个数组，或者一个返回数组的函数(`1.5.35+`)，如下:
 
 ```js
 conds: [{col: 'name', opt: '=', val: '曹操'}] // 此时opt可以省略
 // 或
 conds: new Cond('name', '=', '曹操') // 此时第二个参数opt不能省略
+// 或 函数: 每次查询时都会调用, 可用于动态生成条件(如根据当前用户、当前时间)
+conds: () => {
+    return [{col: 'status', opt: '=', val: getCurrentStatus()}]
+}
 ```
 
 关于opt的取值详见[Cond](/latest/advance/cond#opt)

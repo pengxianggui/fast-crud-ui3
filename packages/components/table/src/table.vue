@@ -476,7 +476,7 @@ export default {
           util.merge(extra, storeExtra, false, true, (obj1, obj2, key) => obj1[key] = obj2[key] )
         }
         // 添加固定的预置条件
-        conds.push(...this.option.conds);
+        conds.push(...this.option.getConds());
         this.pageQuery.setConds(conds);
         this.pageQuery.setExtra(extra);
         const context = this.option.context;
