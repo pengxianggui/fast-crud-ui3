@@ -58,6 +58,20 @@ export default {
       type: [FastTableOption, Function],
       required: true,
       dispatch: true // 分发到底层组件里
+    },
+    valKey: {
+      type: String,
+      dispatch: true // 分发到底层组件里
+    },
+    labelKey: {
+      type: String,
+      dispatch: true // 分发到底层组件里
+    },
+    // 单选时, 将弹窗选中的对象字段按映射回填到编辑行: key为弹窗表格数据的字段名, value为当前行editRow的目标字段
+    pickMap: {
+      type: Object,
+      default: () => ({}),
+      dispatch: true // 分发到底层组件里
     }
   },
   methods: {

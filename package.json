@@ -1,6 +1,6 @@
 {
   "name": "fast-crud-ui3",
-  "version": "1.5.35-beta.1",
+  "version": "1.5.35-beta.2",
   "type": "module",
   "main": "lib/fast-crud-ui3.cjs.js",
   "module": "lib/fast-crud-ui3.es.js",
@@ -77,7 +77,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pengxianggui/fast-crud-ui3"
+    "url": "git+https://github.com/pengxianggui/fast-crud-ui3.git"
   },
   "files": [
     "lib",

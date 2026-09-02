@@ -3,7 +3,7 @@ import md5 from "md5";
 import * as util from '../util/util.js'
 import {post} from "../util/http.js";
 import {openDialog} from "../util/dialog.js";
-import {deleteFromSessionStorage, getFromSessionStorage, setToSessionStorage} from "../util/cache.js";
+import {getFromSessionStorage, setToSessionStorage} from "../util/cache.js";
 import ExportConfirm from "../components/table/src/export-confirm.vue";
 import Cond from './cond.js'
 import {t} from '../i18n/index.js'
@@ -135,6 +135,11 @@ class FastTableOption {
      * @type {boolean | ((scope: any) => boolean)}
      */
     enableFilterCache = true;
+    /**
+     * /list接口响应的缓存时长(秒)。默认0(不缓存), 用于下拉选项等基于/list的场景防止高频重复请求; 设为小于等于 0可关闭缓存
+     * @type {number}
+     */
+    listCacheSeconds = 0;
     /**
      * 是否延迟加载分页数据，即不立即加载数据。默认false，若设置true, 则表格渲染后不立即加载数据，需要手动触发加载。
      * @type {boolean | ((scope: any) => boolean)}
@@ -375,6 +380,7 @@ class FastTableOption {
                     enableIndex = DEFAULT_FALSE,
                     enableColumnFilter = DEFAULT_TRUE,
                     enableFilterCache = DEFAULT_TRUE,
+                    listCacheSeconds = 0,
                     lazyLoad = DEFAULT_FALSE,
                     editType = 'inline',
                     queryable = DEFAULT_TRUE,
@@ -428,6 +434,7 @@ class FastTableOption {
         util.assert(util.isBoolean(enableIndex) || util.isFunction(enableIndex), 'enableIndex必须为布尔值或返回布尔值的函数')
         util.assert(util.isBoolean(enableColumnFilter) || util.isFunction(enableColumnFilter), 'enableColumnFilter必须为布尔值或返回布尔值的函数')
         util.assert(util.isBoolean(enableFilterCache) || util.isFunction(enableFilterCache), 'enableFilterCache必须为布尔值或返回布尔值的函数')
+        util.assert(util.isNumber(listCacheSeconds), 'listCacheSeconds必须是数字(单位: 秒)')
         util.assert(util.isBoolean(lazyLoad) || util.isFunction(lazyLoad), 'lazyLoad必须为布尔值或返回布尔值的函数')
         util.assert(['inline', 'form'].includes(editType), 'editType必须为inline或form')
         util.assert(util.isBoolean(queryable) || util.isFunction(queryable), 'queryable必须为布尔值或返回布尔值的函数')
@@ -487,6 +494,7 @@ class FastTableOption {
         this.enableIndex = enableIndex;
         this.enableColumnFilter = enableColumnFilter;
         this.enableFilterCache = enableFilterCache;
+        this.listCacheSeconds = listCacheSeconds;
         this.lazyLoad = lazyLoad;
         this.editType = editType;
         this.queryable = queryable;
@@ -675,11 +683,32 @@ class FastTableOption {
     /**
      * 列表查询
      * @param query 查询条件 Query类型
-     * @param config
+     * @param config {forceRefresh?: boolean, cacheSeconds?: number, ...axiosConfig} forceRefresh为true时跳过缓存读取(请求成功后仍会写缓存); cacheSeconds可覆盖this.listCacheSeconds; 其余配置原样透传给axios
+     * @return {Promise<Array>}
      */
-    _list(query, config) {
+    _list(query, config = {}) {
         this.getConds().forEach(c => query.addCond(c)) // 内置conds添加
-        return post(this.listUrl, query.params, query.toJson(), config)
+        const {forceRefresh = false, cacheSeconds, ...axiosConfig} = config
+        const seconds = util.isNumber(cacheSeconds) ? cacheSeconds : this.listCacheSeconds
+        // key在固定conds合并之后生成, 保证cols/conds/distinct/orders等影响结果的因素全部进入缓存key
+        const key = `LIST:${this.id}:` + md5(JSON.stringify(util.sortKey(query)))
+        return new Promise((resolve, reject) => {
+            if (forceRefresh !== true && seconds > 0) {
+                const cached = getFromSessionStorage(key)
+                if (util.isArray(cached)) {
+                    resolve(cached)
+                    return
+                }
+            }
+            post(this.listUrl, query.params, query.toJson(), axiosConfig).then(res => {
+                if (seconds > 0) {
+                    setToSessionStorage(key, res, seconds)
+                }
+                resolve(res)
+            }).catch(err => {
+                reject(err)
+            })
+        })
     }
 
     /**
@@ -770,35 +799,27 @@ class FastTableOption {
      * @param valKey
      * @param labelKey
      * @param forceRefresh 是否强制刷新，若true则跳过缓存
+     * @param pickMap 需要随选项一并返回的字段映射。仅将pickMap的key(选项源数据字段)追加到查询列, 并保留在选项对象上, 供pickMap赋值使用
      * @return {Promise<*>}
      */
-    _buildSelectOptions(query, valKey, labelKey, forceRefresh = false) {
-        return new Promise((resolve, reject) => {
-            const key = `OPTIONS:${this.id}_${valKey}_${labelKey}_` + md5(JSON.stringify(util.sortKey(query)))
-            let options
-            if (!forceRefresh) {
-                options = getFromSessionStorage(key)
-            }
-            if (util.isArray(options)) {
-                try {
-                    resolve(options)
-                    return
-                } catch (err) {
-                    console.log(err)
-                    deleteFromSessionStorage(key)
-                }
-            }
-            this._list(query).then(res => {
-                options = res.filter(item => util.isObject(item)).map(item => {
-                    const obj = {}
-                    obj[valKey] = item[valKey]
-                    obj[labelKey] = item[labelKey]
-                    return obj
+    _buildSelectOptions(query, valKey, labelKey, forceRefresh = false, pickMap = null) {
+        // pickMap的key是选项源数据中的字段, 需要追加到查询cols, 否则后端不会返回该字段
+        const pickKeys = util.isObject(pickMap) ? Object.keys(pickMap) : []
+        if (pickKeys.length > 0) {
+            const cols = new Set(query.cols || [])
+            pickKeys.forEach(key => cols.add(key))
+            query.setCols([...cols])
+        }
+        // 响应级缓存由_list统一管理, 缓存时长取this.listCacheSeconds(默认10秒)
+        return this._list(query, {forceRefresh}).then(res => {
+            return res.filter(item => util.isObject(item)).map(item => {
+                const obj = {}
+                obj[valKey] = item[valKey]
+                obj[labelKey] = item[labelKey]
+                pickKeys.forEach(key => {
+                    obj[key] = item[key]
                 })
-                setToSessionStorage(key, options, 1)
-                resolve(options)
-            }).catch(err => {
-                reject(err)
+                return obj
             })
         })
     }

@@ -55,12 +55,14 @@ export default {
     const ruleMap = {};
     for (const col in this.config) {
       const {component, props: {rules = []}} = this.config[col];
+      const props = this.config[col].props || {}
       if (!isEmpty(rules)) {
         rules.forEach(rule => rule[GET_ROW] = (() => formData)) // 为了自定义验证器里能获取到当前行 煞费苦心
         ruleMap[col] = rules;
       }
-      if (component === 'fast-object-picker') { // 对于FastObjectPicker需要特别把formData传进去
-        this.config[col].props.pickObject = formData;
+      // 对于FastObjectPicker、以及配置了pickMap的FastSelect, 需要特别把formData传进去, 以便单选后按pickMap回填
+      if (component === 'fast-object-picker' || (component === 'fast-select' && !isEmpty(props.pickMap))) {
+        props.pickObject = formData;
       }
     }
     return {

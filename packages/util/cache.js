@@ -11,10 +11,10 @@ const STORAGE_KEY_PREFIX = 'FC:';
  * 保存到localStorage中
  * @param key 会拼接"FC:"前缀
  * @param value any
- * @param minutes 缓存有效期(null/undefined, 均表示不设置有效期)
+ * @param seconds 缓存有效期(null/undefined, 均表示不设置有效期)
  */
-export function setToLocalStorage(key, value, minutes) {
-    setItem(localStorage, key, value, minutes)
+export function setToLocalStorage(key, value, seconds) {
+    setItem(localStorage, key, value, seconds)
 }
 
 /**
@@ -30,8 +30,8 @@ export function deleteFromLocalStorage(key) {
     localStorage.removeItem(`${STORAGE_KEY_PREFIX}:${key}`)
 }
 
-export function setToSessionStorage(key, value, minutes) {
-    setItem(sessionStorage, key, value, minutes)
+export function setToSessionStorage(key, value, seconds) {
+    setItem(sessionStorage, key, value, seconds)
 }
 
 export function getFromSessionStorage(key) {
@@ -47,12 +47,12 @@ export function deleteFromSessionStorage(key) {
  * @param storage localStorage或sessionStorage
  * @param {string} key 存储的键名 (会被添加前缀)
  * @param {*} value 要存储的任何类型的数据
- * @param {number} minutes 有效期，单位为分钟
+ * @param {number} seconds 有效期，单位为秒
  */
-const setItem = (storage, key, value, minutes) => {
+const setItem = (storage, key, value, seconds) => {
     const item = {
         value: value,
-        expiry: ternary(isEmpty(minutes), null, new Date().getTime() + minutes * 60 * 1000)
+        expiry: ternary(isEmpty(seconds), null, new Date().getTime() + seconds * 1000)
     };
 
     try {

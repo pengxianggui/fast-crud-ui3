@@ -24,6 +24,7 @@
         <slot name="edit" v-bind:row="row" v-bind:column="column" v-bind:$index="$index" v-else>
           <fast-select v-model="row['editRow'][prop]"
                        v-bind="row['config'][prop]['props']"
+                       :pick-object="row['editRow']"
                        :ref="prop + $index"
                        @change="(val) => handleChange(val, {row, column, $index})"
                        @blur="(event) => handleBlur(event, {row, column, $index})"
@@ -58,11 +59,32 @@ export default {
       type: Boolean,
       default: () => false,
       dispatch: true // 分发到底层组件里
+    },
+    options: {
+      type: [Array, FastTableOption],
+      default: () => [],
+      dispatch: true // 分发到底层组件里
+    },
+    labelKey: {
+      type: String,
+      default: () => 'label',
+      dispatch: true // 分发到底层组件里
+    },
+    valKey: {
+      type: String,
+      default: () => 'value',
+      dispatch: true // 分发到底层组件里
+    },
+    // 单选时, 将选中选项的数据字段映射回填到编辑行的其它列: key为选项数据字段, value为当前行editRow的目标字段
+    pickMap: {
+      type: Object,
+      default: () => ({}),
+      dispatch: true // 分发到底层组件里
     }
   },
   data() {
     return {
-      options: []
+      loadedOptions: []
     }
   },
   async created() {
@@ -73,12 +95,12 @@ export default {
      * 从属性中加载options(如果传入的options是FastTableOption类型, 则可能涉及异步加载)
      */
     async loadOptions() {
-      const {options, valKey = 'value', labelKey = 'label'} = this.columnProp
+      const {options, valKey = 'value', labelKey = 'label'} = this
       if (util.isArray(options)) {
-        this.options = options
+        this.loadedOptions = options
       } else if (options instanceof FastTableOption) {
         const query = new Query().setDistinct().setCols([valKey, labelKey])
-        this.options = await options._buildSelectOptions(query, valKey, labelKey)
+        this.loadedOptions = await options._buildSelectOptions(query, valKey, labelKey, false, this.pickMap)
       }
     },
     showLabel(fatRow) {
@@ -91,7 +113,7 @@ export default {
       } else {
         val = editRow[this.prop];
       }
-      return util.escapeLabel(val, this.options, valKey, labelKey)
+      return util.escapeLabel(val, this.loadedOptions, valKey, labelKey)
     }
   }
 }

@@ -36,9 +36,11 @@
 | onClick(`1.5.8+(新格式)`)  | 监听快筛项点击事件    | `Function<({model, filter, filters, refs}) => void>`      | -   |
 
 :::warning
-1. 无论是onChange还是onClick, 对formModel/model更改值没有意义, 只能针对filter(当前快筛控件)或filtersMap(全部快筛控件)中的val值更改才会有实际作用。
+
+1. 无论是onChange还是onClick, 对formModel/model更改值没有意义, 只能针对filter(当前快筛控件)或filtersMap(全部快筛控件)
+   中的val值更改才会有实际作用。
 2. 为使用方便,filters和refs均为map结构, refs可以拿到控件对象，从而按需调用其内部方法
-:::
+   :::
 
 :::tip
 
@@ -104,15 +106,27 @@
 
 ### 属性
 
-| 属性                  | 说明                                                | 类型                               | 默认值     |
-|---------------------|---------------------------------------------------|----------------------------------|---------|
-| quickFilterCheckbox | 快筛时是否转换为checkbox group呈现                          | `Boolean`                        | false   |
-| options             | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`) | `Array<Object>\|FastTableOption` | `[]`    |
-| labelKey            | options中作为label的属性名                               | `String`                         | `label` |
-| labelKey            | options中作为value的属性名                               | `String`                         | `value` |
+| 属性                  | 说明                                                                | 类型                               | 默认值     |
+|---------------------|-------------------------------------------------------------------|----------------------------------|---------|
+| quickFilterCheckbox | 快筛时是否转换为checkbox group呈现                                          | `Boolean`                        | false   |
+| options             | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`)                 | `Array<Object>\|FastTableOption` | `[]`    |
+| labelKey            | options中作为label的属性名                                               | `String`                         | `label` |
+| valKey              | options中作为value的属性名                                               | `String`                         | `value` |
+| pickMap(`1.5.35+`)  | 单选时, 将选中选项的数据字段回填到当前编辑行的其它列: key为选项数据字段名, value为当前行`editRow`的目标字段 | `Object`                         | `{}`    |
 
-> 对于options而言。在`1.5.16+`开始支持一个`FastTableOption`对象，内部将基于`FastTableOption`的标准接口————`/list`、结合`labelKey`和`valKey`构造选项数组。
+> 对于options而言。在`1.5.16+`开始支持一个`FastTableOption`对象，内部将基于`FastTableOption`的标准接口————`/list`、结合
+`labelKey`和`valKey`构造选项数组。
 > 你还能利用`FastTableOption`的`conds`属性配置过滤条件。
+
+:::tip pickMap
+
+1. `pickMap`仅在单选(`multiple`不为true)时生效, 清空选择时会将映射的目标字段置为`null`(与`FastTableColumnObject`
+   行为一致)。
+2. 映射字段必须是选项数据上真实存在的一层属性: 若`options`为`FastTableOption`, 内部会自动将pickMap的key追加到`/list`请求的
+   `cols`中, 无需额外配置;
+   若`options`为静态对象数组, 则要求数组元素自带这些字段。
+3. 建议保证`valKey`取值唯一, 回填按"首个匹配"查找选项。
+   :::
 
 ### 事件
 
@@ -221,11 +235,18 @@
 
 ### 属性
 
-| 属性              | 说明             | 类型                | 默认值 |
-|-----------------|----------------|-------------------|-----|
-| **tableOption** | 弹出表tableOption | `FastTableOption` | -   |
+| 属性                 | 说明                                                                 | 类型                | 默认值  |
+|--------------------|--------------------------------------------------------------------|-------------------|------|
+| **tableOption**    | 弹出表tableOption                                                     | `FastTableOption` | -    |
+| valKey             | 弹窗数据中作为"值"回显到当前列的字段名                                               | `String`          | -    |
+| labelKey           | 弹窗数据中作为"显"的字段名                                                     | `String`          | -    |
+| pickMap(`1.5.35+`) | 单选时, 将弹窗选中的对象字段回填到当前编辑行的其它列: key为弹窗数据的字段名, value为当前行`editRow`的目标字段 | `Object`          | `{}` |
 
 > 指定的`tableOption`的渲染模版只能通过其`render`声明。
+
+:::tip pickMap
+`pickMap`仅在单选(`multiple`不为true)时生效, 清空选择时会将映射的目标字段置为`null`。
+:::
 
 ### 事件
 
