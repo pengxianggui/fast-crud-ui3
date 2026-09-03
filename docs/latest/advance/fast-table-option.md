@@ -106,8 +106,13 @@ conds: [{col: 'name', opt: '=', val: '曹操'}] // 此时opt可以省略
 // 或
 conds: new Cond('name', '=', '曹操') // 此时第二个参数opt不能省略
 // 或 函数: 每次查询时都会调用, 可用于动态生成条件(如根据当前用户、当前时间)
+// 行内编辑加载选项时, 函数会收到scope: {editRow}, 可实现"选项随当前行其它字段变化"的级联
 conds: () => {
     return [{col: 'status', opt: '=', val: getCurrentStatus()}]
+}
+// 级联用法示例:
+conds: ({editRow}) => {
+    return [{col: 'customerId', opt: '=', val: editRow?.customerId}]
 }
 ```
 

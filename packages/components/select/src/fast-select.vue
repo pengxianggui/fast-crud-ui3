@@ -14,6 +14,7 @@
 <script>
 import FastTableOption from '../../../model/fastTableOption.js'
 import Query from '../../../model/query.js'
+import Cond from '../../../model/cond.js'
 import * as util from '../../../util/util.js'
 
 export default {
@@ -40,6 +41,14 @@ export default {
       default: () => ({})
     },
     pickObject: Object, // 单选时, 映射回填的目标对象(一般为当前编辑行editRow)
+    optionConds: { // 级联场景下的选项附加条件: 数组, 或接收{editRow}并返回Cond数组的函数
+      type: [Array, Function],
+      default: () => []
+    },
+    optionDeps: { // 级联场景下需要监听的pickObject字段(如['customerId']), 任一字段变化时重新加载选项并清空当前值
+      type: Array,
+      default: () => []
+    },
     multiple: { // 多值时, value为数组
       type: Boolean,
       default: () => false
@@ -62,8 +71,12 @@ export default {
     if (this.multiple === true && !util.isEmpty(this.pickObject) && !util.isEmpty(this.pickMap)) {
       console.warn('[FastSelect] pickMap 仅支持单选(multiple=false), 多选模式下 pickMap 已忽略')
     }
+    this.startOptionDepsWatch()
     if (this.options instanceof FastTableOption) {
-      await this.getOptions()
+      // 行内编辑且级联依赖为空时不加载(如尚未选择客户), 等依赖变化后再由watch触发; 非行内场景正常加载
+      if (!(this.pickObject && this.hasEmptyOptionDeps())) {
+        await this.getOptions()
+      }
     }
   },
   computed: {
@@ -83,14 +96,80 @@ export default {
      */
     getOptions(force = false) {
       if (!(this.options instanceof FastTableOption)) {
-        return
+        return Promise.resolve()
       }
+      const seq = (this._optionLoadSeq = (this._optionLoadSeq || 0) + 1)
+      const scope = {editRow: this.pickObject}
+      const extraConds = this.resolveOptionConds(scope)
       const query = new Query().setDistinct().setCols([this.valKey, this.labelKey]);
-      this.options._buildSelectOptions(query, this.valKey, this.labelKey, force, this.pickMap).then(options => {
-        this.nativeOptions = options
+      return this.options._buildSelectOptions(query, this.valKey, this.labelKey, force, this.pickMap, {
+        scope,
+        extraConds
+      }).then(options => {
+        if (seq === this._optionLoadSeq) {
+          this.nativeOptions = options
+        }
       }).catch(err => {
         console.error(err)
       })
+    },
+    /**
+     * 将optionConds规整为Cond对象数组
+     * @param scope 传给optionConds函数的作用域(含editRow)
+     */
+    resolveOptionConds(scope) {
+      const conds = util.isFunction(this.optionConds) ? this.optionConds(scope) : (this.optionConds || [])
+      return (util.isArray(conds) ? conds : []).map(c => Cond.build(c))
+    },
+    /**
+     * optionDeps中任一依赖字段为空时返回true, 此时不加载选项
+     */
+    hasEmptyOptionDeps() {
+      return this.optionDeps.some(field => util.isEmpty(this.pickObject?.[field]))
+    },
+    /**
+     * 监听optionDeps声明的pickObject字段, 变化时按新条件重新加载选项
+     */
+    startOptionDepsWatch() {
+      if (!util.isArray(this.optionDeps) || this.optionDeps.length === 0 || util.isEmpty(this.pickObject)) {
+        return
+      }
+      this.optionDeps.forEach(field => {
+        this.$watch(
+          () => this.pickObject?.[field],
+          () => this.handleOptionDepsChange()
+        )
+      })
+    },
+    /**
+     * 依赖字段变化: 清空当前值(避免残留上一依赖的选项值), 再按新依赖加载选项
+     */
+    handleOptionDepsChange() {
+      // 使依赖变化前发起的请求失效, 避免旧依赖的选项晚到覆盖新依赖的选项
+      this._optionLoadSeq = (this._optionLoadSeq || 0) + 1
+      this.resetValueByCascade()
+      if (this.hasEmptyOptionDeps()) {
+        this.nativeOptions = []
+        return
+      }
+      if (this.options instanceof FastTableOption) {
+        void this.getOptions(true)
+      }
+    },
+    /**
+     * 级联触发时清空当前选中值及pickMap回填字段
+     */
+    resetValueByCascade() {
+      if (this.multiple) {
+        if (util.isArray(this.modelValue) && this.modelValue.length > 0) {
+          this.$emit('update:modelValue', [])
+        }
+        return
+      }
+      if (!util.isEmpty(this.modelValue)) {
+        this.$emit('update:modelValue', null)
+        this.clearPickMap()
+      }
     },
     /**
      * 选中值变化时: 上抛change事件, 并处理pickMap回填

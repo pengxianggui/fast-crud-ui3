@@ -44,6 +44,7 @@ import FastSelect from "../../select/src/fast-select.vue"
 import * as util from "../../../util/util.js"
 import FastTableOption from '../../../model/fastTableOption.js'
 import Query from '../../../model/query.js'
+import Cond from '../../../model/cond.js'
 
 export default {
   name: "FastTableColumnSelect",
@@ -75,6 +76,18 @@ export default {
       default: () => 'value',
       dispatch: true // 分发到底层组件里
     },
+    // 级联场景下的选项附加条件: Cond 数组, 或接收{editRow}并返回Cond数组的函数
+    optionConds: {
+      type: [Array, Function],
+      default: () => [],
+      dispatch: true // 分发到底层组件里
+    },
+    // 级联场景下需要监听的editRow字段(如['customerId']), 变化时底层FastSelect会重新加载选项并清空当前值
+    optionDeps: {
+      type: Array,
+      default: () => [],
+      dispatch: true // 分发到底层组件里
+    },
     // 单选时, 将选中选项的数据字段映射回填到编辑行的其它列: key为选项数据字段, value为当前行editRow的目标字段
     pickMap: {
       type: Object,
@@ -99,9 +112,21 @@ export default {
       if (util.isArray(options)) {
         this.loadedOptions = options
       } else if (options instanceof FastTableOption) {
+        // 行级依赖选项(optionDeps或函数式optionConds)依赖具体编辑行, 无法在列级别预加载, 正常态直接展示原值
+        if (this.isRowDependentOptions()) {
+          return
+        }
         const query = new Query().setDistinct().setCols([valKey, labelKey])
-        this.loadedOptions = await options._buildSelectOptions(query, valKey, labelKey, false, this.pickMap)
+        const extraConds = this.resolveOptionConds({})
+        this.loadedOptions = await options._buildSelectOptions(query, valKey, labelKey, false, this.pickMap, {extraConds})
       }
+    },
+    isRowDependentOptions() {
+      return (Array.isArray(this.optionDeps) && this.optionDeps.length > 0) || util.isFunction(this.optionConds)
+    },
+    resolveOptionConds(scope) {
+      const conds = util.isFunction(this.optionConds) ? this.optionConds(scope) : (this.optionConds || [])
+      return (util.isArray(conds) ? conds : []).map(c => Cond.build(c))
     },
     showLabel(fatRow) {
       const {row, editRow, status, config} = fatRow

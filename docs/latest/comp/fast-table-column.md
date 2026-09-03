@@ -112,11 +112,32 @@
 | options             | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`)                 | `Array<Object>\|FastTableOption` | `[]`    |
 | labelKey            | options中作为label的属性名                                               | `String`                         | `label` |
 | valKey              | options中作为value的属性名                                               | `String`                         | `value` |
+| optionConds(`1.5.36+`) | 选项的附加查询条件, 仅作用于本列的选项加载, 不影响FastTableOption本身。支持数组, 或函数 `({editRow}) => Cond[]` 用于行级级联 | `Array\|Function` | `[]` |
+| optionDeps(`1.5.36+`)  | 行级级联时监听的`editRow`字段(如`['customerId']`)。任一字段变化会重新按新条件加载选项, 并清空当前选中值 | `String[]`       | `[]`    |
 | pickMap(`1.5.35+`)  | 单选时, 将选中选项的数据字段回填到当前编辑行的其它列: key为选项数据字段名, value为当前行`editRow`的目标字段 | `Object`                         | `{}`    |
 
 > 对于options而言。在`1.5.16+`开始支持一个`FastTableOption`对象，内部将基于`FastTableOption`的标准接口————`/list`、结合
 `labelKey`和`valKey`构造选项数组。
 > 你还能利用`FastTableOption`的`conds`属性配置过滤条件。
+
+:::tip 行内级联示例(`1.5.36+`)
+
+先让"客户"下拉通过`pickMap`把客户`id`回填到当前行的`customerId`, 再让"客户经理"下拉的选项依赖该字段:
+
+```vue
+<fast-table-column-select prop="customerName" :options="customerOption"
+                          :pick-map="{ id: 'customerId', sapCode: 'soldToCode' }" />
+<fast-table-column-select prop="salesAccountManager" :options="consultantOption"
+                          val-key="name" label-key="name"
+                          :option-conds="({ editRow }) => editRow?.customerId ? [{ col: 'customerId', val: editRow.customerId }] : []"
+                          :option-deps="['customerId']" />
+```
+
+- `optionDeps`为空时(如尚未选客户), 不发起选项请求; 一旦字段有值或变化, 自动加载/刷新选项。
+- 依赖变化时, 若当前值来自上一依赖, 会自动清空(多选清空为`[]`), 避免把旧客户经理提交给新客户。
+- 依赖字段为空的存量行, 打开下拉也不会请求, 选项保持为空。
+
+:::
 
 :::tip pickMap
 

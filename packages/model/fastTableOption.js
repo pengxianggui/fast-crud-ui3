@@ -10,7 +10,7 @@ import {t} from '../i18n/index.js'
 
 /**
  * 默认的固定筛选条件: 空数组。显式标注类型, 以支持"数组或返回Conds数组的函数"两种配置
- * @type {any[] | (() => any[])}
+ * @type {any[] | ((scope?: any) => any[])}
  */
 const DEFAULT_CONDS = [];
 
@@ -237,7 +237,8 @@ class FastTableOption {
      * 内置固定的筛选条件。将始终在分页查询条件里，无法被用户取消。
      * 支持两种配置:
      * 1. 数组: 例如 [{col: 'name', opt: '=', val: '曹操'}]
-     * 2. 函数: () => Cond[], 每次查询时调用, 可用于动态生成条件, 函数内this指向当前FastTableOption
+     * 2. 函数: (scope) => Cond[], 每次查询时调用, 可用于动态生成条件, 函数内this指向当前FastTableOption,
+     *    行内编辑加载选项时scope为{editRow}, 供"当前行其它字段参与筛选"这类级联场景使用
      * @type {Cond[] | (() => Cond[])}
      */
     conds = []; // 固定的筛选条件，内部无法取消
@@ -544,11 +545,12 @@ class FastTableOption {
     /**
      * 获取内置固定筛选条件。
      * conds配置为函数时, 每次调用都会重新执行该函数, 以便动态生成条件
+     * @param scope {any} 行内编辑加载选项时传入{editRow}等上下文; 普通列表/筛选查询不传
      * @return {Cond[]}
      */
-    getConds() {
+    getConds(scope) {
         if (typeof this.conds === 'function') {
-            const conds = this.conds();
+            const conds = this.conds(scope);
             util.assert(Array.isArray(conds), 'conds函数必须返回Conds数组!')
             return conds.map(c => Cond.build(c))
         }
@@ -683,12 +685,15 @@ class FastTableOption {
     /**
      * 列表查询
      * @param query 查询条件 Query类型
-     * @param config {forceRefresh?: boolean, cacheSeconds?: number, ...axiosConfig} forceRefresh为true时跳过缓存读取(请求成功后仍会写缓存); cacheSeconds可覆盖this.listCacheSeconds; 其余配置原样透传给axios
+     * @param config {forceRefresh?: boolean, cacheSeconds?: number, scope?: any, extraConds?: Cond[], ...axiosConfig}
+     * forceRefresh为true时跳过缓存读取(请求成功后仍会写缓存); cacheSeconds可覆盖this.listCacheSeconds;
+     * scope透传给conds函数; extraConds为级联场景追加的条件(会覆盖同列的固定conds); 其余配置原样透传给axios
      * @return {Promise<Array>}
      */
     _list(query, config = {}) {
-        this.getConds().forEach(c => query.addCond(c)) // 内置conds添加
-        const {forceRefresh = false, cacheSeconds, ...axiosConfig} = config
+        const {forceRefresh = false, cacheSeconds, scope, extraConds = [], ...axiosConfig} = config
+        this.getConds(scope).forEach(c => query.addCond(c)) // 内置conds添加
+        extraConds.forEach(c => query.addCond(Cond.build(c), false)) // 级联条件追加, 同列覆盖内置conds
         const seconds = util.isNumber(cacheSeconds) ? cacheSeconds : this.listCacheSeconds
         // key在固定conds合并之后生成, 保证cols/conds/distinct/orders等影响结果的因素全部进入缓存key
         const key = `LIST:${this.id}:` + md5(JSON.stringify(util.sortKey(query)))
@@ -800,9 +805,10 @@ class FastTableOption {
      * @param labelKey
      * @param forceRefresh 是否强制刷新，若true则跳过缓存
      * @param pickMap 需要随选项一并返回的字段映射。仅将pickMap的key(选项源数据字段)追加到查询列, 并保留在选项对象上, 供pickMap赋值使用
+     * @param config 透传给_list的附加配置, 支持scope与extraConds, 用于行内级联场景
      * @return {Promise<*>}
      */
-    _buildSelectOptions(query, valKey, labelKey, forceRefresh = false, pickMap = null) {
+    _buildSelectOptions(query, valKey, labelKey, forceRefresh = false, pickMap = null, config = {}) {
         // pickMap的key是选项源数据中的字段, 需要追加到查询cols, 否则后端不会返回该字段
         const pickKeys = util.isObject(pickMap) ? Object.keys(pickMap) : []
         if (pickKeys.length > 0) {
@@ -811,7 +817,7 @@ class FastTableOption {
             query.setCols([...cols])
         }
         // 响应级缓存由_list统一管理, 缓存时长取this.listCacheSeconds(默认10秒)
-        return this._list(query, {forceRefresh}).then(res => {
+        return this._list(query, {forceRefresh, ...config}).then(res => {
             return res.filter(item => util.isObject(item)).map(item => {
                 const obj = {}
                 obj[valKey] = item[valKey]
