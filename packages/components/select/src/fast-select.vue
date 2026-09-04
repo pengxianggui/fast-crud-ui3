@@ -183,6 +183,11 @@ export default {
      * 清空时: 上抛clear事件, 并清除pickMap已回填的目标字段
      */
     handleClear() {
+      // Element Plus 单选清空时默认把 modelValue 置为 undefined,
+      // 若原样提交, JSON 序列化会丢弃该字段导致后端无法清空, 因此统一归一化为 null
+      if (!this.multiple) {
+        this.$emit('update:modelValue', null)
+      }
       this.$emit('clear')
       this.clearPickMap()
     },
