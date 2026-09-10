@@ -7,13 +7,36 @@ import FastTable from '../components/table'
 import {t} from '../i18n/index.js'
 
 /**
- * pick弹窗选择表格数据
- * @param option {FastTableOption} FastTableOption实例
- * @param multiple {boolean} 是否多选
- * @param dialog {Object} 弹窗配置
- * @returns {Promise<*>|*} 返回Promise
+ * pick方法的按钮配置
+ * @typedef {Object} PickButton
+ * @property {string} text 按钮文案
+ * @property {string} [type] 按钮类型, 同el-button的type
+ * @property {string} [size] 按钮尺寸, 同el-button的size
+ * @property {(instance: any) => any} [onClick] 按钮点击回调, 返回Promise才会关闭弹窗并resolve
  */
-export function pick({option, multiple = false, dialog = {width: '70%'}}) {
+
+/**
+ * pick方法的dialog配置, 除buttons外均为el-dialog的props
+ * @typedef {Object} PickDialogProps
+ * @property {string} [width] 弹窗宽度
+ * @property {PickButton[]} [buttons] 自定义按钮, 不配置则使用内置的确定/取消
+ */
+
+/**
+ * pick方法参数
+ * @typedef {Object} PickParams
+ * @property {FastTableOption} option FastTableOption实例
+ * @property {boolean} [multiple] 是否多选, 默认false
+ * @property {PickDialogProps} [dialog] 弹窗配置, 默认{width: '70%'}
+ */
+
+/**
+ * pick弹窗选择表格数据
+ * @param {PickParams} params pick参数
+ * @returns {Promise<any>} 返回Promise, then中为选中的数据(多选时为数组), catch表示用户取消
+ */
+export function pick(params) {
+    const {option, multiple = false, dialog = {width: '70%'}} = params
     const _this = this
     if (isEmpty(option)) {
         throw new Error("option 不能为空!");
