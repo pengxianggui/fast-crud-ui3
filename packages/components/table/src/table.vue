@@ -67,6 +67,12 @@
                 </el-icon>
                 <span>{{ t('crud.export') }}</span>
               </el-dropdown-item>
+              <el-dropdown-item class="fc-fast-table-operation-more-import" @click="importData" v-if="importable">
+                <el-icon>
+                  <Upload/>
+                </el-icon>
+                <span>{{ t('crud.import') }}</span>
+              </el-dropdown-item>
               <template v-for="button in moreButtons">
                 <el-dropdown-item :disabled="getBoolVal(button.disable, false)"
                                   @click="() => executeInContext(button.click)"
@@ -159,16 +165,16 @@ import {
   noRepeatAdd
 } from "../../../util/util"
 import * as cache from '../../../util/cache.js'
-import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport, isFatRow} from "./util"
+import {getEditConfig, iterBuildComponentConfig, rowValid, toTableRow, buildParamForExport, buildParamForImport, isFatRow} from "./util"
 import {openDialog} from "../../../util/dialog"
 import {buildFinalQueryComponentConfig} from "../../mapping"
-import {ArrowDown, Download, Edit, RefreshLeft, Search} from "@element-plus/icons-vue";
+import {ArrowDown, Download, Edit, RefreshLeft, Search, Upload} from "@element-plus/icons-vue";
 import {post} from "../../../util/http.js";
 import * as util from "../../../util/util.js";
 
 export default {
   name: "FastTable",
-  components: {ArrowDown, Download, Edit, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
+  components: {ArrowDown, Download, Edit, Upload, QuickFilterForm, EasyFilter, StoredFilter, DynamicFilterList},
   emits: ['currentChange', 'select', 'selectionChange', 'selectAll', 'rowClick', 'rowDblclick'],
   setup() {
     const {t} = useI18n()
@@ -211,6 +217,9 @@ export default {
     },
     exportable() {
       return this.getBoolVal(this.option.exportable, true)
+    },
+    importable() {
+      return this.getBoolVal(this.option.importable, true)
     },
     enableDblClickEdit() {
       return this.getBoolVal(this.option.enableDblClickEdit, true)
@@ -289,7 +298,7 @@ export default {
     },
     // 是否展示“更多”下拉菜单按钮
     showMoreBtn() {
-      return this.updatable || this.exportable || !util.isEmpty(this.moreButtons)
+      return this.updatable || this.exportable || this.importable || !util.isEmpty(this.moreButtons)
     },
     // “更多”按钮扩展
     moreButtons() {
@@ -1054,6 +1063,16 @@ export default {
         return
       }
       this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);
+    },
+    /**
+     * 导入数据
+     */
+    importData() {
+      if (!this.importable) {
+        ElMessage.warning(this.t('crud.imports.notImportable'))
+        return
+      }
+      this.option._importData(buildParamForImport(this.columnConfig), this.pageQuery);
     },
     /**
      * 自定义表格

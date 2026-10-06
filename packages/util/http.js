@@ -18,3 +18,22 @@ export function post(url, params, data, config = {}) {
         ...config
     })
 }
+
+/**
+ * 发起multipart/form-data的post请求(用于文件上传等)
+ * @param url
+ * @param params
+ * @param formData FormData实例
+ * @param config
+ * @return {*}
+ */
+export function postForm(url, params, formData, config = {}) {
+    return FastTableOption.$http.post(url, formData, {
+        headers: {
+            'Fc-Request-Id': uuidv4(),
+            'Content-Type': 'multipart/form-data'
+        },
+        params: params,
+        ...config
+    })
+}

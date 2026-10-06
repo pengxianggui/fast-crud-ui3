@@ -5,6 +5,7 @@ import {post} from "../util/http.js";
 import {openDialog} from "../util/dialog.js";
 import {getFromSessionStorage, setToSessionStorage} from "../util/cache.js";
 import ExportConfirm from "../components/table/src/export-confirm.vue";
+import ImportConfirm from "../components/table/src/import-confirm.vue";
 import Cond from './cond.js'
 import {t} from '../i18n/index.js'
 
@@ -106,6 +107,11 @@ class FastTableOption {
      */
     exportUrl = '';
     /**
+     * 数据导入接口: 默认为${baseUrl}/import
+     * @type {string}
+     */
+    importUrl = '';
+    /**
      * 存在性判断接口path: 默认为${baseUrl}/exists
      * @type {string}
      */
@@ -175,6 +181,11 @@ class FastTableOption {
      * @type {boolean | ((scope: any) => boolean)}
      */
     exportable = true;
+    /**
+     * 是否支持导入。默认true
+     * @type {boolean | ((scope: any) => boolean)}
+     */
+    importable = true;
     /**
      * 主键字段名。默认为"id"。必须正确设置，否则更新、删除等功能无法使用。
      * @type {string}
@@ -354,6 +365,27 @@ class FastTableOption {
      * @type Function
      */
     exportFail; // 导出失败后
+    /**
+     * 导入请求前的钩子函数。可用于在导入前做校验, 或结合importExtra动态调整参数
+     * @type {Function}
+     */
+    beforeImport;
+    /**
+     * 导入成功后的钩子函数
+     * @type {Function}
+     */
+    importSuccess;
+    /**
+     * 导入失败后的钩子函数(包含请求失败以及success=false)
+     * @type {Function}
+     */
+    importFail;
+    /**
+     * 导入时额外携带的参数。可以为对象, 也可以为函数(scope为{columns, pageQuery}), 最终以json字符串随导入请求提交。
+     * 后端可在beforeImport钩子中获取, 例如传入{customerId: 1}以限定导入数据归属某客户
+     * @type {Object | Function}
+     */
+    importExtra = {};
 
     static $http; // Axios实例
     static $router; // VueRouter实例
@@ -375,6 +407,7 @@ class FastTableOption {
                     batchDeleteUrl = '',
                     uploadUrl = '',
                     exportUrl = '',
+                    importUrl = '',
                     existsUrl = '',
                     enableDblClickEdit = DEFAULT_TRUE,
                     enableMulti = DEFAULT_TRUE,
@@ -389,6 +422,8 @@ class FastTableOption {
                     updatable = DEFAULT_TRUE,
                     deletable = DEFAULT_TRUE,
                     exportable = DEFAULT_TRUE,
+                    importable = DEFAULT_TRUE,
+                    importExtra = {},
                     idField = 'id',
                     createTimeField = '',
                     sortField = '',
@@ -423,7 +458,10 @@ class FastTableOption {
                     beforeCancel = ({fatRows, rows, status}) => Promise.resolve(),
                     beforeExport = ({columns, pageQuery}) => Promise.resolve(columns),
                     exportSuccess = ({columns, pageQuery, data}) => Promise.resolve(),
-                    exportFail = ({columns, pageQuery, error}) => Promise.resolve()
+                    exportFail = ({columns, pageQuery, error}) => Promise.resolve(),
+                    beforeImport = ({columns, pageQuery}) => Promise.resolve(),
+                    importSuccess = ({columns, pageQuery, result}) => Promise.resolve(),
+                    importFail = ({columns, pageQuery, result, error}) => Promise.resolve()
                 }) {
         util.assert(util.isString(title), 'title必须为字符串')
         util.assert(util.isBoolean(showTitle) || util.isFunction(showTitle), 'showTitle必须为布尔值或返回布尔值的函数')
@@ -443,6 +481,8 @@ class FastTableOption {
         util.assert(util.isBoolean(updatable) || util.isFunction(updatable), 'updatable必须为布尔值或返回布尔值的函数')
         util.assert(util.isBoolean(deletable) || util.isFunction(deletable), 'deletable必须为布尔值或返回布尔值的函数')
         util.assert(util.isBoolean(exportable) || util.isFunction(exportable), 'exportable必须为布尔值或返回布尔值的函数')
+        util.assert(util.isBoolean(importable) || util.isFunction(importable), 'importable必须为布尔值或返回布尔值的函数')
+        util.assert(util.isObject(importExtra) || util.isFunction(importExtra), 'importExtra必须为对象或返回对象的函数')
         util.assert(util.isString(idField), 'idField必须为字符串')
         util.assert(util.isString(createTimeField), 'createTimeField必须为字符串')
         util.assert(util.isString(sortField), 'sortField必须为字符串')
@@ -470,6 +510,9 @@ class FastTableOption {
         util.assert(util.isFunction(beforeExport), "beforeExport必须是一个函数")
         util.assert(util.isFunction(exportSuccess), "exportSuccess必须是一个函数")
         util.assert(util.isFunction(exportFail), "exportFail必须是一个函数")
+        util.assert(util.isFunction(beforeImport), "beforeImport必须是一个函数")
+        util.assert(util.isFunction(importSuccess), "importSuccess必须是一个函数")
+        util.assert(util.isFunction(importFail), "importFail必须是一个函数")
         util.assert(util.isArray(conds) || util.isFunction(conds), "conds必须是Cond数组或返回Cond数组的函数")
         util.assert(util.isArray(condGroups), 'condGroups必须是数组')
         util.assert(util.isObject(condExtra), 'condExtra必须是对象')
@@ -489,6 +532,7 @@ class FastTableOption {
         this.batchDeleteUrl = util.defaultIfBlank(batchDeleteUrl, this.baseUrl + '/delete/batch');
         this.uploadUrl = util.defaultIfBlank(uploadUrl, this.baseUrl + '/upload');
         this.exportUrl = util.defaultIfBlank(exportUrl, this.baseUrl + '/export');
+        this.importUrl = util.defaultIfBlank(importUrl, this.baseUrl + '/import');
         this.existsUrl = util.defaultIfBlank(existsUrl, this.baseUrl + '/exists');
         this.enableDblClickEdit = enableDblClickEdit;
         this.enableMulti = enableMulti;
@@ -503,6 +547,8 @@ class FastTableOption {
         this.updatable = updatable;
         this.deletable = deletable;
         this.exportable = exportable;
+        this.importable = importable;
+        this.importExtra = importExtra;
         this.idField = idField;
         this.createTimeField = createTimeField;
         this.sortField = util.defaultIfBlank(sortField, util.defaultIfBlank(createTimeField, idField));
@@ -540,6 +586,9 @@ class FastTableOption {
         this.beforeExport = beforeExport;
         this.exportSuccess = exportSuccess;
         this.exportFail = exportFail;
+        this.beforeImport = beforeImport;
+        this.importSuccess = importSuccess;
+        this.importFail = importFail;
     }
 
     /**
@@ -648,6 +697,7 @@ class FastTableOption {
             const {context, beforeUpdate} = this;
             const rows = fatRows.map(r => r.row);
             const editRows = fatRows.map(r => r.editRow);
+            // TODO 根据 config 移除掉一些不需要更新的字段
             beforeUpdate.call(context, {
                 fatRows: fatRows,
                 rows: rows,
@@ -778,6 +828,78 @@ class FastTableOption {
             }).catch(() => {
                 // do nothing
             })
+        })
+    }
+
+    /**
+     * 导入数据。打开导入弹窗, 弹窗内可拖拽excel文件, 并支持下载导入模板(复用导出接口)
+     * @param columns 导入列配置(由buildParamForImport构建)
+     * @param pageQuery 分页查询对象(用于构建参数及下载模板)
+     */
+    _importData(columns, pageQuery) {
+        const {context, beforeImport, importSuccess, importFail, importExtra} = this;
+        Promise.resolve(beforeImport.call(context, {columns, pageQuery})).then(() => {
+            const extra = util.isFunction(importExtra)
+                ? (importExtra.call(context, {columns, pageQuery}) || {})
+                : (importExtra || {});
+            openDialog({
+                component: ImportConfirm,
+                props: {
+                    columns: columns,
+                    importUrl: this.importUrl,
+                    extra: extra,
+                    templateDownload: () => this._downloadImportTemplate(columns, pageQuery),
+                    onFail: (payload) => {
+                        importFail.call(context, {
+                            columns: columns,
+                            pageQuery: pageQuery,
+                            result: payload?.result,
+                            error: payload?.error
+                        })
+                    }
+                },
+                dialogProps: {
+                    title: `${t('crud.imports.title')}`,
+                    width: '666px',
+                    'close-on-click-modal': false
+                }
+            }).then((result) => {
+                importSuccess.call(context, {columns: columns, pageQuery: pageQuery, result: result})
+                this.ref?.pageLoad?.()
+            }).catch(() => {
+                // 用户取消或未发起导入
+            })
+        }).catch((err) => {
+            importFail.call(context, {columns: columns, pageQuery: pageQuery, error: err})
+        })
+    }
+
+    /**
+     * 下载导入模板。借助已有导出接口(template=true)实现, 仅输出可导入列的表头(含下拉校验等)
+     * @param columns 导入列配置(由buildParamForImport构建)
+     * @param pageQuery 分页查询对象
+     */
+    _downloadImportTemplate(columns, pageQuery) {
+        const {title, exportUrl} = this;
+        post(exportUrl, pageQuery?.params, {
+            columns: columns,
+            all: true,
+            template: true, // true-下载空模板, 仅输出表头
+            pageQuery: pageQuery
+        }, {
+            responseType: 'blob'
+        }).then((data) => {
+            const url = window.URL.createObjectURL(data);
+            const link = document.createElement('a')
+            link.href = url;
+            const dateStr = util.dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
+            link.setAttribute('download', `${title ? title : 'import'}_template_${dateStr}.xlsx`)
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            ElMessage.success(t('crud.imports.downloadTemplateSuccess'))
+        }).catch(() => {
+            ElMessage.error(t('crud.imports.downloadTemplateFail'))
         })
     }
 

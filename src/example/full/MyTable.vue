@@ -20,7 +20,7 @@
                            :on-remove="handleGalleryRemove"
                            :response-handler="handleGalleryResponseHandle"
                            :on-change="handleGalleryChange"/>
-    <fast-table-column-input label="姓名" prop="name" :filter="0" required :unique="params.enableNameUnique"/>
+    <fast-table-column-input label="姓名" prop="name" :filter="0" required :unique="params.enableNameUnique" :import-unique="true"/>
     <fast-table-column-number label="年龄" prop="age" required :quick-filter="3"
                               :rules="[{type: 'number', min: 16, max: 60, message: '年龄必须在[16,60]之间'}]"
                               :min="16" :max="60"
@@ -59,6 +59,7 @@
     <fast-table-column-input prop="address" label="地址" min-width="200px"/>
     <fast-table-column-input prop="phone" label="联系电话" min-width="150px"/>
     <fast-table-column-date-picker label="创建时间" prop="createTime" width="200px"
+                                   :importable="false"
                                    :disabled-date_q="(time) => time.getTime() > Date.now()"
                                    type="datetime"
                                    :quick-filter="false" :default-val_q="defaultQueryOfCreatedTime"

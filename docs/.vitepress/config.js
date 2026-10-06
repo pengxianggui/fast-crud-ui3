@@ -34,7 +34,8 @@ export default defineConfig({
                     {text: '创建', link: '/latest/feature/create'},
                     {text: '更新', link: '/latest/feature/update'},
                     {text: '删除', link: '/latest/feature/delete'},
-                    {text: '导出', link: '/latest/feature/export'}
+                    {text: '导出', link: '/latest/feature/export'},
+                    {text: '导入', link: '/latest/feature/import'}
                 ]
             },
             {

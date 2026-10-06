@@ -3,6 +3,7 @@ import Schema from 'async-validator'
 import Opt from '../../../model/opt.js'
 import * as util from '../../../util/util.js'
 import * as cache from '../../../util/cache.js'
+import {t} from '../../../i18n/index.js'
 
 /**
  * 单个col值校验, 校验失败会添加class: valid-error并reject(errors), 成功则会移除可能存在的valid-error，并resolve
@@ -132,6 +133,24 @@ function parseStaticProps(staticProps) {
     return props
 }
 
+// 默认不参与导入的列组件: 图片、文件
+const NOT_IMPORTABLE_COMPONENTS = ['FastTableColumnImg', 'FastTableColumnFile']
+
+/**
+ * 计算列是否参与导入。
+ * 注意: 这里不能直接使用合并后的props.importable, 因为defaultProps的合并顺序是"组件自身props -> mixins props",
+ * tableColumn mixin的importable默认值为true, 会覆盖组件自身声明的默认值, 因此未显式配置时按组件类型取默认值
+ * @param customProps 用户在vnode上显式传入的属性
+ * @param importable 合并后的importable值
+ * @param tableColumnComponentName 列组件名
+ */
+function resolveImportable(customProps, importable, tableColumnComponentName) {
+    if (Object.prototype.hasOwnProperty.call(customProps, 'importable')) {
+        return importable // 显式配置优先
+    }
+    return !NOT_IMPORTABLE_COMPONENTS.includes(tableColumnComponentName)
+}
+
 /**
  * 构建组件配置
  * @param tableColumnVNodes fast-table-column-* 组成的节点数组，蕴含fast-table-column-*组件节点上的信息(也可能是ElTableColumn)
@@ -168,7 +187,7 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
 
         const param = {}
         const {showOverflowTooltip, minWidth, ...leftProp} = props
-        const {label, prop: col, filter, quickFilter, dynamicFilter, unique, firstFilter, hidden, showLength} = leftProp
+        const {label, prop: col, filter, quickFilter, dynamicFilter, unique, importable, importUnique, firstFilter, hidden, showLength} = leftProp
         if (util.isEmpty(col)) { // 操作列
             continue
         }
@@ -179,6 +198,8 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
             quickFilter: quickFilter, // 当前列是否支持快筛
             dynamicFilter: dynamicFilter, // 当前列是否支持动筛
             unique: unique,
+            importable: resolveImportable(customProps, importable, tableColumnComponentName), // 当前列是否参与导入
+            importUnique: importUnique, // 当前列是否作为导入时无主键场景的匹配键
             firstFilter: firstFilter, // deprecated: 1.6.0
             hidden: hidden,
             showLength: showLength,
@@ -193,6 +214,18 @@ export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callbac
         } catch (err) {
             console.error(err)
         } finally {
+            if (tableColumnComponentName === 'FastTableColumnSwitch') {
+                // switch列: 补齐开关取值与文案(与编辑态最终生效的配置保持一致, 含i18n文案),
+                // 以便后端导出/下载导入模板时能正确转义(如true <-> Y)
+                const switchProps = (param.inlineItemConfig && param.inlineItemConfig.props) || {}
+                customConfig.props = {
+                    activeValue: util.isUndefined(switchProps.activeValue) ? true : switchProps.activeValue,
+                    inactiveValue: util.isUndefined(switchProps.inactiveValue) ? false : switchProps.inactiveValue,
+                    activeText: switchProps.activeText || t('common.yes'),
+                    inactiveText: switchProps.inactiveText || t('common.no'),
+                    ...customConfig.props
+                }
+            }
             callback({tableColumnComponentName, col, customConfig: customConfig, ...param})
         }
     }
@@ -375,6 +408,24 @@ export function buildParamForExport(columnConfigs) {
             exportable: config.tableColumnComponentName !== 'FastTableColumnImg' && config.tableColumnComponentName !== 'FastTableColumnFile'
         }
     })
+}
+
+/**
+ * 构建导入请求参数。与导出的列元数据同构, 额外携带importable/importUnique, 并过滤掉不参与导入的列。
+ * 其中exportable由importable派生, 以便"下载导入模板"复用导出接口时只输出可导入的列
+ * @param columnConfigs
+ * @returns {*}
+ */
+export function buildParamForImport(columnConfigs) {
+    return Object.values(columnConfigs)
+        .filter(config => config.customConfig.importable !== false)
+        .map(config => {
+            return {
+                ...config.customConfig,
+                tableColumnComponentName: config.tableColumnComponentName,
+                exportable: true
+            }
+        })
 }
 
 /**

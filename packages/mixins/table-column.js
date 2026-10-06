@@ -69,6 +69,22 @@ export default {
             type: Boolean,
             default: () => false
         },
+        /**
+         * 此列是否参与导入。默认为true; 图片、文件列建议置为false
+         */
+        importable: {
+            type: Boolean,
+            default: () => true
+        },
+        /**
+         * 此列是否作为导入时"无主键"场景的匹配键。
+         * 当某行没有主键值时, 使用所有importUnique=true的列组合(AND)匹配已有记录: 命中则更新, 未命中则新增。
+         * 注意: 与unique(唯一性校验)不同, 仅在需要按业务唯一键导入更新时配置
+         */
+        importUnique: {
+            type: Boolean,
+            default: () => false
+        },
         // deprecated: 1.6.0
         firstFilter: {
             type: Boolean,

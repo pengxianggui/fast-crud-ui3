@@ -45,9 +45,10 @@ export function pick(params) {
         throw new Error("option 必须是 FastTableOption实例");
     }
 
-    option.insertable = false
-    option.updatable = false
-    option.deletable = false
+    // 让业务层决定是否能编辑
+    // option.insertable = false
+    // option.updatable = false
+    // option.deletable = false
     option.enableMulti = (multiple === true)
     option.enableFilterCache = false
     const title = option.title

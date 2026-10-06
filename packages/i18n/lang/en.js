@@ -11,6 +11,7 @@ export default {
     search: 'Search',
     reset: 'Reset',
     export: 'Export',
+    import: 'Import',
     refresh: 'Refresh',
     more: 'More',
 
@@ -178,6 +179,26 @@ export default {
       exportable: 'Exportable',
       exportCurrentPage: 'Export Current Page',
       exportAll: 'Export All'
+    },
+
+    // Import related
+    imports: {
+      title: 'Import Data',
+      dragTip: 'Drop an excel file here, or click to select',
+      supportTip: 'Only .xlsx / .xls are supported. Please fill in the template downloaded by "Download Template"',
+      singleFileOnly: 'Only one file is allowed. Please remove the selected file first',
+      downloadTemplate: 'Download Template',
+      downloadTemplateSuccess: 'Import template downloaded',
+      downloadTemplateFail: 'Failed to download import template',
+      import: 'Start Import',
+      importSuccess: 'Import succeeded: {inserted} inserted, {updated} updated',
+      importFail: 'Import failed',
+      notImportable: 'The table is not importable',
+      pleaseSelectFile: 'Please select an excel file to import',
+      errorTitle: 'Import failed with {count} error(s) (all changes rolled back, nothing was saved)',
+      row: 'Row',
+      col: 'Column',
+      reason: 'Reason'
     },
 
     // Row operation related

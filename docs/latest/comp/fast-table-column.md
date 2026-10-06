@@ -16,6 +16,8 @@
 | quickFilterConfig(`1.5.9+`) | 配置快筛项的一些监听方法,可用于实现快筛项的级联。详见[quickFilterConfig](#quickfilterconfig)                               | `Object`                                                                                | `-`     |
 | dynamicFilter(`1.5.12+`)    | 在filter非false的前提下, 列是否动筛。                                                                        | `Boolean`                                                                               | `false` |
 | unique(`1.5.12+`)           | 行内编辑时校验此列值是否唯一(后端必须提供/exists标准接口)。                                                               | `Boolean`                                                                               | `false` |
+| importable(`1.5.37`)        | 此列是否参与导入(含"下载导入模板")。图片、文件列默认`false`                                                              | `Boolean`                                                                               | `true`  |
+| importUnique(`1.5.37`)      | 此列是否作为导入时"无主键"场景的匹配键。所有`importUnique`列组合(AND)命中已有记录则更新, 否则新增                                     | `Boolean`                                                                               | `false` |
 | ~~firstFilter~~             | 在简筛、快筛中是否排第一个。由于filter、quickFilter在`1.5.4+`支持Number类型指定排序, 此配置项将于`1.6.0`移除                       | `Boolean`                                                                               | `false` |
 | editable                    | 此列是否可编辑(针对`FastTableColumn`无效)                                                                   | `Boolean`/`insert\|update`/`Function<({row, editRow, config, status, col}) => Boolean>` | `true`  |
 | hidden(`1.5.9+`)            | 此列是否可展示(若需要检索, 但无需展示时有用)                                                                         | `Boolean`                                                                               | `true`  |
@@ -106,15 +108,15 @@
 
 ### 属性
 
-| 属性                  | 说明                                                                | 类型                               | 默认值     |
-|---------------------|-------------------------------------------------------------------|----------------------------------|---------|
-| quickFilterCheckbox | 快筛时是否转换为checkbox group呈现                                          | `Boolean`                        | false   |
-| options             | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`)                 | `Array<Object>\|FastTableOption` | `[]`    |
-| labelKey            | options中作为label的属性名                                               | `String`                         | `label` |
-| valKey              | options中作为value的属性名                                               | `String`                         | `value` |
-| optionConds(`1.5.36+`) | 选项的附加查询条件, 仅作用于本列的选项加载, 不影响FastTableOption本身。支持数组, 或函数 `({editRow}) => Cond[]` 用于行级级联 | `Array\|Function` | `[]` |
-| optionDeps(`1.5.36+`)  | 行级级联时监听的`editRow`字段(如`['customerId']`)。任一字段变化会重新按新条件加载选项, 并清空当前选中值 | `String[]`       | `[]`    |
-| pickMap(`1.5.35+`)  | 单选时, 将选中选项的数据字段回填到当前编辑行的其它列: key为选项数据字段名, value为当前行`editRow`的目标字段 | `Object`                         | `{}`    |
+| 属性                     | 说明                                                                                    | 类型                               | 默认值     |
+|------------------------|---------------------------------------------------------------------------------------|----------------------------------|---------|
+| quickFilterCheckbox    | 快筛时是否转换为checkbox group呈现                                                              | `Boolean`                        | false   |
+| options                | 提供的下拉选项。可以是静态对象数组, 或者一个FastTableOption(`1.5.16+`)                                     | `Array<Object>\|FastTableOption` | `[]`    |
+| labelKey               | options中作为label的属性名                                                                   | `String`                         | `label` |
+| valKey                 | options中作为value的属性名                                                                   | `String`                         | `value` |
+| optionConds(`1.5.36+`) | 选项的附加查询条件, 仅作用于本列的选项加载, 不影响FastTableOption本身。支持数组, 或函数 `({editRow}) => Cond[]` 用于行级级联 | `Array\|Function`                | `[]`    |
+| optionDeps(`1.5.36+`)  | 行级级联时监听的`editRow`字段(如`['customerId']`)。任一字段变化会重新按新条件加载选项, 并清空当前选中值                    | `String[]`                       | `[]`    |
+| pickMap(`1.5.35+`)     | 单选时, 将选中选项的数据字段回填到当前编辑行的其它列: key为选项数据字段名, value为当前行`editRow`的目标字段                     | `Object`                         | `{}`    |
 
 > 对于options而言。在`1.5.16+`开始支持一个`FastTableOption`对象，内部将基于`FastTableOption`的标准接口————`/list`、结合
 `labelKey`和`valKey`构造选项数组。
@@ -125,12 +127,13 @@
 先让"客户"下拉通过`pickMap`把客户`id`回填到当前行的`customerId`, 再让"客户经理"下拉的选项依赖该字段:
 
 ```vue
+
 <fast-table-column-select prop="customerName" :options="customerOption"
-                          :pick-map="{ id: 'customerId', sapCode: 'soldToCode' }" />
+                          :pick-map="{ id: 'customerId', sapCode: 'soldToCode' }"/>
 <fast-table-column-select prop="salesAccountManager" :options="consultantOption"
                           val-key="name" label-key="name"
                           :option-conds="({ editRow }) => editRow?.customerId ? [{ col: 'customerId', val: editRow.customerId }] : []"
-                          :option-deps="['customerId']" />
+                          :option-deps="['customerId']"/>
 ```
 
 - `optionDeps`为空时(如尚未选客户), 不发起选项请求; 一旦字段有值或变化, 自动加载/刷新选项。

@@ -11,6 +11,7 @@ export default {
     search: '搜索',
     reset: '重置',
     export: '导出',
+    import: '导入',
     refresh: '刷新',
     more: '更多',
 
@@ -178,6 +179,27 @@ export default {
       exportable: '是否导出',
       exportCurrentPage: '导出当前页',
       exportAll: '导出全部'
+    },
+
+    // 导入相关
+    // 注: 导入功能为英文UI(不随language pack变化), 因此这里也使用英文文案
+    imports: {
+      title: 'Import Data',
+      dragTip: 'Drop an excel file here, or click to select',
+      supportTip: 'Only .xlsx / .xls are supported. Please fill in the template downloaded by "Download Template"',
+      singleFileOnly: 'Only one file is allowed. Please remove the selected file first',
+      downloadTemplate: 'Download Template',
+      downloadTemplateSuccess: 'Import template downloaded',
+      downloadTemplateFail: 'Failed to download import template',
+      import: 'Start Import',
+      importSuccess: 'Import succeeded: {inserted} inserted, {updated} updated',
+      importFail: 'Import failed',
+      notImportable: 'The table is not importable',
+      pleaseSelectFile: 'Please select an excel file to import',
+      errorTitle: 'Import failed with {count} error(s) (all changes rolled back, nothing was saved)',
+      row: 'Row',
+      col: 'Column',
+      reason: 'Reason'
     },
 
     // 行操作相关
