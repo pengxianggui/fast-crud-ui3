@@ -185,7 +185,7 @@ class FastTableOption {
      * 是否支持导入。默认true
      * @type {boolean | ((scope: any) => boolean)}
      */
-    importable = true;
+    importable = false;
     /**
      * 主键字段名。默认为"id"。必须正确设置，否则更新、删除等功能无法使用。
      * @type {string}
