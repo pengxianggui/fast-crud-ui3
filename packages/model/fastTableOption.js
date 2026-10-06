@@ -182,7 +182,7 @@ class FastTableOption {
      */
     exportable = true;
     /**
-     * 是否支持导入。默认true
+     * 是否支持导入。默认false
      * @type {boolean | ((scope: any) => boolean)}
      */
     importable = false;
@@ -422,7 +422,7 @@ class FastTableOption {
                     updatable = DEFAULT_TRUE,
                     deletable = DEFAULT_TRUE,
                     exportable = DEFAULT_TRUE,
-                    importable = DEFAULT_TRUE,
+                    importable = DEFAULT_FALSE,
                     importExtra = {},
                     idField = 'id',
                     createTimeField = '',
