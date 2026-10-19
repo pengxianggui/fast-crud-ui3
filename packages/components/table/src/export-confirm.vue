@@ -15,8 +15,12 @@
     </el-table>
     <div class="footer">
       <span class="flex"></span>
-      <el-button :icon="Download" size="default" type="primary" plain @click="exportData(false)">{{ t('crud.exports.exportCurrentPage') }}</el-button>
-      <el-button :icon="Download" size="default" type="primary" @click="exportData(true)">{{ t('crud.exports.exportAll') }}</el-button>
+      <el-button v-if="showSelected" :icon="Download" size="default" type="primary" plain
+                 :disabled="selectedCount === 0" @click="exportData('selected')">
+        {{ t('crud.exports.exportSelected', {count: selectedCount}) }}
+      </el-button>
+      <el-button :icon="Download" size="default" type="primary" plain @click="exportData('page')">{{ t('crud.exports.exportCurrentPage') }}</el-button>
+      <el-button :icon="Download" size="default" type="primary" @click="exportData('all')">{{ t('crud.exports.exportAll') }}</el-button>
     </div>
   </div>
 </template>
@@ -40,11 +44,19 @@ export default {
   },
   emits: ['ok'],
   props: {
-    columns: Array
+    columns: Array,
+    showSelected: {
+      type: Boolean,
+      default: false
+    },
+    selectedCount: {
+      type: Number,
+      default: 0
+    }
   },
   methods: {
-    exportData(all) {
-      this.$emit('ok', { columns: this.columns, all: all })
+    exportData(scope) {
+      this.$emit('ok', { columns: this.columns, scope: scope })
     }
   }
 }

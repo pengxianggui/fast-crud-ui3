@@ -88,6 +88,13 @@ export default defineConfig(({mode}) => {
                     silenceDeprecations: ["legacy-js-api"] // 静默警告: Deprecation Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
                 }
             }
+        },
+        test: {
+            server: {
+                deps: {
+                    inline: ['element-plus']
+                }
+            }
         }
     }
 })

@@ -1062,7 +1062,11 @@ export default {
         ElMessage.warning(this.t('crud.table.notExportable'))
         return
       }
-      this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery);
+      this.option._exportData(buildParamForExport(this.columnConfig), this.pageQuery, {
+        enabled: this.enableMulti,
+        rows: this.checkedRows.map(fatRow => fatRow.row),
+        idField: this.option.idField
+      });
     },
     /**
      * 导入数据

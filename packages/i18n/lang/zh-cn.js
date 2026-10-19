@@ -177,6 +177,8 @@ export default {
       titleRow: '标题行',
       enterName: '请输入名称',
       exportable: '是否导出',
+      exportSelected: '导出已勾选的（{count}）',
+      exportSelectedUnsaved: '所选数据包含未保存记录，请先保存或取消勾选',
       exportCurrentPage: '导出当前页',
       exportAll: '导出全部'
     },

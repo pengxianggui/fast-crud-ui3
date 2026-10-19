@@ -6,7 +6,8 @@
 点击导出，进入导出面板：
 ![img_15](https://pengxg-note.oss-cn-shanghai.aliyuncs.com/halo/img_15.png)
 
-你可以定制导出excel的表头，以及设置某些列不导出，最后根据需要导出当前页或全部数据。
+你可以定制导出excel的表头，以及设置某些列不导出，最后根据需要导出已勾选、当前页或全部数据。
+表格启用多选时，已勾选导出的范围会跨页累计；若勾选记录中包含尚未保存的新增行，请先保存或取消勾选。
 
 > 由于excel单个单元格难以支持多图/多文件，因此`FastTableColumnImg`和`FastTableColumnFile`配置为multiple时, 导出的内容不渲染图片，
 > 为原始json数据。

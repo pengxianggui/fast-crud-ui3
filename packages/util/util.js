@@ -588,6 +588,20 @@ export function getNameFromUrl(url) {
 }
 
 /**
+ * 从URL中提取可作为文件名基础名的字符串。
+ * 处理流程: 去除 query/hash 部分 -> 去除协议与域名 -> 去除首尾斜杠 -> 将路径分隔符/替换为下划线。
+ * @param {string} url 待解析的URL
+ * @returns {string} 提取出的基础名; url为空(undefined/null/'')时返回空字符串
+ */
+export function extractBaseNameFromUrl(url) {
+    return (url || '')
+        .split(/[?#]/)[0]
+        .replace(/^https?:\/\/[^/]*/i, '')
+        .replace(/^\/+|\/+$/g, '')
+        .replace(/\//g, '_')
+}
+
+/**
  * 从fileItems中获取第一个url。
  * @param fileItems 期望是[{name:'', url:''}, ..],如果非数组或空数组，返回null; 为数组则取首个元素，首个元素为对象类型，取url属性返回, 否则直接返回
  * @returns {*|null}

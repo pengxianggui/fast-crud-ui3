@@ -177,6 +177,8 @@ export default {
       titleRow: 'Title Row',
       enterName: 'Please enter name',
       exportable: 'Exportable',
+      exportSelected: 'Export Selected ({count})',
+      exportSelectedUnsaved: 'Selected data includes unsaved records. Save the records or clear the selection first.',
       exportCurrentPage: 'Export Current Page',
       exportAll: 'Export All'
     },

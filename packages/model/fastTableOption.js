@@ -6,6 +6,7 @@ import {openDialog} from "../util/dialog.js";
 import {getFromSessionStorage, setToSessionStorage} from "../util/cache.js";
 import ExportConfirm from "../components/table/src/export-confirm.vue";
 import ImportConfirm from "../components/table/src/import-confirm.vue";
+import {buildExportRequest} from "../components/table/src/export-util.js";
 import Cond from './cond.js'
 import {t} from '../i18n/index.js'
 
@@ -770,9 +771,15 @@ class FastTableOption {
      * 导出
      * @param columnConfigs
      * @param pageQuery
+     * @param exportSelection 勾选导出信息
      */
-    _exportData(columnConfigs, pageQuery) {
-        const {context, beforeExport} = this
+    _exportData(columnConfigs, pageQuery, exportSelection = {}) {
+        const {context, beforeExport, idField} = this
+        const {
+            enabled = false,
+            rows = [],
+            idField: selectionIdField = idField
+        } = exportSelection
         beforeExport.call(context, {
             columns: columnConfigs,
             pageQuery: pageQuery
@@ -780,18 +787,32 @@ class FastTableOption {
             openDialog({
                 component: ExportConfirm,
                 props: {
-                    columns: columnConfigs
+                    columns: columnConfigs,
+                    showSelected: enabled,
+                    selectedCount: enabled ? rows.length : 0
                 },
                 dialogProps: {
                     title: `${t('crud.exports.title')}`,
                     width: '60%',
                     okClose: false,
-                    handleOk: ({columns, all = false}) => {
+                    handleOk: ({columns, scope = 'page'}) => {
+                        const {request, hasUnsavedRows} = buildExportRequest(
+                            scope,
+                            columns,
+                            rows,
+                            selectionIdField
+                        )
+                        if (scope === 'selected' && hasUnsavedRows) {
+                            ElMessage.warning(t('crud.exports.exportSelectedUnsaved'))
+                            return
+                        }
+                        if (scope === 'selected' && request.selectedIds.length === 0) {
+                            return
+                        }
                         // 导出数据
                         const {title, exportUrl, exportSuccess, exportFail} = this;
                         post(exportUrl, pageQuery.params, {
-                            columns: columns,
-                            all: all, // false-当前页; true-全部
+                            ...request, // 勾选导出额外包含selectedIds、idField
                             pageQuery: pageQuery
                         }, {
                             responseType: 'blob'
@@ -823,7 +844,7 @@ class FastTableOption {
                     // console.log(`你取消了下载..${who}触发cancel`)
                     // }
                 }
-            }).then(({columns, all = false}) => {
+            }).then(() => {
                 // do nothing, dialog props中配置了handleOk
             }).catch(() => {
                 // do nothing
@@ -880,7 +901,7 @@ class FastTableOption {
      * @param pageQuery 分页查询对象
      */
     _downloadImportTemplate(columns, pageQuery) {
-        const {title, exportUrl} = this;
+        const {title, exportUrl, baseUrl} = this;
         post(exportUrl, pageQuery?.params, {
             columns: columns,
             all: true,
@@ -893,7 +914,9 @@ class FastTableOption {
             const link = document.createElement('a')
             link.href = url;
             const dateStr = util.dateFormat(new Date(), 'YYYYMMDDHHmmssSSS')
-            link.setAttribute('download', `${title ? title : 'import'}_template_${dateStr}.xlsx`)
+            const baseNameFromUrl = util.extractBaseNameFromUrl(baseUrl)
+            const fileBaseName = title || baseNameFromUrl || 'import'
+            link.setAttribute('download', `${fileBaseName}_template_${dateStr}.xlsx`)
             document.body.appendChild(link)
             link.click()
             link.remove()
