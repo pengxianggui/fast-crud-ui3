@@ -126,7 +126,7 @@ class FastTableOption {
      * 是否启用表格多选。默认启用
      * @type {boolean | ((scope: any) => boolean)}
      */
-    enableMulti = true;
+    enableMulti = false;
     /**
      * 是否启用序号列
      * @type {boolean | ((scope: any) => boolean)}
@@ -411,7 +411,7 @@ class FastTableOption {
                     importUrl = '',
                     existsUrl = '',
                     enableDblClickEdit = DEFAULT_TRUE,
-                    enableMulti = DEFAULT_TRUE,
+                    enableMulti = DEFAULT_FALSE,
                     enableIndex = DEFAULT_FALSE,
                     enableColumnFilter = DEFAULT_TRUE,
                     enableFilterCache = DEFAULT_TRUE,
