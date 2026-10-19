@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest'
-import {buildExportRequest} from './export-util.js'
+import {buildExportRequest} from '../../../packages/components/table/src/export-util.js'
 
 const columns = [{col: 'name', label: '姓名', exportable: true}]
 

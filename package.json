@@ -20,6 +20,7 @@
     "build": "npm run build:lib && npm run build:demo",
     "build:lib": "vite build --mode library && cp packages/global.d.ts lib/global.d.ts",
     "build:demo": "vite build",
+    "test": "vitest run",
     "preview": "vite preview --port 4173",
     "pub:beta": "npm publish --tag beta --access public --registry https://registry.npmjs.org",
     "pub": "npm publish --access public --registry https://registry.npmjs.org",

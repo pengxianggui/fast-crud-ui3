@@ -1,8 +1,8 @@
 import {renderToString} from '@vue/server-renderer'
 import {createSSRApp, h} from 'vue'
 import {describe, expect, it, vi} from 'vitest'
-import i18n from '../../../i18n/index.js'
-import ExportConfirm from './export-confirm.vue'
+import i18n from '../../../packages/i18n/index.js'
+import ExportConfirm from '../../../packages/components/table/src/export-confirm.vue'
 
 vi.mock('element-plus', async () => {
     const {h} = await import('vue')

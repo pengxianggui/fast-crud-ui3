@@ -90,6 +90,7 @@ export default defineConfig(({mode}) => {
             }
         },
         test: {
+            include: ['tests/**/*.{test,spec}.js'],
             server: {
                 deps: {
                     inline: ['element-plus']

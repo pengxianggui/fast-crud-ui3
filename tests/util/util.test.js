@@ -1,5 +1,5 @@
 import {describe, it, expect} from 'vitest'
-import {extractBaseNameFromUrl} from './util.js'
+import {extractBaseNameFromUrl} from '../../packages/util/util.js'
 
 describe('extractBaseNameFromUrl', () => {
     it('空入参(undefined/null/空字符串)返回空字符串', () => {
