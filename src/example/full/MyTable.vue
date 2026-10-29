@@ -117,6 +117,7 @@ export default {
         context: this, // important! 否则钩子函数里无法获取当当前组件实例上下文
         title: '',
         module: 'student', // 配置了这个, 默认分页接口就是: /student/page, 新增接口就是: /student/insert, 其它同理
+        importable: true,
         enableDblClickEdit: true,
         enableMulti: true,
         enableIndex: true,
