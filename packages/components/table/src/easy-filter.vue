@@ -20,7 +20,7 @@
 import {nextTick} from "vue";
 import FastSelect from "../../select/src/fast-select.vue";
 import {RefreshLeft, Search} from "@element-plus/icons-vue";
-import {isEmpty, isFunction, isUndefined} from "../../../util/util.js";
+import {isEmpty, isFunction, isKeydownComposing, isUndefined} from "../../../util/util.js";
 
 export default {
   name: "easy-filter",
@@ -91,7 +91,11 @@ export default {
         this.$emit('search')
       })
     },
-    handleEnter() {
+    handleEnter(event) {
+      // 输入法组合输入中按回车(如确认中文候选词)不触发搜索
+      if (isKeydownComposing(event)) {
+        return
+      }
       nextTick(() => {
         this.$emit('search')
       })

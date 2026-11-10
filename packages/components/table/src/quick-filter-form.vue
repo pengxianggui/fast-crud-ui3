@@ -9,7 +9,7 @@
                     :style="getStyle(filter, index)"
                     class="fc-quick-filter-form-item">
         <component :ref="filter.col" :size="option.style.size" :is="filter.component" v-model="filter.val" v-bind="filter.props"
-                   @change="handleChange(filter)" @click="handleClick(filter)"/>
+                   @change="handleChange(filter)" @click="handleClick(filter)" @keydown.enter="handleEnter"/>
       </el-form-item>
       <slot></slot>
       <el-form-item class="fc-quick-filter-form-action" v-if="option.style.showQuickFilterBtn">
@@ -24,7 +24,8 @@
 
 <script>
 import {ArrowDown, ArrowUp} from "@element-plus/icons-vue";
-import {isFunction, unwrapArr} from "../../../util/util.js";
+import {nextTick} from "vue";
+import {isFunction, isKeydownComposing, unwrapArr} from "../../../util/util.js";
 import {FastTableOption} from "../../../index.js";
 import {RefreshLeft, Search} from "@element-plus/icons-vue";
 import {useI18n} from "../../../i18n/index.js";
@@ -144,6 +145,16 @@ export default {
       })
       const context = this.option.context
       onClick.call(context, {val: filter.val, model: this.formModel, filter: filter, filters: filters, refs: refs})
+    },
+    handleEnter(event) {
+      // 输入法组合输入中按回车(如确认中文候选词)不触发搜索
+      if (isKeydownComposing(event)) {
+        return
+      }
+      // 等待控件完成 v-model 更新后再发起查询, 避免漏掉本次输入
+      nextTick(() => {
+        this.$emit('search')
+      })
     },
     handleSearch() {
       this.$emit('search')

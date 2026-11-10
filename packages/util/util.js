@@ -903,6 +903,16 @@ export function escapeLabel(val, options, valKey, labelKey) {
 
 
 /**
+ * 判断键盘事件是否处于输入法组合输入中。
+ * 例如中文输入法按回车确认候选词时, 不应触发搜索等额外动作。
+ * @param {KeyboardEvent} event
+ * @returns {boolean}
+ */
+export function isKeydownComposing(event) {
+    return !!event && (event.isComposing === true || event.keyCode === 229);
+}
+
+/**
  * 递归地对对象的键进行排序
  * * @param {*} obj
  * @returns {*}

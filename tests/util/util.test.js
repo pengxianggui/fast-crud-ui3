@@ -1,5 +1,17 @@
 import {describe, it, expect} from 'vitest'
-import {extractBaseNameFromUrl} from '../../packages/util/util.js'
+import {extractBaseNameFromUrl, isKeydownComposing} from '../../packages/util/util.js'
+
+describe('isKeydownComposing', () => {
+    it('输入法组合输入中返回 true', () => {
+        expect(isKeydownComposing({isComposing: true})).toBe(true)
+        expect(isKeydownComposing({keyCode: 229})).toBe(true)
+    })
+
+    it('普通回车或空事件返回 false', () => {
+        expect(isKeydownComposing({isComposing: false, keyCode: 13})).toBe(false)
+        expect(isKeydownComposing(null)).toBe(false)
+    })
+})
 
 describe('extractBaseNameFromUrl', () => {
     it('空入参(undefined/null/空字符串)返回空字符串', () => {
