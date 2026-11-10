@@ -1,4 +1,5 @@
 import {buildFinalQueryComponentConfig, buildFinalEditComponentConfig} from '../../mapping'
+import {Fragment, isVNode} from 'vue'
 import Schema from 'async-validator'
 import Opt from '../../../model/opt.js'
 import * as util from '../../../util/util.js'
@@ -152,12 +153,37 @@ function resolveImportable(customProps, importable, tableColumnComponentName) {
 }
 
 /**
+ * 展开插槽或 v-for 产生的 Fragment 包装节点，使通过插槽透传的列也能被解析。
+ * <p>
+ * Vue 的 <slot> 出口与 v-for 都会生成 Fragment 节点，若直接解析会被当作无 prop 的节点跳过，
+ * 导致列能渲染但不会进入 columnConfig（快筛、导出、存筛等配置缺失）。
+ *
+ * @param vnodes 列节点数组
+ * @return 展开后的列节点数组（保持原有顺序）
+ */
+export function flattenColumnVNodes(vnodes = []) {
+    const result = []
+    for (const vnode of vnodes) {
+        if (!isVNode(vnode)) {
+            continue
+        }
+        if (vnode.type === Fragment && Array.isArray(vnode.children)) {
+            result.push(...flattenColumnVNodes(vnode.children))
+            continue
+        }
+        result.push(vnode)
+    }
+    return result
+}
+
+/**
  * 构建组件配置
  * @param tableColumnVNodes fast-table-column-* 组成的节点数组，蕴含fast-table-column-*组件节点上的信息(也可能是ElTableColumn)
  * @param tableOption 表格配置
  * @param callback 针对每个table-column解析的回调函数
  */
 export function iterBuildComponentConfig(tableColumnVNodes, tableOption, callback) {
+    tableColumnVNodes = flattenColumnVNodes(tableColumnVNodes)
     const fromTableProps = { // 通过option传入配置项, 需要作用到搜索或编辑等组件内部
         size: tableOption.style.size
     }
